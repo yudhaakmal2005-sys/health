@@ -108,7 +108,7 @@ private fun CitizenCard(c: CitizenSummary, vm: KaderViewModel, onVisit: (String)
             }
         }
         KeyValueRow("Pemeriksaan terakhir", c.lastCheckAt?.let { TimeUtils.date(it) } ?: "Belum ada")
-        KeyValueRow("Status tindak lanjut", if (c.followUpOpen) "Perlu tindak lanjut" else "Tidak ada", if (c.followUpOpen) RiskOrangeText else TextPrimary)
+        KeyValueRow("Status tindak lanjut", if (c.followUpOpen) "Perlu tindak lanjut" else "Tidak ada", valueColor = if (c.followUpOpen) RiskOrangeText else TextPrimary)
         PrimaryButton("Daftarkan kunjungan hari ini", { vm.registerVisit(c.sehatiId, onVisit) }, icon = Icons.Rounded.HowToReg, tag = "register_visit_${c.sehatiId}")
         Text("Riwayat kesehatan hanya terbuka selama kunjungan aktif dan dicatat dalam audit.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
     }

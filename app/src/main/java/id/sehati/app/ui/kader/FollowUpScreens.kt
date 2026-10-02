@@ -124,8 +124,8 @@ fun SyncTab(vm: KaderViewModel) {
         Text("SINKRONISASI", style = MaterialTheme.typography.labelLarge, color = PrimaryDark)
         SehatiCard {
             Text("Tujuan: ${s.destination}", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
-            KeyValueRow("Menunggu kirim", s.sync.pending.toString(), if (s.sync.pending > 0) RiskYellowText else TextPrimary)
-            KeyValueRow("Gagal (akan dicoba lagi)", s.sync.failed.toString(), if (s.sync.failed > 0) RiskRedText else TextPrimary)
+            KeyValueRow("Menunggu kirim", s.sync.pending.toString(), valueColor = if (s.sync.pending > 0) RiskYellowText else TextPrimary)
+            KeyValueRow("Gagal (akan dicoba lagi)", s.sync.failed.toString(), valueColor = if (s.sync.failed > 0) RiskRedText else TextPrimary)
             KeyValueRow("Terkirim", s.sync.done.toString())
             KeyValueRow("Terakhir", s.sync.lastSyncAt?.let { TimeUtils.dateTime(it) } ?: "-")
             msg?.let { InfoNote(it, icon = Icons.Rounded.Sync) }
