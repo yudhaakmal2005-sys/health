@@ -261,3 +261,19 @@ class GamificationTest {
     }
     @Test fun learningPoints() { assertEquals(2 * 3 + 10 * 1, Gamification.compute(emptyMap(), 6000, 3, 1, 0).learningPoints) }
 }
+
+class ReportTest {
+    private val stats = CommunityAnalytics.calculate(
+        (1..6).map { CitizenRec("HM-00010$it", "01", true) },
+        (1..6).map { CheckRec("HM-00010$it", 1L, 150, 95, 170f, 27f) }, emptyList(), emptyList(), emptyList(),
+    )
+    @Test fun reportUsesScreeningTerminologyNotPrevalence() {
+        val t = ReportBuilder.text(stats, "2 Okt 2026", "Desa Uji")
+        assertTrue(t.contains("bukan prevalensi populasi")); assertFalse(t.contains("prevalensi:", true))
+    }
+    @Test fun reportHasNoIndividualIdentifiers() {
+        val t = ReportBuilder.text(stats, "2 Okt 2026", "Desa Uji")
+        assertFalse(t.contains("HM-0001")); assertFalse(ReportBuilder.csv(stats).contains("HM-0001"))
+    }
+    @Test fun csvHasHeaderAndRow() { assertEquals(2, ReportBuilder.csv(stats).trim().lines().size) }
+}
