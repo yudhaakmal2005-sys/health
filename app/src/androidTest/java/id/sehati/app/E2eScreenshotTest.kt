@@ -58,7 +58,7 @@ class E2eScreenshotTest {
     }
 
     private fun logout(profileTag: String = "nav_profile") {
-        click(profileTag); click("logout_button"); click("logout_dialog_confirm")
+        rule.click(profileTag); rule.click("logout_button"); rule.click("logout_dialog_confirm")
     }
 
     private fun AndroidComposeTestRule<*, *>.assessment(prefix: String) {
