@@ -26,3 +26,7 @@ Sinkronisasi demo memakai **server simulasi di perangkat** (dilabeli jelas di UI
 * Aturan klinis: konfigurasi internal (`ClinicalThresholds`) dengan sumber, penjelasan, keterbatasan, dan tindakan; hasil skrining tidak pernah ditulis sebagai diagnosis.
 
 Lihat `docs/API.md` untuk kontrak backend opsional.
+
+## Status verifikasi
+CI: 118 tes lulus (unit, integrasi Room, ViewModel, Compose, dan UI end-to-end), build debug/staging/release sukses.
+Detail temuan, perubahan, dan batasan: `docs/LAPORAN.md`.
