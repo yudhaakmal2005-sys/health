@@ -11,16 +11,38 @@ jobs:
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: 21 }
       - uses: gradle/actions/setup-gradle@v4
-      - name: Unit tests
-        run: ./gradlew --no-daemon testDebugUnitTest --stacktrace
-      - name: Assemble debug APK
-        run: ./gradlew --no-daemon assembleDebug --stacktrace
+      - name: Build and test
+        run: |
+          set +e
+          ./gradlew --no-daemon --console=plain --continue testDebugUnitTest assembleDebug > build.log 2>&1
+          echo $? > build.code
+          exit 0
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-reports
-          path: app/build/reports/tests
+          path: |
+            app/build/reports/tests
+            build.log
       - uses: actions/upload-artifact@v4
         with:
           name: sehati-debug-apk
           path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: warn
+      - name: Summary
+        run: |
+          code=$(cat build.code)
+          echo "=== GRADLE EXIT CODE: $code ==="
+          grep -E "^e: |^w: .*(Unresolved|is deprecated)|error:|What went wrong|Execution failed|Could not " -A3 build.log | grep -v "^\s*at " | head -70
+          python3 - <<'PY'
+          import glob, xml.etree.ElementTree as ET
+          t=f=0
+          for p in glob.glob('app/build/test-results/**/*.xml', recursive=True):
+              r=ET.parse(p).getroot()
+              for c in r.iter('testcase'):
+                  t+=1
+                  for k in c.findall('failure')+c.findall('error'):
+                      f+=1; print('TEST FAIL', c.get('classname'), c.get('name'), (k.get('message') or '')[:200])
+          print('TESTS', t, 'FAILED', f)
+          PY
+          [ "$code" = "0" ]
