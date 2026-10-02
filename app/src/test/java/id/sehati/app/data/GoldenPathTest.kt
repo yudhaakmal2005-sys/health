@@ -190,3 +190,32 @@ class GoldenPathTest {
         assertTrue(env.health.decodeFindings(p).any { it.id == "smoking" })
     }
 }
+
+@RunWith(AndroidJUnit4::class)
+@Config(sdk = [34])
+class CadreProvisioningTest {
+    private lateinit var env: TestEnv
+    @Before fun setUp() { env = TestEnv() }
+    @After fun tearDown() { env.close() }
+
+    @Test fun adminAddsCadreWhoCanThenLogInButCannotAdminister() = blocking {
+        env.staff("AD-000001", Role.ADMIN)
+        env.session.start("AD-000001", Role.ADMIN)
+        val k = env.posyandu.addCadre("Dewi Lestari", "03", "rahasia1")
+        assertEquals("KD-000001", k.sehatiId); assertEquals(Role.KADER.name, k.role)
+        assertTrue(env.posyandu.observeCadres().first().any { it.sehatiId == k.sehatiId && it.active })
+        assertEquals("KD-000002", env.posyandu.addCadre("Ratna", "04", "rahasia2").sehatiId)
+
+        env.session.end()
+        val login = env.auth.login("KD-000001", "rahasia1")
+        assertIs<id.sehati.app.data.repository.AuthResult.Success>(login)
+        assertEquals(Role.KADER, login.session.role)
+        assertFailsWith<AccessDenied> { env.posyandu.addCadre("X", "01", "rahasia1") } // kader tidak boleh menambah kader
+    }
+
+    @Test fun weakPasswordOrBlankNameRejected() = blocking {
+        env.staff("AD-000001", Role.ADMIN); env.session.start("AD-000001", Role.ADMIN)
+        assertFailsWith<IllegalArgumentException> { env.posyandu.addCadre("A", "01", "123") }
+        assertFailsWith<IllegalArgumentException> { env.posyandu.addCadre(" ", "01", "rahasia1") }
+    }
+}

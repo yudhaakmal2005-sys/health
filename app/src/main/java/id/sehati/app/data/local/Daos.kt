@@ -26,6 +26,7 @@ interface UserDao {
     @Query("SELECT * FROM users WHERE role = 'WARGA' ORDER BY fullName") fun observeCitizens(): Flow<List<UserEntity>>
     @Query("SELECT * FROM users WHERE role = :role ORDER BY fullName") fun observeByRole(role: String): Flow<List<UserEntity>>
     @Query("SELECT COUNT(*) FROM users") suspend fun count(): Int
+    @Query("SELECT MAX(CAST(SUBSTR(sehatiId, 4) AS INTEGER)) FROM users WHERE sehatiId LIKE :pattern") suspend fun maxStaffNumber(pattern: String): Int?
     @Query("SELECT MAX(CAST(SUBSTR(sehatiId, 4) AS INTEGER)) FROM users WHERE sehatiId LIKE 'HM-%'") suspend fun maxIdNumber(): Int?
     @Query("SELECT * FROM users WHERE role = 'WARGA' AND (fullName LIKE '%' || :q || '%' OR sehatiId LIKE '%' || :q || '%') ORDER BY fullName LIMIT 50")
     suspend fun searchCitizens(q: String): List<UserEntity>

@@ -40,6 +40,7 @@ fun AssessmentFlow(onFinished: () -> Unit, vm: AssessmentViewModel = hiltViewMod
     var step by rememberSaveable { mutableIntStateOf(0) }
     var showError by remember { mutableStateOf(false) }
 
+    DisposableEffect(Unit) { onDispose { vm.reset() } }
     LaunchedEffect(saved) { if (saved) step = RESULT }
     BackHandler(enabled = step in 1..7) { step--; showError = false }
 

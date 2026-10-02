@@ -170,8 +170,14 @@ fun ReportsTab(vm: AdminViewModel) {
 @Composable
 fun CadresTab(vm: AdminViewModel) {
     val s by vm.state.collectAsStateWithLifecycle()
+    val error by vm.error.collectAsStateWithLifecycle()
+    var adding by remember { mutableStateOf(false) }
+    var created by remember { mutableStateOf<String?>(null) }
     ScreenColumn(Modifier.testTag("admin_cadres_screen")) {
         Text("CADRES", style = MaterialTheme.typography.labelLarge, color = PrimaryDark)
+        error?.let { InfoNote(it, icon = Icons.Rounded.ErrorOutline, color = RiskRedText, bg = RiskRedBg) }
+        created?.let { InfoNote("Akun kader $it dibuat. Berikan ID dan kata sandi sementara kepada kader.", icon = Icons.Rounded.CheckCircle, color = RiskGreenText, bg = RiskGreenBg, modifier = Modifier.testTag("cadre_created_note")) }
+        PrimaryButton("Tambah kader", { adding = true; vm.clearError() }, icon = Icons.Rounded.PersonAdd, tag = "add_cadre_button")
         if (s.cadres.isEmpty()) EmptyState(Icons.Rounded.Groups, "Belum ada kader", "Kader akan muncul setelah akun diprovisikan.")
         s.cadres.forEachIndexed { i, c ->
             SehatiCard(Modifier.staggerIn(i).testTag("cadre_${c.cadre.sehatiId}")) {
@@ -188,6 +194,7 @@ fun CadresTab(vm: AdminViewModel) {
             }
         }
     }
+    if (adding) AddCadreDialog(vm, onDismiss = { adding = false }, onCreated = { adding = false; created = it })
 }
 
 @Composable
@@ -251,4 +258,22 @@ fun SettingsTab(vm: AdminViewModel) {
         }
         if (s.audit.isEmpty()) Text("Belum ada catatan audit.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
     }
+}
+
+@Composable
+private fun AddCadreDialog(vm: AdminViewModel, onDismiss: () -> Unit, onCreated: (String) -> Unit) {
+    var name by remember { mutableStateOf("") }; var rw by remember { mutableStateOf("") }; var pw by remember { mutableStateOf("") }
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss, modifier = Modifier.testTag("add_cadre_dialog"), containerColor = CardWhite,
+        title = { Text("Tambah kader") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                SehatiTextField(name, { name = it }, "Nama lengkap", tag = "cadre_name_field")
+                SehatiTextField(rw, { rw = it.filter(Char::isDigit).take(2) }, "RW tugas", keyboardType = androidx.compose.ui.text.input.KeyboardType.Number, tag = "cadre_rw_field")
+                SehatiTextField(pw, { pw = it }, "Kata sandi sementara", password = true, tag = "cadre_password_field", supporting = "Minimal 6 karakter")
+            }
+        },
+        confirmButton = { TextButton({ vm.addCadre(name, rw.ifBlank { "01" }, pw) { onCreated(it) } }, Modifier.heightIn(min = 48.dp).testTag("cadre_save_button")) { Text("Simpan") } },
+        dismissButton = { TextButton(onDismiss, Modifier.heightIn(min = 48.dp)) { Text("Batal") } },
+    )
 }

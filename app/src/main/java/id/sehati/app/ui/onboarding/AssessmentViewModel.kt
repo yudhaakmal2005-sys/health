@@ -57,6 +57,9 @@ class AssessmentViewModel @Inject constructor(
     val plan: StateFlow<List<PlanDto>> = current.user.filterNotNull().flatMapLatest { health.observeProfile(it.sehatiId) }
         .map { health.decodePlan(it) }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    /** Dipanggil saat alur ditinggalkan agar "Ulangi asesmen" dimulai dari awal. */
+    fun reset() { _saved.value = false; _form.value = AssessmentForm() }
+
     fun update(block: AssessmentForm.() -> AssessmentForm) = _form.update { it.block().copy(error = null) }
 
     private fun f(s: String) = s.replace(',', '.').toFloatOrNull()

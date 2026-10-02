@@ -266,6 +266,32 @@ class PosyanduRepository(
         audit.log("cadre_active", id, active.toString())
     }
 
+    /** Admin menambahkan akun kader (provisioning lokal). Produksi: akun berasal dari server (/auth). */
+    suspend fun addCadre(name: String, rw: String, password: String, facilityId: String = "fac-melati"): UserEntity {
+        requireRole(Permission.MANAGE_CADRES)
+        require(name.isNotBlank()) { "Nama kader wajib diisi." }
+        PasswordHasher.passwordIssue(password)?.let { throw IllegalArgumentException(it) }
+        val now = clock.now()
+        return db.withTransaction {
+            val next = (users.maxStaffNumber("KD-%") ?: 0) + 1
+            val id = "KD-" + next.toString().padStart(6, '0')
+            val u = UserEntity(
+                sehatiId = id, fullName = name.trim(), birthDate = "1990-01-01", sex = id.sehati.app.domain.model.Sex.FEMALE.name, village = "Desa Mirigambar", rw = rw,
+                role = Role.KADER.name, qrToken = QrPayload.newToken(), consentLocal = true, consentServerSync = true, consentAt = now,
+                onboardingDone = true, assessmentDone = true, createdAt = now, updatedAt = now,
+            )
+            users.upsert(u)
+            val h = PasswordHasher.hash(password.toCharArray())
+            users.upsertCredential(CredentialEntity(id, h.salt, h.hash, h.iterations))
+            val c = CadreEntity(id, facilityId, rw, true, now)
+            dao.upsertCadre(c)
+            sync.record("user", id, null, u.version, UserEntity.serializer(), u.copy(qrToken = ""))
+            sync.record("cadre", id, null, c.version, CadreEntity.serializer(), c)
+            audit.log("cadre_add", null, id)
+            u
+        }
+    }
+
     suspend fun adjustStock(id: String, delta: Int) {
         requireRole(Permission.MANAGE_LOGISTICS)
         val l = dao.logistics(id) ?: return

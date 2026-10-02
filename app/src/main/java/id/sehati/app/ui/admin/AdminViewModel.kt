@@ -70,6 +70,9 @@ class AdminViewModel @Inject constructor(
     fun assign(followUpId: String, cadreId: String?) { viewModelScope.launch { runCatching { posyandu.assignCadre(followUpId, cadreId) }.onFailure { _error.value = it.message } } }
     fun scheduleRecheck(followUpId: String, inDays: Int) { viewModelScope.launch { runCatching { posyandu.scheduleRecheck(followUpId, clock.now() + inDays * 86_400_000L) }.onFailure { _error.value = it.message } } }
     fun setCadreActive(id: String, active: Boolean) { viewModelScope.launch { runCatching { posyandu.setCadreActive(id, active) }.onFailure { _error.value = it.message } } }
+    fun addCadre(name: String, rw: String, password: String, onDone: (String) -> Unit) {
+        viewModelScope.launch { runCatching { posyandu.addCadre(name, rw.padStart(2, '0'), password) }.onSuccess { onDone(it.sehatiId) }.onFailure { _error.value = it.message } }
+    }
     fun adjustStock(id: String, delta: Int) { viewModelScope.launch { runCatching { posyandu.adjustStock(id, delta) }.onFailure { _error.value = it.message } } }
 
     fun reportText(): String? = state.value.stats?.let { ReportBuilder.text(it, TimeUtils.dateTime(clock.now()), "Desa Mirigambar") }
