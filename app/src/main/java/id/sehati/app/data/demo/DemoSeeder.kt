@@ -129,11 +129,11 @@ class DemoSeeder(
         val special = id == "HM-000129"
         val smoker = !special && male && rnd.nextInt(100) < 28
         val height = (if (male) 160f else 150f) + rnd.nextInt(18)
-        val bmiTarget = (20.5f + rnd.nextFloat() * 6f + (age - 35) / 40f).coerceIn(18.5f, 32f)
+        val bmiTarget = (19.5f + rnd.nextFloat() * 6.5f + (age - 35) / 50f).coerceIn(18.5f, 32f)
         val weight = Math.round(bmiTarget * (height / 100f) * (height / 100f) * 10f) / 10f
-        val waist = ((if (male) 72f else 66f) + (bmiTarget - 21f) * 2.6f + rnd.nextInt(5)).coerceAtLeast(60f)
-        val activeDays = if (id == "HM-000128") 2 else 1 + rnd.nextInt(6)
-        val activeMin = 20 + rnd.nextInt(30)
+        val waist = ((if (male) 70f else 64f) + (bmiTarget - 21f) * 2.0f + rnd.nextInt(5)).coerceAtLeast(58f)
+        val activeDays = if (id == "HM-000128") 2 else 2 + rnd.nextInt(5)
+        val activeMin = if (id == "HM-000128") 20 else 30 + rnd.nextInt(35)
         val takenAt = now - (20 + rnd.nextInt(150)) * 86_400_000L
         val hyp = special || (age > 50 && rnd.nextInt(100) < 18)
         val a = HealthAssessmentEntity(
@@ -143,10 +143,10 @@ class DemoSeeder(
             familyHypertension = special || rnd.nextInt(100) < 25, familyDiabetes = rnd.nextInt(100) < 12, familyCardio = rnd.nextInt(100) < 6,
             smokingStatus = if (smoker) "CURRENT" else if (male && rnd.nextInt(100) < 12) "FORMER" else "NEVER",
             smokingProduct = if (smoker) "Rokok kretek" else "", cigarettesPerDay = if (smoker) 3 + rnd.nextInt(12) else 0,
-            vegetableDays = 3 + rnd.nextInt(5), fruitDays = 3 + rnd.nextInt(5), saltyFrequent = rnd.nextInt(100) < 22,
-            sugaryFrequent = rnd.nextInt(100) < 22, fattyFrequent = rnd.nextInt(100) < 22,
+            vegetableDays = 5 + rnd.nextInt(3), fruitDays = if (rnd.nextInt(100) < 25) 3 + rnd.nextInt(2) else 5 + rnd.nextInt(3), saltyFrequent = rnd.nextInt(100) < 18,
+            sugaryFrequent = rnd.nextInt(100) < 18, fattyFrequent = rnd.nextInt(100) < 18,
             activeDays = activeDays, activeMinutes = activeMin, activityIntensity = "Sedang", sedentaryHours = 3 + rnd.nextInt(5),
-            sleepHours = 6f + rnd.nextInt(3), sleepQuality = "Cukup", stressLevel = 1 + rnd.nextInt(4),
+            sleepHours = 6.5f + rnd.nextInt(3), sleepQuality = "Cukup", stressLevel = 1 + rnd.nextInt(3),
             createdAt = takenAt, updatedAt = takenAt, syncStatus = "SYNCED",
         )
         hd.upsertAssessment(a)
