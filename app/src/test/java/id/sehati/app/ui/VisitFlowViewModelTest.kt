@@ -45,7 +45,7 @@ class VisitFlowViewModelTest {
     }
     @After fun tearDown() { Dispatchers.resetMain(); env.close() }
 
-    @Test fun fiveStepFlowSavesToCitizenRecordAndSyncs() = runBlocking {
+    @Test fun fiveStepFlowSavesToCitizenRecordAndSyncs() = id.sehati.app.data.blocking {
         env.staff("KD-000001", Role.KADER)
         val citizen = env.citizen()
         env.session.start("KD-000001", Role.KADER)
@@ -82,7 +82,7 @@ class VisitFlowViewModelTest {
         assertEquals("SYNCED", env.db.healthDao().check(saved.id)!!.header.syncStatus)
     }
 
-    @Test fun measurementIsSavedLocallyEvenWhenSyncCannotRun() = runBlocking {
+    @Test fun measurementIsSavedLocallyEvenWhenSyncCannotRun() = id.sehati.app.data.blocking {
         env.staff("KD-000001", Role.KADER)
         val citizen = env.citizen(consentServer = false)   // tidak boleh dikirim → tetap lokal
         env.session.start("KD-000001", Role.KADER)

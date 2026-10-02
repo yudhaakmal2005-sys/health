@@ -65,7 +65,7 @@ class GoldenPathUiTest {
         rule.waitTag("assessment_screen")
         rule.type("assess_height_field", "165")
         rule.type("assess_weight_field", "72")
-        repeat(7) { rule.click("submit_assessment_button") }   // langkah 1..7 → kirim (langkah 8)
+        repeat(8) { rule.click("submit_assessment_button") }   // 7× lanjut (langkah 1–7), lalu kirim di langkah 8
         rule.waitTag("health_status_card")                      // Profil SEHATI tampil (hasil asesmen tersimpan)
         rule.click("submit_assessment_button")                  // → rencana
         rule.click("submit_assessment_button")                  // → mulai SEHATI

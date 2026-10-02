@@ -39,7 +39,7 @@ class SyncEngineTest {
     private suspend fun measurement(userId: String) =
         env.health.saveMeasurement(NewMeasurement(userId, DataSource.SELF, MeasurementInput(systolic = 120, diastolic = 80)))
 
-    @Test fun offlineKeepsDataLocalThenSyncsWhenOnline() = runBlocking {
+    @Test fun offlineKeepsDataLocalThenSyncsWhenOnline() = blocking {
         val u = env.citizen()
         val c = measurement(u.sehatiId)
         assertEquals("LOCAL_ONLY", env.db.healthDao().check(c.id)!!.header.syncStatus)
@@ -56,7 +56,7 @@ class SyncEngineTest {
         assertTrue(env.db.systemDao().pending(100).isEmpty())
     }
 
-    @Test fun secondSyncDoesNotUploadAgain() = runBlocking {
+    @Test fun secondSyncDoesNotUploadAgain() = blocking {
         val u = env.citizen(); measurement(u.sehatiId)
         t.mode = ScriptedTransport.Mode.OK
         env.engine.syncNow()
@@ -66,13 +66,13 @@ class SyncEngineTest {
         assertEquals(sent, t.received.size)
     }
 
-    @Test fun eachMutationHasUniqueIdempotencyKey() = runBlocking {
+    @Test fun eachMutationHasUniqueIdempotencyKey() = blocking {
         val u = env.citizen(); measurement(u.sehatiId); measurement(u.sehatiId)
         t.mode = ScriptedTransport.Mode.OK; env.engine.syncNow()
         assertEquals(t.received.size, t.received.map { it.id }.toSet().size)
     }
 
-    @Test fun rejectedItemsAreMarkedFailedAndRetriedLater() = runBlocking {
+    @Test fun rejectedItemsAreMarkedFailedAndRetriedLater() = blocking {
         val u = env.citizen(); val c = measurement(u.sehatiId)
         t.mode = ScriptedTransport.Mode.REJECT
         val out = env.engine.syncNow()
@@ -86,7 +86,7 @@ class SyncEngineTest {
         assertEquals(0, env.db.systemDao().observeFailedCount().first())
     }
 
-    @Test fun dataOfCitizenWithoutConsentIsNeverUploaded() = runBlocking {
+    @Test fun dataOfCitizenWithoutConsentIsNeverUploaded() = blocking {
         val u = env.citizen(consentServer = false)
         val c = measurement(u.sehatiId)
         t.mode = ScriptedTransport.Mode.OK
@@ -95,14 +95,14 @@ class SyncEngineTest {
         assertEquals("LOCAL_ONLY", env.db.healthDao().check(c.id)!!.header.syncStatus)
     }
 
-    @Test fun notConfiguredServerKeepsEverythingLocal() = runBlocking {
+    @Test fun notConfiguredServerKeepsEverythingLocal() = blocking {
         val u = env.citizen(); val c = measurement(u.sehatiId)
         t.mode = ScriptedTransport.Mode.NOT_CONFIGURED
         assertIs<SyncOutcome.NotConfigured>(env.engine.syncNow())
         assertEquals("LOCAL_ONLY", env.db.healthDao().check(c.id)!!.header.syncStatus)
     }
 
-    @Test fun loopbackIsIdempotent() = runBlocking {
+    @Test fun loopbackIsIdempotent() = blocking {
         val lb = LoopbackSyncTransport()
         val req = SyncPushRequest("d", listOf(SyncItemDto("k1", "measurement", "e1", "UPSERT", 1, "{}")))
         assertEquals(AckStatus.OK, (lb.push(req) as TransportResult.Success).acks.single().status)

@@ -28,7 +28,7 @@ class GoldenPathTest {
 
     private fun input() = MeasurementInput(systolic = 145, diastolic = 92, heartRate = 78, weightKg = 72f, heightCm = 165f, waistCm = 90f, glucose = 168f)
 
-    @Test fun kaderMeasurementReachesCitizenHistoryAndAdminDashboard() = runBlocking {
+    @Test fun kaderMeasurementReachesCitizenHistoryAndAdminDashboard() = blocking {
         env.staff("KD-000001", Role.KADER); env.staff("AD-000001", Role.ADMIN)
         val citizen = env.citizen()
         env.session.start("KD-000001", Role.KADER)
@@ -75,7 +75,7 @@ class GoldenPathTest {
         assertTrue(audit.none { it.detail.contains("145") }) // nilai kesehatan tidak masuk log
     }
 
-    @Test fun repeatedElevatedBpEscalatesToHomeVisitFollowUp() = runBlocking {
+    @Test fun repeatedElevatedBpEscalatesToHomeVisitFollowUp() = blocking {
         env.staff("KD-000001", Role.KADER)
         val citizen = env.citizen()
         env.session.start("KD-000001", Role.KADER)
@@ -90,7 +90,7 @@ class GoldenPathTest {
         assertEquals(RiskLevel.MEDICAL_FOLLOW_UP.name, env.db.healthDao().profile(citizen.sehatiId)!!.level)
     }
 
-    @Test fun duplicateFollowUpIsNotCreatedForSameReason() = runBlocking {
+    @Test fun duplicateFollowUpIsNotCreatedForSameReason() = blocking {
         env.staff("KD-000001", Role.KADER)
         val citizen = env.citizen()
         env.session.start("KD-000001", Role.KADER)
@@ -102,7 +102,7 @@ class GoldenPathTest {
         assertEquals(1, env.posyandu.observeFollowUpsOf(citizen.sehatiId).first().count { it.reasonCode == "bp_elevated" })
     }
 
-    @Test fun rbacBlocksWrongRoles() = runBlocking {
+    @Test fun rbacBlocksWrongRoles() = blocking {
         env.staff("KD-000001", Role.KADER); env.staff("AD-000001", Role.ADMIN)
         val citizen = env.citizen()
         env.session.start("AD-000001", Role.ADMIN)
@@ -115,7 +115,7 @@ class GoldenPathTest {
         assertFailsWith<AccessDenied> { env.posyandu.assignCadre("x", "KD-000001") } // kader tidak boleh menugaskan
     }
 
-    @Test fun adminCanAssignCadreToFollowUp() = runBlocking {
+    @Test fun adminCanAssignCadreToFollowUp() = blocking {
         env.staff("KD-000001", Role.KADER); env.staff("AD-000001", Role.ADMIN)
         val citizen = env.citizen()
         env.session.start("KD-000001", Role.KADER)
@@ -128,7 +128,7 @@ class GoldenPathTest {
         assertEquals("KD-000001", updated.assignedCadreId); assertEquals(FollowUpStatus.SCHEDULED.name, updated.status)
     }
 
-    @Test fun completeVisitRequiresMeasurement() = runBlocking {
+    @Test fun completeVisitRequiresMeasurement() = blocking {
         env.staff("KD-000001", Role.KADER)
         val citizen = env.citizen()
         env.session.start("KD-000001", Role.KADER)
@@ -136,7 +136,7 @@ class GoldenPathTest {
         assertFailsWith<IllegalStateException> { env.posyandu.completeVisit(v.id) }
     }
 
-    @Test fun invalidMeasurementIsRejectedAndNothingIsSaved() = runBlocking {
+    @Test fun invalidMeasurementIsRejectedAndNothingIsSaved() = blocking {
         env.staff("KD-000001", Role.KADER)
         val citizen = env.citizen()
         env.session.start("KD-000001", Role.KADER)
@@ -145,14 +145,14 @@ class GoldenPathTest {
         assertTrue(env.health.checks(citizen.sehatiId).isEmpty())
     }
 
-    @Test fun registeringSameCitizenTwiceReturnsSameOpenVisit() = runBlocking {
+    @Test fun registeringSameCitizenTwiceReturnsSameOpenVisit() = blocking {
         env.staff("KD-000001", Role.KADER)
         val citizen = env.citizen()
         env.session.start("KD-000001", Role.KADER)
         assertEquals(env.posyandu.registerVisit(citizen.sehatiId, null).id, env.posyandu.registerVisit(citizen.sehatiId, null).id)
     }
 
-    @Test fun healthConnectImportWithFixedIdDoesNotDuplicate() = runBlocking {
+    @Test fun healthConnectImportWithFixedIdDoesNotDuplicate() = blocking {
         val citizen = env.citizen()
         val m = NewMeasurement(citizen.sehatiId, DataSource.HEALTH_CONNECT, MeasurementInput(systolic = 120, diastolic = 80), fixedId = "hc-bp-1")
         env.health.saveMeasurement(m); env.health.saveMeasurement(m)
@@ -160,7 +160,7 @@ class GoldenPathTest {
         assertEquals(DataSource.HEALTH_CONNECT, env.health.checks(citizen.sehatiId).single().source)
     }
 
-    @Test fun deletingMyDataRemovesEverythingAndQueuesServerDelete() = runBlocking {
+    @Test fun deletingMyDataRemovesEverythingAndQueuesServerDelete() = blocking {
         val citizen = env.citizen()
         env.health.saveMeasurement(NewMeasurement(citizen.sehatiId, DataSource.SELF, MeasurementInput(systolic = 120, diastolic = 80)))
         env.daily.addWater(citizen.sehatiId, "2026-10-02", 3)
@@ -173,7 +173,7 @@ class GoldenPathTest {
         assertTrue(queue.none { it.payload.contains("Tariska") })
     }
 
-    @Test fun assessmentMarksUserDoneAndBuildsProfile() = runBlocking {
+    @Test fun assessmentMarksUserDoneAndBuildsProfile() = blocking {
         val citizen = env.citizen()
         val now = env.clock.now()
         env.health.saveAssessment(id.sehati.app.data.local.HealthAssessmentEntity(

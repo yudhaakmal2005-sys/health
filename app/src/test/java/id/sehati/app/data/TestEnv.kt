@@ -17,6 +17,9 @@ import id.sehati.app.domain.model.Sex
 import id.sehati.app.domain.rules.QrPayload
 import kotlinx.serialization.json.Json
 
+/** JUnit4 mewajibkan metode uji bertipe void: pembungkus ini selalu mengembalikan Unit. */
+fun blocking(block: suspend kotlinx.coroutines.CoroutineScope.() -> Any?) { kotlinx.coroutines.runBlocking { block() } }
+
 class FakeClock(var t: Long = 1_790_000_000_000L) : Clock { override fun now() = t }
 
 /** Lingkungan uji: Room in-memory (tanpa SQLCipher) + repositori nyata. */
