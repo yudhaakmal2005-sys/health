@@ -54,13 +54,7 @@ class AdminViewModel @Inject constructor(
 
     val state: StateFlow<AdminUiState> = combine(current.user, g1, g2, syncController.overview, destination) { admin, a, b, sync, dest ->
         val rwOf = a.users.associate { it.sehatiId to it.rw }
-        val stats = CommunityAnalytics.calculate(
-            citizens = a.users.map { CitizenRec(it.sehatiId, it.rw, it.assessmentDone) },
-            checks = a.checks.map { CheckRec(it.userId, it.measuredAt, it.systolic, it.diastolic, it.glucose, it.bmi) },
-            assessments = a.assessments.map { AssessmentRec(it.userId, it.smokingStatus == "CURRENT", it.activeDays * it.activeMinutes) },
-            followUps = a.follow.map { FollowUpRec(it.id, it.userId, FollowUpStatus.parse(it.status), it.priority, it.reason, it.dueAt) },
-            profiles = a.profiles.map { ProfileRec(it.userId, RiskLevel.parse(it.level)) },
-        )
+        val stats = AnalyticsMapper.stats(a.users, a.checks, a.assessments, a.follow, a.profiles)
         val names = b.staff.associate { it.sehatiId to it.fullName }
         val lastCheck = a.checks.groupBy { it.userId }.mapValues { it.value.maxOf { c -> c.measuredAt } }
         val registry = a.follow.filter { it.status != "DONE" && it.status != "CANCELLED" }
