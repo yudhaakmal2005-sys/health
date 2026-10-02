@@ -77,14 +77,14 @@ fun WizardLayout(
 @Composable
 fun NumberStepper(
     label: String, value: Int, onChange: (Int) -> Unit, range: IntRange, modifier: Modifier = Modifier,
-    unit: String = "", step: Int = 1, tag: String = "stepper",
+    unit: String = "", step: Int = 1, tag: String = "stepper", display: ((Int) -> String)? = null,
 ) {
     Row(modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(label, style = MaterialTheme.typography.bodyLarge, color = TextPrimary, modifier = Modifier.weight(1f))
         FilledTonalIconButton(onClick = { onChange((value - step).coerceIn(range)) }, enabled = value > range.first, modifier = Modifier.size(48.dp).testTag("${tag}_minus")) {
             Icon(Icons.Rounded.Remove, contentDescription = "Kurangi $label")
         }
-        Text("$value$unit", style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center, modifier = Modifier.widthIn(min = 64.dp).semantics { contentDescription = "$label $value $unit" })
+        Text(display?.invoke(value) ?: "$value$unit", style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center, modifier = Modifier.widthIn(min = 64.dp).semantics { contentDescription = "$label ${display?.invoke(value) ?: "$value $unit"}" })
         FilledTonalIconButton(onClick = { onChange((value + step).coerceIn(range)) }, enabled = value < range.last, modifier = Modifier.size(48.dp).testTag("${tag}_plus")) {
             Icon(Icons.Rounded.Add, contentDescription = "Tambah $label")
         }

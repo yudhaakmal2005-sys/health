@@ -83,8 +83,27 @@ class CitizenRepository(
         return if (u.qrToken == p.token) u else null
     }
 
+    /**
+     * Hapus semua data warga ini dari perangkat (hak penghapusan). Antrean sinkron milik warga dibersihkan,
+     * lalu satu permintaan DELETE dikirim ke server agar data di sisi server juga dihapus saat online.
+     */
     suspend fun deleteAllDataOf(id: String) {
-        db.withTransaction { users.delete(id) }
         audit.log("delete_account", id)
+        db.withTransaction {
+            val w = db.openHelper.writableDatabase
+            val byUser = listOf(
+                "health_assessments", "health_measurements", "activity_sessions", "sleep_records", "food_entries", "habit_logs",
+                "smoking_records", "education_progress", "posyandu_visits", "follow_ups", "referrals", "home_visits", "notifications",
+            )
+            byUser.forEach { w.execSQL("DELETE FROM $it WHERE userId = ?", arrayOf<Any?>(id)) }
+            w.execSQL("DELETE FROM health_profiles WHERE userId = ?", arrayOf<Any?>(id))
+            w.execSQL("DELETE FROM sync_queue WHERE subjectId = ?", arrayOf<Any?>(id))
+            w.execSQL("DELETE FROM credentials WHERE sehatiId = ?", arrayOf<Any?>(id))
+            val u = users.get(id)
+            if (u != null) {
+                users.delete(id)
+                if (u.consentServerSync) sync.record("user", id, null, u.version + 1, UserEntity.serializer(), u.copy(fullName = "", phone = null, qrToken = ""), op = "DELETE")
+            }
+        }
     }
 }

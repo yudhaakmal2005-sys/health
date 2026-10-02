@@ -59,3 +59,15 @@ object FoodCatalog {
     fun healthierAlternatives(item: FoodItem): List<FoodItem> =
         items.filter { it.category == item.category && it.heartFriendly && it.sodiumMg < item.sodiumMg }.take(3)
 }
+
+data class Recipe(val title: String, val items: List<String>, val note: String)
+
+object Recipes {
+    /** Ide menu sederhana & ramah jantung dari bahan lokal (saran umum). */
+    val list = listOf(
+        Recipe("Pepes ikan + nasi merah", listOf("ikan_kembung", "nasi_merah", "bayam_bening"), "Dikukus tanpa minyak; tambahkan banyak sayur."),
+        Recipe("Sarapan telur & oat", listOf("oatmeal", "telur_rebus", "pisang"), "Tinggi serat, rendah garam."),
+        Recipe("Pecel sayur tempe", listOf("gado_gado", "tempe_bacem", "nasi_merah"), "Kurangi bumbu kacang dan garam."),
+        Recipe("Sop ayam bening", listOf("sop_sayur", "ayam_bakar", "nasi_putih"), "Pakai sedikit garam; kuah bening."),
+    )
+}
