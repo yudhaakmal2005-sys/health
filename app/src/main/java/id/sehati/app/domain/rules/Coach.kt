@@ -36,6 +36,8 @@ object HealthCoach {
         if (RedFlag.detect(question)) return CoachReply(RedFlag.EMERGENCY_MESSAGE, emergency = true)
         val q = question.lowercase()
         val text = when {
+            listOf("obat", "dosis").any(q::contains) ->
+                "Aku tidak dapat memberi saran obat atau mengubah terapi. Tanyakan kepada dokter atau apoteker."
             listOf("langkah", "jalan", "olahraga", "aktivitas").any(q::contains) ->
                 "Langkahmu hari ini ${c.steps} dari target ${c.stepTarget}. Mulai dengan jalan santai 10–15 menit lalu tambah bertahap sesuai kemampuan."
             listOf("garam", "asin", "natrium").any(q::contains) ->
@@ -49,8 +51,6 @@ object HealthCoach {
                     "Satu hasil pengukuran belum cukup untuk kesimpulan; ukur ulang dengan benar dan konsultasikan ke tenaga kesehatan bila tinggi."
             listOf("tidur", "begadang").any(q::contains) ->
                 "Usahakan jam tidur teratur dan kurangi layar sebelum tidur. Tidurmu ${c.sleepHours?.let { "tercatat $it jam" } ?: "belum tercatat"}."
-            listOf("obat", "dosis").any(q::contains) ->
-                "Aku tidak dapat memberi saran obat atau mengubah terapi. Tanyakan kepada dokter atau apoteker."
             listOf("minum", "air").any(q::contains) ->
                 "Kamu sudah minum ${c.waterGlasses} dari ${c.waterTarget} gelas. Bawa botol air agar lebih mudah."
             else -> dailyTip(c)

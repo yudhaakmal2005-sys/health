@@ -72,7 +72,7 @@ class VisitFlowViewModelTest {
         // Langkah 5: wajib konfirmasi kader
         vm.validateAndSync(); assertNotNull(vm.ui.value.error)
         vm.setConfirmed(true); vm.validateAndSync()
-        withTimeout(20_000) { vm.ui.first { it.result != null && it.syncState != SyncState.NONE } }
+        withTimeout(20_000) { vm.ui.first { it.result != null && it.syncMessage != null } }
 
         assertEquals(SyncState.SYNCED, vm.ui.value.syncState)
         assertTrue(vm.ui.value.result!!.followUps.isNotEmpty())
@@ -92,7 +92,7 @@ class VisitFlowViewModelTest {
         vm.confirmAndSave(); withTimeout(10_000) { vm.ui.first { it.step == 2 } }
         vm.saveEducation(); withTimeout(10_000) { vm.ui.first { it.step == 3 } }
         vm.setConfirmed(true); vm.validateAndSync()
-        withTimeout(20_000) { vm.ui.first { it.result != null && it.syncState != SyncState.NONE } }
+        withTimeout(20_000) { vm.ui.first { it.result != null && it.syncMessage != null } }
         assertEquals(SyncState.LOCAL, vm.ui.value.syncState)
         assertEquals(1, env.health.checks(citizen.sehatiId).size)
     }

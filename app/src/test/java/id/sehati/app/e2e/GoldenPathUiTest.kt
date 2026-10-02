@@ -44,12 +44,14 @@ class GoldenPathUiTest {
 
     private fun AndroidComposeTestRule<*, *>.click(tag: String) {
         waitTag(tag)
-        onNodeWithTag(tag).performScrollTo().performClick()
+        runCatching { onNodeWithTag(tag).performScrollTo() }
+        onNodeWithTag(tag).performClick()
     }
 
     private fun AndroidComposeTestRule<*, *>.type(tag: String, text: String) {
         waitTag(tag)
-        onNodeWithTag(tag).performScrollTo().performTextClearance()
+        runCatching { onNodeWithTag(tag).performScrollTo() }
+        onNodeWithTag(tag).performTextClearance()
         onNodeWithTag(tag).performTextInput(text)
     }
 

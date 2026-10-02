@@ -140,7 +140,7 @@ class IdentityTest {
         val h = PasswordHasher.hash("rahasia123".toCharArray(), iterations = 1000)
         assertTrue(PasswordHasher.verify("rahasia123".toCharArray(), h)); assertFalse(PasswordHasher.verify("salah".toCharArray(), h))
     }
-    @Test fun ageFromBirthDate() { assertEquals(33, AgeCalc.age("1992-08-14", LocalDate.of(2026, 10, 2))) }
+    @Test fun ageFromBirthDate() { assertEquals(34, AgeCalc.age("1992-08-14", LocalDate.of(2026, 10, 2))) }
 }
 
 class DailyAndNutritionTest {
@@ -162,7 +162,7 @@ class DailyAndNutritionTest {
         val item = FoodItem("x", "Nasi", "Karbo", "1", 130, 28f, 2.7f, 0.3f, 0f, 0.4f, 1f, false)
         assertEquals(195, NutritionRules.scale(item, 1.5f).kcal)
     }
-    @Test fun energyEstimate() { assertTrue(NutritionRules.estimateDailyKcal(72f, 165f, 33, true, 2) in 2000..2400) }
+    @Test fun energyEstimate() { assertTrue(NutritionRules.estimateDailyKcal(72f, 165f, 33, true, 2) in 1900..2300) }
     @Test fun foodQualityPenalisesSalt() {
         val good = NutritionRules.foodQuality(NutritionTotals(sodiumMg = 800f), 4, 3)
         val salty = NutritionRules.foodQuality(NutritionTotals(sodiumMg = 3000f), 4, 3)

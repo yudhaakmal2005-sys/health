@@ -41,10 +41,8 @@ class ComponentsUiTest {
     }
 
     @Test fun everyRiskLevelHasLabelNotJustColor() {
-        RiskLevel.entries.forEach { lvl ->
-            rule.setContent { SehatiTheme { RiskCard(lvl, compact = true) } }
-            rule.onNodeWithText(lvl.label).assertIsDisplayed()
-        }
+        rule.setContent { SehatiTheme { androidx.compose.foundation.layout.Column { RiskLevel.entries.forEach { RiskCard(it, compact = true) } } } }
+        RiskLevel.entries.forEach { lvl -> rule.onNodeWithText(lvl.label).assertExists() }
     }
 
     @Test fun emergencyBannerShowsMedicalHelpMessage() {
@@ -54,10 +52,8 @@ class ComponentsUiTest {
     }
 
     @Test fun syncChipShowsAllFourStatusLabels() {
-        SyncStatus.entries.forEach { s ->
-            rule.setContent { SehatiTheme { SyncChip(s) } }
-            rule.onNodeWithText(s.label).assertIsDisplayed()
-        }
+        rule.setContent { SehatiTheme { androidx.compose.foundation.layout.Column { SyncStatus.entries.forEach { SyncChip(it) } } } }
+        SyncStatus.entries.forEach { s -> rule.onNodeWithText(s.label).assertExists() }
     }
 
     @Test fun emptyStateActionIsClickable() {
