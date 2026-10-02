@@ -75,7 +75,7 @@ class VisitViewModel @Inject constructor(
     fun update(block: MeasureForm.() -> MeasureForm) = _ui.update { it.copy(form = it.form.block(), error = null) }
 
     private fun f(s: String) = s.replace(',', '.').toFloatOrNull()
-    fun input(form: MeasureForm = _ui.value.form) = MeasureInput(
+    fun input(form: MeasureForm = _ui.value.form) = MeasurementInput(
         form.systolic.toIntOrNull(), form.diastolic.toIntOrNull(), form.heartRate.toIntOrNull(),
         f(form.weight), f(form.height), f(form.waist), f(form.glucose), f(form.cholesterol),
     )
