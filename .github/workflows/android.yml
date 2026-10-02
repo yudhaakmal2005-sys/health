@@ -38,7 +38,7 @@ jobs:
           code=$(cat build.code)
           echo "=== GRADLE EXIT CODE: $code ==="
           echo "--- last build.log lines ---"; tail -n 12 build.log
-          grep -E "^e: |^w: .*(Unresolved|is deprecated)|error:|What went wrong|Execution failed|Could not " -A3 build.log | grep -v "^\s*at " | head -70
+          grep -E "^e: |What went wrong|Execution failed|Could not " -A2 build.log | grep -v "^\s*at " | head -70
           python3 - <<'PY'
           import glob, xml.etree.ElementTree as ET
           t=f=0

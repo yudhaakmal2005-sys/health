@@ -11,6 +11,8 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material3.Text
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import id.sehati.app.domain.model.PROFILE_DISCLAIMER
@@ -60,7 +62,7 @@ class ComponentsUiTest {
 
     @Test fun emptyStateActionIsClickable() {
         var clicked = 0
-        rule.setContent { SehatiTheme { EmptyState(androidx.compose.material.icons.Icons.Rounded.Favorite, "Kosong", "Belum ada data", action = "Tambah", onAction = { clicked++ }) } }
+        rule.setContent { SehatiTheme { EmptyState(Icons.Rounded.Favorite, "Kosong", "Belum ada data", action = "Tambah", onAction = { clicked++ }) } }
         rule.onNodeWithText("Tambah").performClick()
         assertEquals(1, clicked)
     }
