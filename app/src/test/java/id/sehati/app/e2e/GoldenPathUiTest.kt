@@ -85,6 +85,7 @@ class GoldenPathUiTest {
         rule.click("logout_dialog_confirm")
 
         // ---------- KADER ----------
+        rule.click("welcome_login_button")                     // setelah keluar kembali ke layar sambutan
         rule.waitTag("login_screen")
         rule.click("demo_login_kader")
         rule.waitTag("kader_name")
@@ -111,6 +112,7 @@ class GoldenPathUiTest {
         rule.click("kader_logout_dialog_confirm")
 
         // ---------- ADMIN ----------
+        rule.click("welcome_login_button")
         rule.waitTag("login_screen")
         rule.click("demo_login_admin")
         rule.waitTag("admin_overview_screen")

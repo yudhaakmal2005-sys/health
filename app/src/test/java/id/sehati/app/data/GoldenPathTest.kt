@@ -81,6 +81,7 @@ class GoldenPathTest {
         env.session.start("KD-000001", Role.KADER)
         repeat(2) { n ->
             env.clock.t += n * 86_400_000L
+            env.session.start("KD-000001", Role.KADER)   // sesi kader berlaku 12 jam; masuk kembali di hari berikutnya
             val v = env.posyandu.registerVisit(citizen.sehatiId, null)
             env.posyandu.recordMeasurement(v.id, MeasurementInput(150, 95), false, null)
             env.posyandu.completeVisit(v.id)
