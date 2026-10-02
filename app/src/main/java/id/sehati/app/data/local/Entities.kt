@@ -145,6 +145,7 @@ data class HealthAssessmentEntity(
     val heartRate: Int? = null,
     val glucose: Float? = null,
     val cholesterol: Float? = null,
+    val redFlagSymptom: Boolean = false,
     val createdAt: Long,
     val updatedAt: Long,
     val syncStatus: String = "LOCAL_ONLY",

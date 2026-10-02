@@ -162,7 +162,7 @@ class HealthRepository(
             sedentaryHoursPerDay = a?.sedentaryHours ?: 0,
             vegetableDaysPerWeek = a?.vegetableDays ?: 7, fruitDaysPerWeek = a?.fruitDays ?: 7,
             saltyFoodFrequent = a?.saltyFrequent ?: false, sugaryFrequent = a?.sugaryFrequent ?: false, fattyFrequent = a?.fattyFrequent ?: false,
-            sleepHours = a?.sleepHours ?: 7f, stressLevel = a?.stressLevel ?: 1,
+            sleepHours = a?.sleepHours ?: 7f, stressLevel = a?.stressLevel ?: 1, redFlagSymptom = a?.redFlagSymptom ?: false,
         )
         val profile = RiskProfileEngine.evaluate(snap)
         val prev = dao.profile(userId)
