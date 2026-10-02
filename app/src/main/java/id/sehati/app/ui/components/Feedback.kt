@@ -201,11 +201,8 @@ fun AnimatedCheck(modifier: Modifier = Modifier, size: Dp = 72.dp, color: Color 
     val reduce = LocalReduceMotion.current
     val t = remember { Animatable(if (reduce) 1f else 0f) }
     val pop = remember { Animatable(if (reduce) 1f else 0.6f) }
-    LaunchedEffect(Unit) {
-        if (!reduce) {
-            pop.animateTo(1f, motionSpringSpec())
-        }
-    }
+    val popSpec = motionSpringSpec()
+    LaunchedEffect(Unit) { if (!reduce) pop.animateTo(1f, popSpec) }
     LaunchedEffect(Unit) { if (!reduce) t.animateTo(1f, androidx.compose.animation.core.tween(Motion.Long, easing = Motion.Emphasized)) }
     Canvas(modifier.size(size).scale(pop.value)) {
         val w = this.size.width

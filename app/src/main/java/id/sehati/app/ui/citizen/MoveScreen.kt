@@ -160,7 +160,8 @@ private fun TimelineRow(a: ActivitySessionEntity, modifier: Modifier = Modifier)
             Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
                 Text(k.label, style = MaterialTheme.typography.titleSmall, color = TextPrimary)
-                Text("${TimeUtils.durationLabel(((a.endAt - a.startAt) / 60000).toInt())}" + if (a.distanceMeters > 0) " · %.2f km".format(a.distanceMeters / 1000f) else "" + " · ${DataSource.parse(a.source).label}", style = MaterialTheme.typography.bodySmall, color = TextMuted)
+                val dist = if (a.distanceMeters > 0) " · %.2f km".format(a.distanceMeters / 1000f) else ""
+                Text(TimeUtils.durationLabel(((a.endAt - a.startAt) / 60000).toInt()) + dist + " · " + DataSource.parse(a.source).label, style = MaterialTheme.typography.bodySmall, color = TextMuted)
             }
             StatusPill(if (active) "GERAK AKTIF" else "TRANSPORTASI PASIF", if (active) PrimaryDark else TextSecondary, if (active) PrimaryLight else SurfaceMuted)
         }
