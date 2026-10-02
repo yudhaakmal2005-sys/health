@@ -23,6 +23,7 @@ class DailyRepository(
 
     // --- Habit (air, langkah, rencana) ---
     fun observeHabit(userId: String, dateIso: String): Flow<HabitLogEntity?> = dao.observeHabit(userId, dateIso)
+    suspend fun observeHabitOnce(userId: String, dateIso: String): HabitLogEntity? = dao.habit("$userId|$dateIso")
     fun observeRecentHabits(userId: String, days: Int) = dao.observeRecentHabits(userId, days)
 
     private suspend fun habitOrNew(userId: String, dateIso: String) =

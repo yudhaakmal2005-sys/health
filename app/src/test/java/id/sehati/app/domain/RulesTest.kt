@@ -1,5 +1,6 @@
 package id.sehati.app.domain
 
+import id.sehati.app.domain.model.FollowUpStatus
 import id.sehati.app.domain.model.FollowUpType
 import id.sehati.app.domain.model.MovementKind
 import id.sehati.app.domain.model.RiskLevel
@@ -183,4 +184,70 @@ class CoachTest {
     @Test fun refusesMedicationAdvice() { assertTrue(HealthCoach.reply("berapa dosis obat tensi", ctx).text.contains("tidak dapat memberi saran obat")) }
     @Test fun tipMentionsSteps() { assertTrue(HealthCoach.dailyTip(ctx).contains("2800")) }
     @Test fun nonEmergencyIncludesDisclaimer() { assertTrue(HealthCoach.reply("tips garam", ctx).text.contains(HealthCoach.DISCLAIMER)) }
+}
+
+class CommunityAnalyticsTest {
+    private fun citizens(rw: String, n: Int, start: Int) = (0 until n).map { CitizenRec("HM-${(start + it).toString().padStart(6, '0')}", rw, true) }
+
+    @Test fun smallCellsAreInsufficient() {
+        val c = citizens("01", 3, 1)
+        val checks = c.map { CheckRec(it.id, 1L, 150, 95, null, null) }
+        val s = CommunityAnalytics.calculate(c, checks, emptyList(), emptyList(), emptyList())
+        assertEquals(MapState.INSUFFICIENT, s.map.single().state)
+    }
+    @Test fun coverageAndElevatedRatiosUseDenominators() {
+        val c = citizens("01", 10, 1)
+        val checks = c.take(6).mapIndexed { i, x -> CheckRec(x.id, 1L, if (i < 3) 150 else 115, if (i < 3) 95 else 75, null, null) }
+        val s = CommunityAnalytics.calculate(c, checks, emptyList(), emptyList(), emptyList())
+        assertEquals(Ratio(6, 10), s.screeningCoverage)
+        assertEquals(Ratio(3, 6), s.elevatedBp)
+    }
+    @Test fun latestCheckWinsPerCitizen() {
+        val c = citizens("01", 1, 1)
+        val checks = listOf(CheckRec(c[0].id, 1L, 160, 100, null, null), CheckRec(c[0].id, 2L, 115, 75, null, null))
+        assertEquals(0, CommunityAnalytics.calculate(c, checks, emptyList(), emptyList(), emptyList()).elevatedBp.numerator)
+    }
+    @Test fun higherNeedCellIsFlagged() {
+        val c = citizens("03", 8, 1)
+        val checks = c.map { CheckRec(it.id, 1L, 120, 80, null, null) }
+        val profiles = c.take(4).map { ProfileRec(it.id, RiskLevel.HIGHER_MONITORING) }
+        assertEquals(MapState.HIGHER, CommunityAnalytics.calculate(c, checks, emptyList(), emptyList(), profiles).map.single().state)
+    }
+    @Test fun followUpCoverage() {
+        val fus = listOf(
+            FollowUpRec("a", "u1", FollowUpStatus.OPEN, 2, "x", 0), FollowUpRec("b", "u2", FollowUpStatus.DONE, 2, "x", 0),
+            FollowUpRec("c", "u3", FollowUpStatus.CANCELLED, 1, "x", 0),
+        )
+        val s = CommunityAnalytics.calculate(emptyList(), emptyList(), emptyList(), fus, emptyList())
+        assertEquals(Ratio(1, 2), s.followUpCoverage); assertEquals(1, s.openFollowUps)
+    }
+    @Test fun mapNeverCarriesIndividualFields() {
+        val fields = MapCell::class.java.declaredFields.map { it.name }
+        assertTrue(fields.none { it in setOf("name", "nik", "phone", "address", "userId") })
+    }
+}
+
+class MovementClassifierTest {
+    @Test fun fastWalkIsReclassifiedAsVehicle() { assertEquals(MovementKind.VEHICLE, MovementClassifier.classify(MovementKind.WALKING, 32f)) }
+    @Test fun normalWalkStaysWalking() { assertEquals(MovementKind.WALKING, MovementClassifier.classify(MovementKind.WALKING, 5f)) }
+    @Test fun joggingBecomesRunning() { assertEquals(MovementKind.RUNNING, MovementClassifier.classify(MovementKind.WALKING, 10f)) }
+    @Test fun cyclingAtCyclingSpeedIsKept() { assertEquals(MovementKind.CYCLING, MovementClassifier.classify(MovementKind.CYCLING, 22f)) }
+    @Test fun pace() { assertEquals("6'00\"", MovementClassifier.paceMinPerKm(10f)) }
+}
+
+class RbacTest {
+    @Test fun adminCannotReadIndividualHealthDetail() {
+        assertFalse(id.sehati.app.domain.model.RbacPolicy.can(id.sehati.app.domain.model.Role.ADMIN, id.sehati.app.domain.model.Permission.CITIZEN_HEALTH_DETAIL))
+        assertFalse(id.sehati.app.domain.model.RbacPolicy.can(id.sehati.app.domain.model.Role.ADMIN, id.sehati.app.domain.model.Permission.CITIZEN_LOOKUP))
+    }
+    @Test fun citizenCannotRecordVisits() {
+        assertFalse(id.sehati.app.domain.model.RbacPolicy.can(id.sehati.app.domain.model.Role.WARGA, id.sehati.app.domain.model.Permission.VISIT_RECORD))
+    }
+    @Test fun cadreCanRecordVisitsButNotAssignOrManage() {
+        val k = id.sehati.app.domain.model.Role.KADER
+        assertTrue(id.sehati.app.domain.model.RbacPolicy.can(k, id.sehati.app.domain.model.Permission.VISIT_RECORD))
+        assertFalse(id.sehati.app.domain.model.RbacPolicy.can(k, id.sehati.app.domain.model.Permission.MANAGE_CADRES))
+        assertFalse(id.sehati.app.domain.model.RbacPolicy.can(k, id.sehati.app.domain.model.Permission.ANALYTICS_AGGREGATE))
+    }
+    @Test fun requireThrows() { assertFailsWith<SecurityException> { id.sehati.app.domain.model.RbacPolicy.require(id.sehati.app.domain.model.Role.WARGA, id.sehati.app.domain.model.Permission.VIEW_AUDIT) } }
 }

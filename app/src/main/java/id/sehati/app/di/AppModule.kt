@@ -81,3 +81,16 @@ object AppModule {
         )
     }
 }
+
+@Module
+@InstallIn(SingletonComponent::class)
+object PlatformModule {
+    @Provides @Singleton fun gateway(@ApplicationContext c: Context) = id.sehati.app.data.healthconnect.HealthConnectGateway(c)
+    @Provides @Singleton fun hcImporter(
+        g: id.sehati.app.data.healthconnect.HealthConnectGateway, h: HealthRepository, d: DailyRepository, s: SettingsStore, clock: Clock,
+    ) = id.sehati.app.data.healthconnect.HealthConnectImporter(g, h, d, s, clock)
+    @Provides @Singleton fun tracker(@ApplicationContext c: Context, clock: Clock) = id.sehati.app.data.tracking.ActivityTracker(c, clock)
+    @Provides @Singleton fun scheduler(@ApplicationContext c: Context) = id.sehati.app.data.work.WorkScheduler(c)
+    @Provides @Singleton fun seeder(db: SehatiDatabase, h: HealthRepository, s: SettingsStore, clock: Clock) =
+        id.sehati.app.data.demo.DemoSeeder(db, h, s, clock)
+}

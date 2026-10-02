@@ -10,7 +10,7 @@ class LoopbackSyncTransport(private val seen: MutableSet<String> = mutableSetOf(
     override suspend fun push(request: SyncPushRequest): TransportResult = TransportResult.Success(
         request.items.map {
             val dup = !seen.add(it.id)
-            SyncAckDto(it.id, if (dup) AckStatus.DUPLICATE else AckStatus.OK, "demo-${it.entityType}-${it.entityId.takeLast(8)}")
+            SyncAckDto(it.id, if (dup) AckStatus.DUPLICATE else AckStatus.OK, "demo-${it.type}-${it.entityId.takeLast(8)}")
         },
     )
 }

@@ -161,7 +161,7 @@ class HealthRepository(
             activeDaysPerWeek = a?.activeDays ?: 0, activeMinutesPerSession = a?.activeMinutes ?: 0,
             sedentaryHoursPerDay = a?.sedentaryHours ?: 0,
             vegetableDaysPerWeek = a?.vegetableDays ?: 7, fruitDaysPerWeek = a?.fruitDays ?: 7,
-            saltyFrequent = a?.saltyFrequent ?: false, sugaryFrequent = a?.sugaryFrequent ?: false, fattyFrequent = a?.fattyFrequent ?: false,
+            saltyFoodFrequent = a?.saltyFrequent ?: false, sugaryFrequent = a?.sugaryFrequent ?: false, fattyFrequent = a?.fattyFrequent ?: false,
             sleepHours = a?.sleepHours ?: 7f, stressLevel = a?.stressLevel ?: 1,
         )
         val profile = RiskProfileEngine.evaluate(snap)
