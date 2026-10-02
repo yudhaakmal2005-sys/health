@@ -40,11 +40,11 @@ object FollowUpRules {
             val r = GlucoseRules.interpret(glucose, glucoseFasting, t)
             when (r.severity) {
                 Severity.URGENT -> out += FollowUpAdvice(FollowUpType.PUSKESMAS_EVALUATION, "glucose_urgent",
-                    "Gula darah ${glucose.fmt1()} mg/dL di luar rentang aman", 3, 1)
+                    "Gula darah ${glucose.toInt()} mg/dL di luar rentang aman", 3, 1)
                 Severity.ATTENTION -> out += FollowUpAdvice(FollowUpType.PUSKESMAS_EVALUATION, "glucose_high",
-                    "Gula darah ${glucose.fmt1()} mg/dL tinggi, perlu ditinjau tenaga kesehatan", 2, 7)
+                    "Gula darah ${glucose.toInt()} mg/dL tinggi, perlu ditinjau tenaga kesehatan", 2, 7)
                 Severity.WATCH -> out += FollowUpAdvice(FollowUpType.REPEAT_MEASUREMENT, "glucose_watch",
-                    "Gula darah ${glucose.fmt1()} mg/dL perlu diukur ulang", 1, 14)
+                    "Gula darah ${glucose.toInt()} mg/dL perlu diukur ulang", 1, 14)
                 else -> Unit
             }
         }
