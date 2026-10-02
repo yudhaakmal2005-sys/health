@@ -18,7 +18,7 @@ jobs:
       - name: Build and test
         run: |
           set +e
-          timeout 18m ./gradlew --no-daemon --console=plain --continue testDebugUnitTest assembleDebug > build.log 2>&1
+          timeout 18m ./gradlew --no-daemon --console=plain --continue testDebugUnitTest assembleDebug assembleStaging assembleRelease > build.log 2>&1
           echo $? > build.code
           exit 0
       - uses: actions/upload-artifact@v4
@@ -32,6 +32,11 @@ jobs:
         with:
           name: sehati-debug-apk
           path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sehati-staging-apk
+          path: app/build/outputs/apk/staging/*.apk
           if-no-files-found: warn
       - name: Summary
         run: |

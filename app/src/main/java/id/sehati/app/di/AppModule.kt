@@ -37,10 +37,20 @@ object AppModule {
     @Provides @Singleton
     fun database(@ApplicationContext c: Context, store: SecureStore): SehatiDatabase {
         System.loadLibrary("sqlcipher")
-        val factory = SupportOpenHelperFactory(DatabaseKeyProvider(store).passphrase())
-        return Room.databaseBuilder(c, SehatiDatabase::class.java, SehatiDatabase.NAME)
-            .openHelperFactory(factory)
-            .build()
+        fun open(): SehatiDatabase {
+            val factory = SupportOpenHelperFactory(DatabaseKeyProvider(store).passphrase())
+            val db = Room.databaseBuilder(c, SehatiDatabase::class.java, SehatiDatabase.NAME).openHelperFactory(factory).build()
+            db.openHelper.writableDatabase // memaksa pembukaan agar kunci yang salah terdeteksi sekarang, bukan saat layar dibuka
+            return db
+        }
+        return try {
+            open()
+        } catch (e: Exception) {
+            // Kunci Keystore hilang/tidak valid (mis. setelah reset kunci perangkat): data lama tak dapat dibaca.
+            // Buat ulang basis data kosong daripada crash berulang; data tetap dapat dipulihkan dari server bila sinkron aktif.
+            c.deleteDatabase(SehatiDatabase.NAME)
+            open()
+        }
     }
 
     @Provides @Singleton fun session(store: SecureStore, clock: Clock) = SessionManager(store, clock)
