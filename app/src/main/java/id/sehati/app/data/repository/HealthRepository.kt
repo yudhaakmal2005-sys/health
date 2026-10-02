@@ -81,6 +81,8 @@ class HealthRepository(
     fun observeProfile(userId: String) = dao.observeProfile(userId)
     fun observeAllProfiles() = dao.observeAllProfiles()
 
+    suspend fun observeLatestAssessmentOnce(userId: String) = dao.latestAssessment(userId)
+
     suspend fun checks(userId: String) = dao.checks(userId).map { it.toCheck() }
 
     /** Menyimpan pemeriksaan (header + tabel anak) lalu menghitung ulang profil, semuanya satu transaksi. */

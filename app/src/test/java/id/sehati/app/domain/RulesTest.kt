@@ -251,3 +251,13 @@ class RbacTest {
     }
     @Test fun requireThrows() { assertFailsWith<SecurityException> { id.sehati.app.domain.model.RbacPolicy.require(id.sehati.app.domain.model.Role.WARGA, id.sehati.app.domain.model.Permission.VIEW_AUDIT) } }
 }
+
+class GamificationTest {
+    @Test fun threeDayStreakBadge() {
+        val today = LocalDate.of(2026, 10, 2)
+        val steps = (0..2).associate { today.minusDays(it.toLong()) to 6500 }
+        val p = Gamification.compute(steps, 6000, 0, 0, 0, today)
+        assertEquals(3, p.streakDays); assertTrue(p.badges.first { it.id == "streak3" }.earned); assertFalse(p.badges.first { it.id == "streak7" }.earned)
+    }
+    @Test fun learningPoints() { assertEquals(2 * 3 + 10 * 1, Gamification.compute(emptyMap(), 6000, 3, 1, 0).learningPoints) }
+}
