@@ -29,6 +29,9 @@ jobs:
           arch: x86_64
           target: google_apis
           profile: pixel_6
+          ram-size: 4096M
+          heap-size: 1024M
+          emulator-options: -no-snapshot -noaudio -no-boot-anim -camera-back none -gpu swiftshader_indirect
           disable-animations: true
           script: bash .github/scripts/smoke.sh
       - uses: actions/upload-artifact@v4
