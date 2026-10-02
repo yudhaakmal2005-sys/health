@@ -71,8 +71,8 @@ object CommunityAnalytics {
             val fu = ids.sumOf { openByUser[it]?.size ?: 0 }
             val state = when {
                 screened < MIN_CELL -> MapState.INSUFFICIENT
-                fu >= 3 && fu * 100 >= screened * 30 -> MapState.FOLLOW_UP_CONCENTRATION
-                higher * 100 >= screened * 25 -> MapState.HIGHER
+                fu >= 4 && fu * 100 >= screened * 45 -> MapState.FOLLOW_UP_CONCENTRATION
+                higher * 100 >= screened * 35 -> MapState.HIGHER
                 else -> MapState.LOWER
             }
             MapCell(rw, members.size, screened, higher, fu, state)

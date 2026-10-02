@@ -22,7 +22,7 @@ import id.sehati.app.domain.rules.*
 import id.sehati.app.ui.components.*
 import id.sehati.app.ui.theme.*
 
-private val LABELS = listOf("Pengukuran", "Pencatatan", "Penyuluhan", "Validasi & sinkronisasi")
+private val LABELS = listOf("Pendaftaran", "Pengukuran", "Pencatatan", "Penyuluhan", "Validasi & sinkronisasi")
 
 /** Langkah 2–5 pelayanan Posyandu ILP untuk satu kunjungan. */
 @Composable
@@ -53,7 +53,7 @@ fun ExaminationTab(kader: KaderViewModel, selectedVisit: String?, onSelect: (Str
             Text(citizen?.fullName ?: "-", style = MaterialTheme.typography.titleLarge, color = TextPrimary)
             Text("${ui.visit?.userId} · ${citizen?.let { AgeCalc.age(it.birthDate) } ?: 0} th · RW ${citizen?.rw}", style = MaterialTheme.typography.bodyMedium, color = PrimaryDark)
         }
-        StepIndicator(ui.step, 4, labels = LABELS)
+        StepIndicator(ui.step + 1, 5, labels = LABELS)
         ui.error?.let { InfoNote(it, icon = Icons.Rounded.ErrorOutline, color = RiskRedText, bg = RiskRedBg, modifier = Modifier.testTag("visit_error")) }
         when (ui.step) {
             0 -> MeasureStep(vm, ui)

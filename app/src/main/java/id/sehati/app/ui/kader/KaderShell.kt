@@ -44,7 +44,7 @@ fun KaderShell(onLogout: () -> Unit, vm: KaderViewModel = hiltViewModel()) {
     var confirmLogout by remember { mutableStateOf(false) }
     val openVisit: (String) -> Unit = { id -> visitId = id; tab = KaderTab.Exam }
 
-    Column(Modifier.fillMaxSize().background2().statusBarsPadding().navigationBarsPadding()) {
+    Column(Modifier.fillMaxSize().background2().statusBarsPadding().navigationBarsPadding().imePadding()) {
         Surface(color = CardWhite, tonalElevation = 0.dp, shadowElevation = 1.dp) {
             Column(Modifier.fillMaxWidth().padding(top = 8.dp)) {
                 Row(Modifier.padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {

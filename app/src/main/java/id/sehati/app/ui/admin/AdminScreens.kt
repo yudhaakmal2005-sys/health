@@ -80,25 +80,30 @@ fun CommunityTab(vm: AdminViewModel) {
     ScreenColumn(Modifier.testTag("admin_community_screen")) {
         Text("COMMUNITY · HEART MAP", style = MaterialTheme.typography.labelLarge, color = PrimaryDark)
         if (st == null) { LoadingState(); return@ScreenColumn }
-        st.map.forEachIndexed { i, c ->
-            val (bg, fg, icon) = when (c.state) {
-                MapState.INSUFFICIENT -> Triple(SurfaceMuted, TextSecondary, Icons.Rounded.HelpOutline)
-                MapState.LOWER -> Triple(RiskGreenBg, RiskGreenText, Icons.Rounded.CheckCircle)
-                MapState.HIGHER -> Triple(RiskOrangeBg, RiskOrangeText, Icons.Rounded.MonitorHeart)
-                MapState.FOLLOW_UP_CONCENTRATION -> Triple(RiskRedBg, RiskRedText, Icons.Rounded.EventAvailable)
-            }
-            SehatiCard(Modifier.staggerIn(i).testTag("map_rw_${c.rw}"), container = bg, border = fg.copy(alpha = 0.3f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconBadge(icon, fg, Color.White, 40)
-                    Spacer(Modifier.width(12.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text("RW ${c.rw}", style = MaterialTheme.typography.titleMedium, color = fg, fontWeight = FontWeight.Bold)
+        st.map.chunked(2).forEachIndexed { row, pair ->
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                pair.forEachIndexed { col, c ->
+                    val (bg, fg, icon) = when (c.state) {
+                        MapState.INSUFFICIENT -> Triple(SurfaceMuted, TextSecondary, Icons.Rounded.HelpOutline)
+                        MapState.LOWER -> Triple(RiskGreenBg, RiskGreenText, Icons.Rounded.CheckCircle)
+                        MapState.HIGHER -> Triple(RiskOrangeBg, RiskOrangeText, Icons.Rounded.MonitorHeart)
+                        MapState.FOLLOW_UP_CONCENTRATION -> Triple(RiskRedBg, RiskRedText, Icons.Rounded.EventAvailable)
+                    }
+                    SehatiCard(Modifier.weight(1f).staggerIn(row * 2 + col).testTag("map_rw_${c.rw}"), container = bg, border = fg.copy(alpha = 0.3f), contentPadding = 14) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(icon, null, tint = fg, modifier = Modifier.size(22.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("RW ${c.rw}", style = MaterialTheme.typography.titleMedium, color = fg, fontWeight = FontWeight.Bold)
+                        }
                         Text(c.state.label, style = MaterialTheme.typography.labelLarge, color = fg)
+                        Text("Diskrining ${c.screened}/${c.registered}", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                        Text("Pantau lebih tinggi ${c.higherNeed} · tindak lanjut ${c.openFollowUps}", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                     }
                 }
-                Text("Terdaftar ${c.registered} · diskrining ${c.screened} · pemantauan lebih tinggi ${c.higherNeed} · tindak lanjut terbuka ${c.openFollowUps}", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                if (pair.size == 1) Spacer(Modifier.weight(1f))
             }
         }
+        Text("Legenda: abu = data belum cukup · hijau = kebutuhan pemantauan lebih rendah · oranye = lebih tinggi · merah = konsentrasi tindak lanjut.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
         InfoNote("Heart Map hanya menampilkan data agregat. Sel dengan kurang dari ${CommunityAnalytics.MIN_CELL} peserta diskrining ditandai \"Data belum cukup\" untuk melindungi privasi dan mencegah salah tafsir.", icon = Icons.Rounded.Shield)
     }
 }

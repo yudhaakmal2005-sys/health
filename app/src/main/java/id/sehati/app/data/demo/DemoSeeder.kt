@@ -125,49 +125,53 @@ class DemoSeeder(
     }
 
     private suspend fun seedHealth(rnd: Random, u: UserEntity, male: Boolean, age: Int, now: Long, hd: HealthDao, id: String) {
-        // Persona deterministik untuk akun sorotan; selebihnya acak
+        // Sebaran dibuat mendekati komunitas nyata: mayoritas sehat/waspada, minoritas perlu pemantauan.
         val special = id == "HM-000129"
-        val smoker = special.not() && male && rnd.nextInt(100) < 38
-        val height = (if (male) 163f else 152f) + rnd.nextInt(16)
-        val weight = height - 100f + rnd.nextInt(24) - 4 + (age / 10)
-        val waist = (if (male) 78f else 70f) + (weight - (height - 100f)) * 1.1f + rnd.nextInt(8)
-        val activeDays = if (id == "HM-000128") 2 else rnd.nextInt(6)
-        val activeMin = if (activeDays == 0) 0 else 15 + rnd.nextInt(40)
+        val smoker = !special && male && rnd.nextInt(100) < 28
+        val height = (if (male) 160f else 150f) + rnd.nextInt(18)
+        val bmiTarget = (20.5f + rnd.nextFloat() * 6f + (age - 35) / 40f).coerceIn(18.5f, 32f)
+        val weight = Math.round(bmiTarget * (height / 100f) * (height / 100f) * 10f) / 10f
+        val waist = ((if (male) 72f else 66f) + (bmiTarget - 21f) * 2.6f + rnd.nextInt(5)).coerceAtLeast(60f)
+        val activeDays = if (id == "HM-000128") 2 else 1 + rnd.nextInt(6)
+        val activeMin = 20 + rnd.nextInt(30)
         val takenAt = now - (20 + rnd.nextInt(150)) * 86_400_000L
-        val hyp = special || (age > 50 && rnd.nextInt(100) < 30)
+        val hyp = special || (age > 50 && rnd.nextInt(100) < 18)
         val a = HealthAssessmentEntity(
             id = "asm-$id", userId = id, takenAt = takenAt, heightCm = height, weightKg = weight, waistCm = waist,
-            knownHypertension = hyp && rnd.nextBoolean(), knownDiabetes = age > 45 && rnd.nextInt(100) < 12, knownDyslipidemia = false,
+            knownHypertension = hyp && rnd.nextBoolean(), knownDiabetes = age > 50 && rnd.nextInt(100) < 7, knownDyslipidemia = false,
             knownHeartDisease = false, knownKidneyDisease = false, otherConditions = "",
-            familyHypertension = special || rnd.nextInt(100) < 35, familyDiabetes = rnd.nextInt(100) < 20, familyCardio = rnd.nextInt(100) < 10,
-            smokingStatus = if (smoker) "CURRENT" else if (male && rnd.nextInt(100) < 15) "FORMER" else "NEVER",
-            smokingProduct = if (smoker) "Rokok kretek" else "", cigarettesPerDay = if (smoker) 4 + rnd.nextInt(14) else 0,
-            vegetableDays = rnd.nextInt(8), fruitDays = rnd.nextInt(8), saltyFrequent = rnd.nextInt(100) < 45,
-            sugaryFrequent = rnd.nextInt(100) < 40, fattyFrequent = rnd.nextInt(100) < 45,
-            activeDays = activeDays, activeMinutes = activeMin, activityIntensity = "Sedang", sedentaryHours = 3 + rnd.nextInt(8),
-            sleepHours = 5f + rnd.nextInt(5), sleepQuality = "Cukup", stressLevel = 1 + rnd.nextInt(5),
+            familyHypertension = special || rnd.nextInt(100) < 25, familyDiabetes = rnd.nextInt(100) < 12, familyCardio = rnd.nextInt(100) < 6,
+            smokingStatus = if (smoker) "CURRENT" else if (male && rnd.nextInt(100) < 12) "FORMER" else "NEVER",
+            smokingProduct = if (smoker) "Rokok kretek" else "", cigarettesPerDay = if (smoker) 3 + rnd.nextInt(12) else 0,
+            vegetableDays = 3 + rnd.nextInt(5), fruitDays = 3 + rnd.nextInt(5), saltyFrequent = rnd.nextInt(100) < 22,
+            sugaryFrequent = rnd.nextInt(100) < 22, fattyFrequent = rnd.nextInt(100) < 22,
+            activeDays = activeDays, activeMinutes = activeMin, activityIntensity = "Sedang", sedentaryHours = 3 + rnd.nextInt(5),
+            sleepHours = 6f + rnd.nextInt(3), sleepQuality = "Cukup", stressLevel = 1 + rnd.nextInt(4),
             createdAt = takenAt, updatedAt = takenAt, syncStatus = "SYNCED",
         )
         hd.upsertAssessment(a)
 
-        // 1–4 pemeriksaan Posyandu historis; tekanan darah cenderung naik pada persona berisiko
-        val count = if (id == "HM-000128" || special) 3 else rnd.nextInt(5)
-        val baseSys = if (special) 138 else 108 + rnd.nextInt(28) + (age - 30) / 3
-        val baseDia = if (special) 88 else 68 + rnd.nextInt(16) + (age - 30) / 6
+        // 1–3 pemeriksaan Posyandu historis. ±1 dari 7 warga memiliki tekanan darah pada rentang tinggi.
+        val count = if (id == "HM-000128" || special) 3 else rnd.nextInt(4)
+        val elevated = special || rnd.nextInt(100) < 14
+        val baseSys = if (special) 138 else if (elevated) 142 + rnd.nextInt(10) else 104 + rnd.nextInt(22) + (age - 30) / 8
+        val baseDia = if (special) 88 else if (elevated) 90 + rnd.nextInt(5) else 66 + rnd.nextInt(14) + (age - 30) / 10
+        val glucoseHigh = rnd.nextInt(100) < 12
         for (i in 0 until count) {
             val daysAgo = (count - i) * (28 + rnd.nextInt(20)) + 3
             val at = now - daysAgo * 86_400_000L
-            val drift = if (special) i * 5 else rnd.nextInt(7) - 3
+            val drift = if (special) i * 5 else rnd.nextInt(5) - 2
             val sys = baseSys + drift; val dia = baseDia + drift / 2
-            val glucose = if (rnd.nextInt(100) < 70) 85f + rnd.nextInt(60) else 130f + rnd.nextInt(100)
+            val glucose = if (glucoseHigh) 142f + rnd.nextInt(70) else 82f + rnd.nextInt(45)
             val mid = "chk-$id-$i"
-            val facility = if (u.rw in listOf("01", "02", "03")) "fac-melati" else "fac-mawar"
-            hd.upsertHeader(HealthMeasurementEntity(mid, id, at, DataSource.POSYANDU.name, if (u.rw in listOf("01", "02", "03")) CADRE_ID else "KD-000002", facility,
+            val rwEarly = u.rw in listOf("01", "02", "03")
+            val facility = if (rwEarly) "fac-melati" else "fac-mawar"
+            hd.upsertHeader(HealthMeasurementEntity(mid, id, at, DataSource.POSYANDU.name, if (rwEarly) CADRE_ID else "KD-000002", facility,
                 null, "Pemeriksaan rutin Posyandu", VerificationStatus.VERIFIED.name, at, at, "SYNCED"))
             hd.upsertAnthropometry(AnthropometryEntity("an-$mid", mid, id, weight + i * 0.2f, height, waist, AnthropometryRules.bmi(height, weight + i * 0.2f)))
             hd.upsertBloodPressure(BloodPressureEntity("bp-$mid", mid, id, sys, dia, 66 + rnd.nextInt(24)))
             hd.upsertGlucose(BloodGlucoseEntity("gl-$mid", mid, id, glucose, false))
-            if (rnd.nextInt(100) < 35) hd.upsertLipid(LipidMeasurementEntity("li-$mid", mid, id, 160f + rnd.nextInt(110)))
+            if (rnd.nextInt(100) < 30) hd.upsertLipid(LipidMeasurementEntity("li-$mid", mid, id, 150f + rnd.nextInt(80)))
         }
     }
 
