@@ -74,7 +74,15 @@ android {
     compose = true
     buildConfig = true
   }
-  testOptions { unitTests { isIncludeAndroidResources = true } }
+  testOptions {
+    unitTests {
+      isIncludeAndroidResources = true
+      all {
+        it.maxHeapSize = "2g"
+        it.testLogging { events("started", "failed"); showExceptions = true; exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.SHORT }
+      }
+    }
+  }
   packaging { resources.excludes += "/META-INF/{AL2.0,LGPL2.1}" }
   dependenciesInfo {
     includeInApk = false
