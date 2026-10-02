@@ -21,7 +21,7 @@ android {
     targetSdk = 36
     versionCode = 1
     versionName = "1.0.0"
-    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    testInstrumentationRunner = "id.sehati.app.HiltTestRunner"
   }
 
   signingConfigs {
@@ -151,6 +151,11 @@ dependencies {
   androidTestImplementation(libs.androidx.compose.ui.test.junit4)
   androidTestImplementation(libs.androidx.junit)
   androidTestImplementation(libs.androidx.espresso.core)
+  androidTestImplementation(libs.androidx.test.runner)
+  androidTestImplementation(libs.androidx.uiautomator)
+  androidTestImplementation(libs.hilt.android.testing)
+  androidTestImplementation(libs.androidx.work.testing)
+  kspAndroidTest(libs.hilt.compiler)
   debugImplementation(libs.androidx.compose.ui.tooling)
   debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
