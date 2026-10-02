@@ -43,7 +43,7 @@ jobs:
           code=$(cat build.code)
           echo "=== GRADLE EXIT CODE: $code ==="
           echo "--- last build.log lines ---"; tail -n 12 build.log
-          grep -E "^e: |What went wrong|Execution failed|Could not " -A2 build.log | grep -v "^\s*at " | head -70
+          grep "^e: " build.log | sort -u | head -25; grep -E "What went wrong|Could not " -A1 build.log | head -8
           python3 - <<'PY'
           import glob, xml.etree.ElementTree as ET
           t=f=0

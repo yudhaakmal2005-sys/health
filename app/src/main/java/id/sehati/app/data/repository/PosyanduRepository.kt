@@ -276,7 +276,7 @@ class PosyanduRepository(
             val next = (users.maxStaffNumber("KD-%") ?: 0) + 1
             val id = "KD-" + next.toString().padStart(6, '0')
             val u = UserEntity(
-                sehatiId = id, fullName = name.trim(), birthDate = "1990-01-01", sex = id.sehati.app.domain.model.Sex.FEMALE.name, village = "Desa Mirigambar", rw = rw,
+                sehatiId = id, fullName = name.trim(), birthDate = "1990-01-01", sex = Sex.FEMALE.name, village = "Desa Mirigambar", rw = rw,
                 role = Role.KADER.name, qrToken = QrPayload.newToken(), consentLocal = true, consentServerSync = true, consentAt = now,
                 onboardingDone = true, assessmentDone = true, createdAt = now, updatedAt = now,
             )
