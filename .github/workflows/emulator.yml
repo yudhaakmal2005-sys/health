@@ -4,6 +4,8 @@ on:
   push:
     branches: ["claude/**"]
     paths: [".github/workflows/emulator.yml", ".github/scripts/**", "app/src/androidTest/**"]
+permissions:
+  contents: write
 concurrency:
   group: emulator-${{ github.ref }}
   cancel-in-progress: true
@@ -41,3 +43,13 @@ jobs:
           grep -E "FATAL EXCEPTION" -A14 smoke-out/logcat.txt | head -40
           grep -E "^e: |FAILED|AssertionError|Exception|ComposeTimeout|Tests? " smoke-out/connected.log | sort -u | head -30
           tail -n 6 smoke-out/connected.log
+
+      - name: Publikasikan screenshot ke branch emulator-shots
+        if: always()
+        run: |
+          [ -d smoke-out/shots ] || exit 0
+          rm -rf /tmp/shots && mkdir -p /tmp/shots && cp smoke-out/shots/*.png /tmp/shots/
+          cd /tmp/shots && git init -q && git checkout -q -b emulator-shots
+          git config user.email ci@sehati.invalid && git config user.name sehati-ci
+          git add -A && git commit -qm "screenshots ${GITHUB_SHA}"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" emulator-shots
