@@ -99,7 +99,6 @@ class E2eScreenshotTest {
         rule.click("demo_login_warga")
         rule.assessment("demo")
         rule.waitTag("home_greeting_name"); shot("beranda")
-        rule.onNodeWithTag("home_screen").performScrollToIndex(0).also { }
         rule.click("nav_move"); rule.waitTag("move_screen"); shot("aktivitas")
         rule.click("nav_food"); rule.waitTag("food_screen"); shot("makanan")
         rule.click("nav_health"); rule.waitTag("health_screen"); shot("kesehatan")
