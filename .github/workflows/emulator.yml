@@ -34,3 +34,10 @@ jobs:
         with:
           name: emulator-smoke
           path: smoke-out
+      - name: Ringkasan hasil
+        if: always()
+        run: |
+          echo "=== SHOTS: $(ls smoke-out/shots 2>/dev/null | wc -l) ==="
+          grep -E "FATAL EXCEPTION" -A14 smoke-out/logcat.txt | head -40
+          grep -E "^e: |FAILED|AssertionError|Exception|ComposeTimeout|Tests? " smoke-out/connected.log | sort -u | head -30
+          tail -n 6 smoke-out/connected.log
