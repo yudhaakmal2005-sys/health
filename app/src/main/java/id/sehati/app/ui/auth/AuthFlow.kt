@@ -57,7 +57,7 @@ fun AuthFlow(onAssessmentNeeded: () -> Unit) {
 @Composable
 private fun WelcomeScreen(onStart: () -> Unit, onLogin: () -> Unit) {
     val pulse by heartbeatScale()
-    ScreenColumn(Modifier.testTag("welcome_screen"), scroll = true) {
+    ScreenColumn(Modifier.statusBarsPadding().navigationBarsPadding().testTag("welcome_screen"), scroll = true) {
         Spacer(Modifier.height(36.dp))
         Box(Modifier.align(Alignment.CenterHorizontally).scale(pulse)) { IconBadge(Icons.Rounded.Favorite, Color.White, Primary, 96) }
         Text("SEHATI", style = MaterialTheme.typography.displaySmall, color = PrimaryDark, modifier = Modifier.align(Alignment.CenterHorizontally))
@@ -75,7 +75,7 @@ private fun WelcomeScreen(onStart: () -> Unit, onLogin: () -> Unit) {
 @Composable
 private fun LoginScreen(onBack: () -> Unit, onRegister: () -> Unit, vm: AuthViewModel = hiltViewModel()) {
     val s by vm.state.collectAsStateWithLifecycle()
-    ScreenColumn(Modifier.testTag("login_screen")) {
+    ScreenColumn(Modifier.statusBarsPadding().navigationBarsPadding().imePadding().testTag("login_screen")) {
         ScreenHeader("Masuk", "Gunakan SEHATI ID atau nomor kontak", onBack = onBack)
         SehatiTextField(s.identifier, vm::onIdentifier, "SEHATI ID / nomor kontak", tag = "login_id_field", enabled = !s.loading)
         SehatiTextField(s.password, vm::onPassword, "Kata sandi", password = true, tag = "login_password_field", enabled = !s.loading)
