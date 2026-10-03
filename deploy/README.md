@@ -182,6 +182,19 @@ curl -s https://sehati.desaanda.id/api/v1/health
 
 ## 13. Tanya SEHATI (AI): kunci, model, dan perkiraan biaya
 
+**Memakai AI selain Claude.** Isi di `.env`:
+
+| Penyedia | `AI_PROVIDER` | `AI_BASE_URL` | Contoh `AI_MODEL` |
+|---|---|---|---|
+| OpenAI | `openai` | `https://api.openai.com/v1` | `gpt-4o-mini` |
+| DeepSeek | `openai` | `https://api.deepseek.com/v1` | `deepseek-chat` |
+| Google Gemini | `openai` | `https://generativelanguage.googleapis.com/v1beta/openai` | `gemini-2.5-flash` |
+| Groq | `openai` | `https://api.groq.com/openai/v1` | `llama-3.3-70b-versatile` |
+| OpenRouter | `openai` | `https://openrouter.ai/api/v1` | nama model di OpenRouter |
+
+lalu isi `AI_API_KEY` dengan kunci dari penyedia tersebut dan jalankan `docker compose up -d`. Prompt keamanan
+(bukan diagnosis, pengecekan gejala darurat sebelum memanggil AI) tetap sama untuk semua penyedia.
+
 * Kunci AI **hanya** ada di `deploy/.env` (tidak pernah di aplikasi atau repositori). Server tidak menyimpan isi percakapan,
   hanya hitungan pemakaian per hari (dashboard → Pemakaian AI).
 * Batas: 40 pertanyaan/hari/akun dan 10/menit/akun. Gejala darurat (mis. "saya nyeri dada sekarang") dijawab dengan pesan

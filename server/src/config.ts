@@ -27,6 +27,10 @@ export interface AppConfig {
   timeZone: string;
   logLevel: string;
   anthropicApiKey: string | null;
+  /** 'anthropic' (bawaan) atau 'openai' (penyedia berformat OpenAI-compatible). */
+  aiProvider?: 'anthropic' | 'openai';
+  aiApiKey?: string | null;
+  aiBaseUrl?: string;
   aiModel: string;
   aiEffort: Effort;
   aiMaxTokens: number;
@@ -73,6 +77,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   const effort = (env.AI_EFFORT ?? 'low').trim() as Effort;
   if (!EFFORTS.includes(effort)) throw new Error(`AI_EFFORT harus salah satu dari ${EFFORTS.join(', ')}`);
 
+  const aiProvider = (env.AI_PROVIDER ?? 'anthropic').trim().toLowerCase() as 'anthropic' | 'openai';
+  if (aiProvider !== 'anthropic' && aiProvider !== 'openai') throw new Error('AI_PROVIDER harus anthropic atau openai');
+
   const adminId = (env.ADMIN_ID ?? 'AD-000001').trim().toUpperCase();
   if (!/^AD-\d{6}$/.test(adminId)) throw new Error('ADMIN_ID harus berformat AD-000001');
 
@@ -92,7 +99,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     timeZone: env.TZ && env.TZ.trim() !== '' ? env.TZ : 'Asia/Jakarta',
     logLevel: env.LOG_LEVEL ?? (nodeEnv === 'production' ? 'info' : 'debug'),
     anthropicApiKey: env.ANTHROPIC_API_KEY && env.ANTHROPIC_API_KEY.trim() !== '' ? env.ANTHROPIC_API_KEY.trim() : null,
-    aiModel: env.AI_MODEL && env.AI_MODEL.trim() !== '' ? env.AI_MODEL.trim() : 'claude-opus-5-5',
+    aiProvider,
+    aiApiKey: aiProvider === 'openai' ? (env.AI_API_KEY?.trim() || null) : null,
+    aiBaseUrl: (env.AI_BASE_URL?.trim() || 'https://api.openai.com/v1'),
+    aiModel: env.AI_MODEL && env.AI_MODEL.trim() !== '' ? env.AI_MODEL.trim() : aiProvider === 'openai' ? 'gpt-4o-mini' : 'claude-opus-5-5',
     aiEffort: effort,
     aiMaxTokens: int(env.AI_MAX_TOKENS, 8000, 'AI_MAX_TOKENS'),
     rateLimits: {

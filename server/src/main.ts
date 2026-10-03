@@ -3,21 +3,25 @@ import { createPool } from './db/pool.js';
 import { runMigrations } from './db/migrate.js';
 import { buildApp } from './app.js';
 import { ensureAdmin } from './core/bootstrap.js';
-import { AnthropicAiClient } from './ai/client.js';
+import { AnthropicAiClient, type AiClient } from './ai/client.js';
+import { OpenAiCompatClient } from './ai/openai-compat.js';
 import type { Deps } from './core/types.js';
 
 async function main(): Promise<void> {
   const config = loadConfig();
   const pool = createPool(config.databaseUrl);
   const applied = await runMigrations(pool);
-  const ai = config.anthropicApiKey
-    ? new AnthropicAiClient({ apiKey: config.anthropicApiKey, model: config.aiModel, effort: config.aiEffort, maxTokens: config.aiMaxTokens })
-    : null;
+  let ai: AiClient | null = null;
+  if (config.aiProvider === 'openai') {
+    if (config.aiApiKey) ai = new OpenAiCompatClient({ apiKey: config.aiApiKey, baseURL: config.aiBaseUrl ?? 'https://api.openai.com/v1', model: config.aiModel, maxTokens: config.aiMaxTokens });
+  } else if (config.anthropicApiKey) {
+    ai = new AnthropicAiClient({ apiKey: config.anthropicApiKey, model: config.aiModel, effort: config.aiEffort, maxTokens: config.aiMaxTokens });
+  }
   const deps: Deps = { pool, config, ai, now: () => Date.now() };
   const app = await buildApp(deps);
   if (applied.length > 0) app.log.info({ applied }, 'migrations applied');
   await ensureAdmin(pool, config, app.log);
-  if (!ai) app.log.warn('ANTHROPIC_API_KEY tidak diatur: Tanya SEHATI AI nonaktif (503 AI_DISABLED).');
+  if (!ai) app.log.warn('Kunci AI tidak diatur (ANTHROPIC_API_KEY atau AI_API_KEY): Tanya SEHATI AI nonaktif (503 AI_DISABLED).');
 
   // Pemeliharaan berkala: sesi kedaluwarsa & receipt idempoten lama (> 180 hari) dihapus.
   const maintenance = setInterval(() => {
