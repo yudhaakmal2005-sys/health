@@ -40,6 +40,7 @@ interface SehatiServerApi {
     @GET("sync/pull") suspend fun pull(@Query("cursor") cursor: Long, @Query("limit") limit: Int = 500): PullResponse
     @GET("config") suspend fun config(): RemoteConfig
     @GET("health") suspend fun health(): ServerHealth
+    @POST("admin/cadres") suspend fun createCadre(@Body body: NewCadreRequest): NewCadreResponse
 }
 
 /**

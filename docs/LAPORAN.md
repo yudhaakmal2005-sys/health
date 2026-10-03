@@ -40,3 +40,27 @@ Build: `assembleDebug`, `assembleStaging` (R8), `assembleRelease` sukses.
 * Ambang klinis dapat dikonfigurasi di kode (`ClinicalThresholds`), belum ada antarmuka pengubah/persistensi.
 * Migrasi basis data: baru versi 1 (skema belum diekspor), jadi uji migrasi belum ada.
 * Akses baca repositori belum dibatasi per peran di lapisan data (pembatasan ada pada aksi tulis dan UI; admin hanya diberi agregat).
+
+---
+
+## 8. Pembaruan v2 (fokus jantung koroner, server VPS, AI, pengingat)
+
+### Ditambahkan
+* **Server** (`server/`): Fastify 5 + PostgreSQL 16. Login/daftar/aktivasi akun warga, reservasi SEHATI ID (mencegah bentrok antar-HP),
+  sinkron **push + pull** (idempoten, versi, consent, RBAC per peran, tombstone hapus), dashboard admin hanya agregat (sel < 5 disembunyikan),
+  jadwal Posyandu per RW, ambang klinis terpusat, audit log, dan **Tanya SEHATI AI** (Claude, streaming SSE, pemeriksaan darurat sebelum model,
+  batas 40 pertanyaan/hari/akun, isi percakapan tidak disimpan). 76 tes terhadap PostgreSQL sungguhan.
+* **Dashboard web + situs publik** (`web/`): beranda publik, kebijakan privasi, login staf, ringkasan, peta RW, registri tindak lanjut (tugaskan
+  kader, atur jadwal), kader, jadwal Posyandu, ambang klinis, laporan cetak/CSV, audit, pemakaian AI. Mode terang/gelap, responsif hingga 360 px.
+  Diuji langsung terhadap server sungguhan (Playwright) tanpa galat.
+* **Deploy** (`deploy/`): Docker Compose (db, api, Caddy dengan HTTPS otomatis), backup harian `pg_dump` 14 hari, panduan VPS langkah demi langkah.
+* **Android**: koneksi server (alamat dapat diatur tanpa build ulang; rilis wajib HTTPS), login di HP baru + tarik data, aktivasi akun warga dari
+  kartu kader, kolam SEHATI ID, jadwal Posyandu di beranda; Tanya SEHATI AI dengan persetujuan & cadangan offline; pengingat berbasis jam dengan
+  aksi di notifikasi; Obat saya (DB v3, migrasi 2→3); Darurat + metronom RJP; latihan napas; beranda baru (header gradien, aksi cepat, konfeti).
+
+### Batasan yang masih ada
+* Image Docker baru diuji di CI (tidak ada Docker daemon di lingkungan pengembangan); pasang pertama di VPS tetap perlu diperiksa.
+* Tanya SEHATI AI memerlukan `ANTHROPIC_API_KEY` di server (berbayar, perkiraan di `deploy/README.md` §13); tanpa kunci aplikasi memakai pustaka offline.
+* Batas laju per-menit dan percobaan aktivasi disimpan di memori server (cukup untuk satu instance API).
+* Aktivasi akun warga memakai verifikasi tanggal lahir + batas percobaan; untuk keamanan lebih tinggi dapat ditambah kode dari kader.
+* Pemindai foto makanan, kamera, GPS, Health Connect, pengingat, dan getar RJP tetap perlu dicoba di HP fisik.

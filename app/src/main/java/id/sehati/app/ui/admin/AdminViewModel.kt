@@ -43,6 +43,8 @@ class AdminViewModel @Inject constructor(
     private val syncController: SyncController,
     private val clock: Clock,
     private val thresholds: ThresholdService,
+    private val server: id.sehati.app.data.remote.ServerClient,
+    private val remote: id.sehati.app.data.remote.RemoteAccount,
 ) : ViewModel() {
     private val destination = MutableStateFlow("")
     init { viewModelScope.launch { destination.value = syncController.destinationLabel() } }
@@ -72,7 +74,19 @@ class AdminViewModel @Inject constructor(
     fun scheduleRecheck(followUpId: String, inDays: Int) { viewModelScope.launch { runCatching { posyandu.scheduleRecheck(followUpId, clock.now() + inDays * 86_400_000L) }.onFailure { _error.value = it.message } } }
     fun setCadreActive(id: String, active: Boolean) { viewModelScope.launch { runCatching { posyandu.setCadreActive(id, active) }.onFailure { _error.value = it.message } } }
     fun addCadre(name: String, rw: String, password: String, onDone: (String) -> Unit) {
-        viewModelScope.launch { runCatching { posyandu.addCadre(name, rw.padStart(2, '0'), password) }.onSuccess { onDone(it.sehatiId) }.onFailure { _error.value = it.message } }
+        viewModelScope.launch {
+            // Bila tertaut ke server, akun kader dibuat di server (berlaku di semua perangkat) lalu ditarik kembali.
+            if (server.token() != null) {
+                when (val r = server.call { it.createCadre(id.sehati.app.data.remote.NewCadreRequest(name.trim(), rw.padStart(2, '0'), password)) }) {
+                    is id.sehati.app.data.remote.ApiResult.Ok -> { remote.pullNow(); onDone(r.value.sehatiId) }
+                    is id.sehati.app.data.remote.ApiResult.Failure -> _error.value = r.message
+                    is id.sehati.app.data.remote.ApiResult.Offline -> _error.value = r.message
+                    id.sehati.app.data.remote.ApiResult.NotConfigured -> _error.value = "Server belum diatur."
+                }
+                return@launch
+            }
+            runCatching { posyandu.addCadre(name, rw.padStart(2, '0'), password) }.onSuccess { onDone(it.sehatiId) }.onFailure { _error.value = it.message }
+        }
     }
     fun adjustStock(id: String, delta: Int) { viewModelScope.launch { runCatching { posyandu.adjustStock(id, delta) }.onFailure { _error.value = it.message } } }
 

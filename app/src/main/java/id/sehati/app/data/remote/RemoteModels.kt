@@ -55,3 +55,6 @@ sealed interface ChatEvent {
     data class Done(val stopReason: String) : ChatEvent
     data class Failure(val code: String, val message: String) : ChatEvent
 }
+
+@Serializable data class NewCadreRequest(val fullName: String, val rw: String, val password: String)
+@Serializable data class NewCadreResponse(val sehatiId: String)
