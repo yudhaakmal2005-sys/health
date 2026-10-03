@@ -45,6 +45,9 @@ class E2eScreenshotTest {
         device.takeScreenshot(File(dir, "%02d_%s.png".format(++n, name)))
     }
 
+    private fun AndroidComposeTestRule<*, *>.waitGone(tag: String, ms: Long = 30_000) =
+        waitUntil(ms) { onAllNodesWithTag(tag).fetchSemanticsNodes().isEmpty() }
+
     private fun AndroidComposeTestRule<*, *>.waitTag(tag: String, ms: Long = 90_000) =
         waitUntil(ms) { onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty() }
 
@@ -71,7 +74,7 @@ class E2eScreenshotTest {
         waitTag("health_status_card"); shot("${prefix}_profil_sehati")
         click("submit_assessment_button"); shot("${prefix}_rencana")
         click("submit_assessment_button")
-        waitTag("home_screen")
+        waitTag("home_screen"); waitGone("welcome_overlay")
     }
 
     @Test fun test1_onboardingRegistration() {
@@ -108,7 +111,7 @@ class E2eScreenshotTest {
         rule.click("logout_button"); rule.click("logout_dialog_confirm")
 
         rule.click("welcome_login_button"); rule.click("demo_login_kader")
-        rule.waitTag("kader_name"); shot("kader_hari_ini")
+        rule.waitTag("kader_name"); rule.waitGone("welcome_overlay"); shot("kader_hari_ini")
         rule.click("kader_tab_citizens")
         rule.type("citizen_search_field", "HM-000127"); rule.waitTag("register_visit_HM-000127"); shot("kader_cari_warga")
         rule.click("register_visit_HM-000127")
@@ -125,7 +128,7 @@ class E2eScreenshotTest {
         rule.click("kader_logout_button"); rule.click("kader_logout_dialog_confirm")
 
         rule.click("welcome_login_button"); rule.click("demo_login_admin")
-        rule.waitTag("admin_overview_screen"); rule.waitTag("admin_kpi_registered"); shot("admin_overview")
+        rule.waitTag("admin_overview_screen"); rule.waitGone("welcome_overlay"); rule.waitTag("admin_kpi_registered"); shot("admin_overview")
         rule.click("admin_tab_community"); rule.waitTag("admin_community_screen"); shot("admin_heartmap")
         rule.click("admin_tab_followup"); rule.waitTag("registry_HM-000127"); shot("admin_followup")
         rule.click("admin_tab_reports"); rule.waitTag("admin_reports_screen"); shot("admin_laporan")

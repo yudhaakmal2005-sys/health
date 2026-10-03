@@ -42,6 +42,9 @@ class GoldenPathUiTest {
     private fun AndroidComposeTestRule<*, *>.waitTag(tag: String, ms: Long = 60_000) =
         waitUntil(ms) { onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty() }
 
+    private fun AndroidComposeTestRule<*, *>.waitGone(tag: String, ms: Long = 30_000) =
+        waitUntil(ms) { onAllNodesWithTag(tag).fetchSemanticsNodes().isEmpty() }
+
     private fun AndroidComposeTestRule<*, *>.click(tag: String) {
         waitTag(tag)
         runCatching { onNodeWithTag(tag).performScrollTo() }
@@ -72,6 +75,7 @@ class GoldenPathUiTest {
 
         // ---------- BERANDA WARGA ----------
         rule.waitTag("home_screen")
+        rule.waitGone("welcome_overlay")
         rule.waitTag("home_greeting_name")
         rule.onNodeWithTag("home_greeting_name").assertTextEquals("Tariska")
         rule.click("nav_health")
@@ -89,6 +93,7 @@ class GoldenPathUiTest {
         rule.waitTag("login_screen")
         rule.click("demo_login_kader")
         rule.waitTag("kader_name")
+        rule.waitGone("welcome_overlay")
         rule.click("kader_tab_citizens")
         rule.type("citizen_search_field", "HM-000127")
         rule.click("register_visit_HM-000127")
@@ -116,6 +121,7 @@ class GoldenPathUiTest {
         rule.waitTag("login_screen")
         rule.click("demo_login_admin")
         rule.waitTag("admin_overview_screen")
+        rule.waitGone("welcome_overlay")
         rule.waitTag("admin_kpi_registered")
         rule.click("admin_tab_followup")
         rule.waitTag("registry_HM-000127")                    // data kader muncul di registri admin
