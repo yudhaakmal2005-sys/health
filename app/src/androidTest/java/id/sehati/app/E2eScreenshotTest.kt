@@ -1,6 +1,8 @@
 package id.sehati.app
 
 import android.content.Context
+import androidx.compose.ui.test.printToString
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -48,8 +50,14 @@ class E2eScreenshotTest {
     private fun AndroidComposeTestRule<*, *>.waitGone(tag: String, ms: Long = 30_000) =
         waitUntil(ms) { onAllNodesWithTag(tag).fetchSemanticsNodes().isEmpty() }
 
-    private fun AndroidComposeTestRule<*, *>.waitTag(tag: String, ms: Long = 90_000) =
+    private fun AndroidComposeTestRule<*, *>.waitTag(tag: String, ms: Long = 90_000) = try {
         waitUntil(ms) { onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty() }
+    } catch (e: Throwable) {
+        // Bukti saat gagal: layar + pohon semantik, agar penyebab terlihat dari artifact/screenshot CI.
+        runCatching { device.takeScreenshot(File(dir, "%02d_GAGAL_menunggu_%s.png".format(++n, tag))) }
+        runCatching { File(dir, "gagal_semantik.txt").writeText(onRoot(useUnmergedTree = true).printToString()) }
+        throw e
+    }
 
     private fun AndroidComposeTestRule<*, *>.click(tag: String) {
         waitTag(tag); runCatching { onNodeWithTag(tag).performScrollTo() }; onNodeWithTag(tag).performClick()
