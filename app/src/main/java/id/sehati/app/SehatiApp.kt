@@ -17,7 +17,7 @@ class SehatiApp : Application(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
-        CoroutineScope(Dispatchers.Default).launch { runCatching { thresholds.get().restore() } }
+        CoroutineScope(Dispatchers.Default).launch { try { thresholds.get().restore() } catch (_: Throwable) { } }
     }
 
     override val workManagerConfiguration: Configuration
