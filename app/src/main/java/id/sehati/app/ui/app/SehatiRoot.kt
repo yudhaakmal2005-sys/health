@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import id.sehati.app.ui.admin.AdminShell
@@ -30,11 +32,13 @@ import id.sehati.app.ui.theme.motionTween
  * Akar aplikasi. Layar yang tampil ditentukan sesi terautentikasi + role (RBAC), bukan tombol di UI:
  * Warga → Kader → Admin tidak dapat saling dibuka tanpa login yang sah.
  */
+@OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
 fun SehatiRoot(vm: AppViewModel = hiltViewModel()) {
     val root by vm.root.collectAsStateWithLifecycle()
     val welcome by vm.welcome.collectAsStateWithLifecycle()
-    Box(Modifier.fillMaxSize().background(Background)) {
+    // testTag juga terlihat sebagai resource-id agar UiAutomator (rekaman video demo) dapat menemukannya.
+    Box(Modifier.fillMaxSize().background(Background).semantics { testTagsAsResourceId = true }) {
         AnimatedContent(
             targetState = root,
             transitionSpec = {

@@ -50,7 +50,7 @@ jobs:
         if: always()
         run: |
           [ -d smoke-out/shots ] || exit 0
-          rm -rf /tmp/shots && mkdir -p /tmp/shots && cp smoke-out/shots/*.png /tmp/shots/
+          rm -rf /tmp/shots && mkdir -p /tmp/shots && cp smoke-out/shots/*.png /tmp/shots/ && (cp smoke-out/sehati-demo.mp4 /tmp/shots/ 2>/dev/null || true)
           cd /tmp/shots && git init -q && git checkout -q -b emulator-shots
           git config user.email ci@sehati.invalid && git config user.name sehati-ci
           git add -A && git commit -qm "screenshots ${GITHUB_SHA}"

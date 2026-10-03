@@ -17,6 +17,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
+import id.sehati.app.ui.components.popOnChange
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -59,25 +68,23 @@ fun CitizenShell(onLogout: () -> Unit, onRetakeAssessment: () -> Unit) {
         containerColor = Background,
         contentWindowInsets = WindowInsets.systemBars,
         bottomBar = {
-            if (showBar) NavigationBar(containerColor = CardWhite, modifier = Modifier.testTag("citizen_nav")) {
-                Tab.entries.forEach { t ->
-                    val sel = route == t.route
-                    NavigationBarItem(
-                        selected = sel, onClick = { if (!sel) tab(t.route) },
-                        icon = { androidx.compose.material3.Icon(if (sel) t.selected else t.unselected, contentDescription = null) },
-                        label = { Text(t.label) }, modifier = Modifier.testTag("nav_${t.route}"),
-                        colors = NavigationBarItemDefaults.colors(selectedIconColor = PrimaryDark, selectedTextColor = PrimaryDark, indicatorColor = PrimaryLight, unselectedIconColor = TextMuted, unselectedTextColor = TextMuted),
-                    )
-                }
+            androidx.compose.animation.AnimatedVisibility(showBar,
+                enter = androidx.compose.animation.slideInVertically { it } + fadeIn(),
+                exit = androidx.compose.animation.slideOutVertically { it } + fadeOut()) {
+                SehatiBottomBar(route) { tab(it) }
             }
         },
     ) { pad ->
         NavHost(
             nav, startDestination = "home", modifier = Modifier.padding(pad),
-            enterTransition = { fadeIn(tween(Motion.Medium, 60)) + slideInHorizontally(tween(Motion.Medium, easing = Motion.Emphasized)) { it / 12 } },
-            exitTransition = { fadeOut(tween(Motion.Short)) },
-            popEnterTransition = { fadeIn(tween(Motion.Medium, 60)) },
-            popExitTransition = { fadeOut(tween(Motion.Short)) + slideOutHorizontally(tween(Motion.Medium)) { it / 12 } },
+            enterTransition = {
+                val tabs = Tab.entries.map { it.route }
+                if (initialState.destination.route in tabs && targetState.destination.route in tabs) fadeIn(tween(Motion.Medium)) + androidx.compose.animation.scaleIn(tween(Motion.Medium, easing = Motion.Emphasized), initialScale = 0.97f)
+                else fadeIn(tween(Motion.Medium)) + slideInHorizontally(tween(420, easing = Motion.Emphasized)) { it / 4 }
+            },
+            exitTransition = { fadeOut(tween(Motion.Short)) + slideOutHorizontally(tween(420, easing = Motion.Emphasized)) { -it / 10 } },
+            popEnterTransition = { fadeIn(tween(Motion.Medium)) + slideInHorizontally(tween(420, easing = Motion.Emphasized)) { -it / 10 } },
+            popExitTransition = { fadeOut(tween(Motion.Short)) + slideOutHorizontally(tween(420, easing = Motion.Emphasized)) { it / 4 } },
         ) {
             composable("home") { HomeScreen(onOpenHealth = { tab("health") }, onOpenMove = { tab("move") }, onOpenFood = { tab("food") }, onOpenAcademy = { id -> open(if (id == null) "academy" else "academy/$id") }, onOpenCoach = { open("coach") }, onOpenRisk = { open("heart") }, onOpenChallenges = { open("challenges") },
                 onEmergency = { open("emergency") }, onOpenMeds = { open("medications") }, onBreath = { open("breathing") }, onReminders = { open("reminders") }) }
@@ -101,3 +108,36 @@ fun CitizenShell(onLogout: () -> Unit, onRetakeAssessment: () -> Unit) {
         }
     }
 }
+
+/** Navigasi bawah: pil merah yang meluncur ke tab terpilih, ikon memantul, label muncul halus. */
+@Composable
+private fun SehatiBottomBar(route: String?, onSelect: (String) -> Unit) {
+    Surface(color = CardWhite, shadowElevation = 12.dp, modifier = Modifier.testTag("citizen_nav")) {
+        Row(
+            Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 8.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Tab.entries.forEach { t ->
+                val sel = route == t.route
+                val weight by androidx.compose.animation.core.animateFloatAsState(if (sel) 1.6f else 1f, androidx.compose.animation.core.spring(dampingRatio = 0.7f, stiffness = 300f), label = "w")
+                val bg by androidx.compose.animation.animateColorAsState(if (sel) PrimaryLight else androidx.compose.ui.graphics.Color.Transparent, tween(Motion.Medium), label = "bg")
+                val tint by androidx.compose.animation.animateColorAsState(if (sel) PrimaryDark else TextMuted, tween(Motion.Medium), label = "tint")
+                val src = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                Row(
+                    Modifier.weight(weight).height(52.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(26.dp))
+                        .background(bg)
+                        .clickable(interactionSource = src, indication = androidx.compose.material3.ripple(color = Primary), role = androidx.compose.ui.semantics.Role.Tab) { if (!sel) onSelect(t.route) }
+                        .semantics { selected = sel; contentDescription = t.label }
+                        .testTag("nav_${t.route}"),
+                    horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    androidx.compose.material3.Icon(if (sel) t.selected else t.unselected, null, tint = tint, modifier = Modifier.size(24.dp).popOnChange(sel))
+                    androidx.compose.animation.AnimatedVisibility(sel, enter = fadeIn(tween(Motion.Medium)) + androidx.compose.animation.expandHorizontally(), exit = fadeOut(tween(Motion.Short)) + androidx.compose.animation.shrinkHorizontally()) {
+                        Text(t.label, style = MaterialTheme.typography.labelMedium, color = tint, maxLines = 1, modifier = Modifier.padding(start = 6.dp))
+                    }
+                }
+            }
+        }
+    }
+}
+

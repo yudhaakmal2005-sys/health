@@ -22,6 +22,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
@@ -86,21 +88,33 @@ fun SehatiCard(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val source = remember { MutableInteractionSource() }
-    val shape = RoundedCornerShape(20.dp)
-    val base = modifier.fillMaxWidth().animateContentSize()
-    val mod = if (onClick != null) base.pressScale(source).clip(shape).clickable(
-        interactionSource = source, indication = null, role = Role.Button, onClick = onClick,
+    val shape = RoundedCornerShape(24.dp)
+    val elevated = container == CardWhite
+    val base = modifier.fillMaxWidth()
+        .then(if (elevated) Modifier.shadow(10.dp, shape, ambientColor = Primary.copy(alpha = 0.10f), spotColor = Primary.copy(alpha = 0.14f)) else Modifier)
+        .animateContentSize(motionSpringSpecSize())
+    val mod = if (onClick != null) base.pressScale(source, 0.965f).clip(shape).clickable(
+        interactionSource = source, indication = ripple(color = Primary), role = Role.Button, onClick = onClick,
     ) else base
-    Surface(mod, shape = shape, color = container, border = BorderStroke(1.dp, border), tonalElevation = 0.dp) {
+    Surface(mod, shape = shape, color = container, border = BorderStroke(1.dp, if (elevated) border.copy(alpha = 0.6f) else border), tonalElevation = 0.dp) {
         Column(Modifier.padding(contentPadding.dp), verticalArrangement = Arrangement.spacedBy(8.dp), content = content)
     }
 }
 
+private fun motionSpringSpecSize() = androidx.compose.animation.core.spring<androidx.compose.ui.unit.IntSize>(
+    dampingRatio = androidx.compose.animation.core.Spring.DampingRatioLowBouncy, stiffness = androidx.compose.animation.core.Spring.StiffnessMediumLow,
+)
+
 @Composable
 fun SectionTitle(title: String, modifier: Modifier = Modifier, action: String? = null, onAction: (() -> Unit)? = null) {
-    Row(modifier.fillMaxWidth().padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text(title, style = MaterialTheme.typography.titleMedium, color = TextPrimary, modifier = Modifier.weight(1f))
-        if (action != null && onAction != null) TextButton(onClick = onAction, modifier = Modifier.heightIn(min = 48.dp)) { Text(action) }
+    Row(modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.size(width = 4.dp, height = 18.dp).clip(CircleShape).background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(Primary, Sunset))))
+        Spacer(Modifier.width(10.dp))
+        Text(title, style = MaterialTheme.typography.titleLarge, color = TextPrimary, modifier = Modifier.weight(1f))
+        if (action != null && onAction != null) TextButton(onClick = onAction, modifier = Modifier.heightIn(min = 48.dp)) {
+            Text(action, color = PrimaryDark, style = MaterialTheme.typography.labelLarge)
+            Icon(androidx.compose.material.icons.Icons.Rounded.ChevronRight, null, tint = PrimaryDark, modifier = Modifier.size(18.dp))
+        }
     }
 }
 
@@ -114,27 +128,42 @@ fun PrimaryButton(
     loading: Boolean = false,
     tag: String = "",
 ) {
+    val source = remember { MutableInteractionSource() }
+    val active = enabled && !loading
+    val shape = RoundedCornerShape(18.dp)
     Button(
-        onClick = onClick, enabled = enabled && !loading,
-        modifier = modifier.fillMaxWidth().heightIn(min = 52.dp).then(if (tag.isNotEmpty()) Modifier.testTag(tag) else Modifier),
-        shape = RoundedCornerShape(16.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = Primary, contentColor = Color.White),
+        onClick = onClick, enabled = active, interactionSource = source,
+        modifier = modifier.fillMaxWidth().heightIn(min = 54.dp).pressScale(source, 0.95f)
+            .then(if (active) Modifier.shadow(8.dp, shape, ambientColor = Primary.copy(alpha = 0.25f), spotColor = Primary.copy(alpha = 0.35f)) else Modifier)
+            .then(if (tag.isNotEmpty()) Modifier.testTag(tag) else Modifier),
+        shape = shape, contentPadding = PaddingValues(0.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = Color.White, disabledContainerColor = BorderColor, disabledContentColor = TextMuted),
     ) {
-        if (loading) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp, color = Color.White)
-        else {
-            if (icon != null) { Icon(icon, null, Modifier.size(20.dp)); Spacer(Modifier.width(8.dp)) }
-            Text(text, style = MaterialTheme.typography.labelLarge)
+        Box(
+            Modifier.fillMaxWidth().heightIn(min = 54.dp)
+                .then(if (active) Modifier.background(androidx.compose.ui.graphics.Brush.horizontalGradient(listOf(Primary, Color(0xFFF43F5E), Sunset.copy(alpha = 0.92f)))) else Modifier)
+                .padding(horizontal = 16.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            androidx.compose.animation.AnimatedContent(loading, label = "btn") { l ->
+                if (l) CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.5.dp, color = Color.White)
+                else Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (icon != null) { Icon(icon, null, Modifier.size(20.dp)); Spacer(Modifier.width(8.dp)) }
+                    Text(text, style = MaterialTheme.typography.labelLarge)
+                }
+            }
         }
     }
 }
 
 @Composable
 fun SecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, icon: ImageVector? = null, enabled: Boolean = true, tag: String = "") {
+    val source = remember { MutableInteractionSource() }
     OutlinedButton(
-        onClick = onClick, enabled = enabled,
-        modifier = modifier.fillMaxWidth().heightIn(min = 52.dp).then(if (tag.isNotEmpty()) Modifier.testTag(tag) else Modifier),
-        shape = RoundedCornerShape(16.dp), border = BorderStroke(1.dp, Primary.copy(alpha = 0.5f)),
-        colors = ButtonDefaults.outlinedButtonColors(contentColor = PrimaryDark),
+        onClick = onClick, enabled = enabled, interactionSource = source,
+        modifier = modifier.fillMaxWidth().heightIn(min = 52.dp).pressScale(source, 0.95f).then(if (tag.isNotEmpty()) Modifier.testTag(tag) else Modifier),
+        shape = RoundedCornerShape(18.dp), border = BorderStroke(1.dp, Primary.copy(alpha = 0.22f)),
+        colors = ButtonDefaults.outlinedButtonColors(containerColor = PrimarySoft, contentColor = PrimaryDark),
     ) {
         if (icon != null) { Icon(icon, null, Modifier.size(20.dp)); Spacer(Modifier.width(8.dp)) }
         Text(text, style = MaterialTheme.typography.labelLarge)

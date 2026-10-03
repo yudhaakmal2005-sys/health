@@ -98,7 +98,7 @@ export function LoginPage() {
       <MockBanner />
       <div className="grid flex-1 lg:grid-cols-[1fr_1.05fr]">
         {/* Panel merek */}
-        <aside className="relative hidden overflow-hidden bg-gradient-to-br from-[#0284C7] via-[#0369A1] to-[#0C4A6E] p-12 text-white lg:flex lg:flex-col lg:justify-between">
+        <aside className="relative hidden overflow-hidden bg-gradient-to-br from-[#E11D48] via-[#BE123C] to-[#881337] p-12 text-white lg:flex lg:flex-col lg:justify-between">
           <svg className="pointer-events-none absolute -right-40 -bottom-40 h-[560px] w-[560px] opacity-[0.12]" viewBox="0 0 64 64" aria-hidden="true">
             <circle cx="32" cy="32" r="30" fill="none" stroke="#fff" strokeWidth="1" />
             <circle cx="32" cy="32" r="23" fill="none" stroke="#fff" strokeWidth="0.6" />
@@ -110,10 +110,10 @@ export function LoginPage() {
           </Link>
           <div className="relative max-w-md">
             <h2 className="text-3xl leading-tight font-extrabold tracking-tight">Dashboard Puskesmas untuk pencegahan jantung koroner di desa.</h2>
-            <p className="mt-4 text-sm leading-relaxed text-sky-100">
+            <p className="mt-4 text-sm leading-relaxed text-rose-100">
               Pantau cakupan skrining, sebaran faktor risiko per RW, dan registri tindak lanjut — dengan angka agregat yang menjaga privasi warga.
             </p>
-            <ul className="mt-8 space-y-3 text-sm text-sky-50">
+            <ul className="mt-8 space-y-3 text-sm text-rose-50">
               {['Tanpa data kesehatan perorangan', 'Sel kecil (< 5) disembunyikan', 'Setiap perubahan tercatat di audit'].map((t) => (
                 <li key={t} className="flex items-center gap-2.5">
                   <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/15"><Icon name="check" size={14} /></span>
@@ -122,7 +122,7 @@ export function LoginPage() {
               ))}
             </ul>
           </div>
-          <p className="relative text-xs text-sky-200">{site.village} · {site.kkn.team}</p>
+          <p className="relative text-xs text-rose-200">{site.village} · {site.kkn.team}</p>
         </aside>
 
         {/* Formulir */}

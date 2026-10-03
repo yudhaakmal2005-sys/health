@@ -10,7 +10,7 @@ const AUDIENCES: { icon: IconName; who: string; title: string; points: string[];
     icon: 'heart',
     who: 'Warga',
     title: 'Kenali faktor risiko jantung sejak dini',
-    tone: 'from-sky-500/12',
+    tone: 'from-rose-500/12',
     points: [
       'Asesmen singkat 9 faktor risiko jantung koroner — bukan skor kemungkinan, bukan diagnosis',
       'Lima pilar jantung sehat: aktif, bebas rokok, garam terkendali, tidur cukup, kontrol tensi',
@@ -73,10 +73,10 @@ const STEPS: { icon: IconName; title: string; body: string }[] = [
 function PhoneMock() {
   return (
     <div className="relative mx-auto w-full max-w-[300px]" aria-hidden="true">
-      <div className="absolute -inset-10 -z-10 rounded-full bg-gradient-to-br from-sky-400/25 via-sky-300/10 to-emerald-300/20 blur-3xl" />
+      <div className="absolute -inset-10 -z-10 rounded-full bg-gradient-to-br from-rose-400/25 via-orange-300/10 to-emerald-300/20 blur-3xl" />
       <div className="rounded-[2.4rem] border border-line-strong bg-surface p-2.5 shadow-pop">
         <div className="overflow-hidden rounded-[1.9rem] bg-bg">
-          <div className="flex items-center justify-between bg-gradient-to-br from-[#0284C7] to-[#0369A1] px-5 pt-6 pb-10 text-white">
+          <div className="flex items-center justify-between bg-gradient-to-br from-[#E11D48] to-[#BE123C] px-5 pt-6 pb-10 text-white">
             <div>
               <p className="text-[0.7rem] opacity-80">Selamat pagi,</p>
               <p className="text-base font-bold">Warga Contoh</p>
@@ -133,7 +133,7 @@ export function LandingPage() {
               <Icon name="heartPulse" size={14} /> Posyandu ILP · Skrining dewasa · {site.village}
             </p>
             <h1 className="mt-5 text-[2.1rem] leading-[1.12] font-extrabold tracking-tight text-fg sm:text-5xl lg:text-[3.35rem]">
-              Jaga jantung warga, <span className="bg-gradient-to-r from-[#0284C7] to-[#10B981] bg-clip-text text-transparent">dimulai dari Posyandu.</span>
+              Jaga jantung warga, <span className="bg-gradient-to-r from-[#E11D48] to-[#F97316] bg-clip-text text-transparent">dimulai dari Posyandu.</span>
             </h1>
             <p className="mt-5 max-w-xl text-base leading-relaxed text-fg-2 sm:text-lg">
               SEHATI membantu warga, kader, dan Puskesmas mencegah penyakit jantung koroner lewat skrining rutin,
@@ -291,7 +291,7 @@ export function LandingPage() {
 
       {/* ---------- Unduh ---------- */}
       <section id="unduh" className="mx-auto max-w-6xl scroll-mt-20 px-4 pb-20 sm:px-6">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0284C7] via-[#0369A1] to-[#075985] px-6 py-12 text-white sm:px-12">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#E11D48] via-[#BE123C] to-[#9F1239] px-6 py-12 text-white sm:px-12">
           <svg className="pointer-events-none absolute -top-16 -right-16 h-72 w-72 opacity-15" viewBox="0 0 64 64" aria-hidden="true">
             <circle cx="32" cy="32" r="30" fill="none" stroke="#fff" strokeWidth="2" />
             <circle cx="32" cy="32" r="22" fill="none" stroke="#fff" strokeWidth="1.2" />
@@ -299,11 +299,11 @@ export function LandingPage() {
           <div className="relative grid items-center gap-8 lg:grid-cols-[1.4fr_1fr]">
             <div>
               <h2 className="text-3xl font-extrabold tracking-tight">Pasang SEHATI di HP Android</h2>
-              <p className="mt-3 max-w-xl text-sm leading-relaxed text-sky-100">
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-rose-100">
                 Unduh berkas APK, buka, lalu izinkan pemasangan dari sumber ini bila diminta. Kader menerima akun dari Puskesmas;
                 warga dapat mendaftar sendiri atau dibantu kader saat Posyandu.
               </p>
-              <ol className="mt-5 grid gap-2 text-sm text-sky-50 sm:grid-cols-3">
+              <ol className="mt-5 grid gap-2 text-sm text-rose-50 sm:grid-cols-3">
                 {['Unduh APK', 'Izinkan pemasangan', 'Buka & daftar'].map((t, i) => (
                   <li key={t} className="flex items-center gap-2">
                     <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-xs font-bold">{i + 1}</span>{t}
@@ -312,10 +312,10 @@ export function LandingPage() {
               </ol>
             </div>
             <div className="flex flex-col items-start gap-3 lg:items-end">
-              <a href={site.apk.url} download className="inline-flex h-13 items-center gap-2.5 rounded-xl bg-white px-6 py-3.5 text-base font-bold text-[#0369A1] shadow-pop transition-transform hover:-translate-y-0.5">
+              <a href={site.apk.url} download className="inline-flex h-13 items-center gap-2.5 rounded-xl bg-white px-6 py-3.5 text-base font-bold text-[#BE123C] shadow-pop transition-transform hover:-translate-y-0.5">
                 <Icon name="download" size={20} /> Unduh sehati.apk
               </a>
-              <p className="text-xs text-sky-100">Versi {site.apk.version} · {site.apk.minAndroid}</p>
+              <p className="text-xs text-rose-100">Versi {site.apk.version} · {site.apk.minAndroid}</p>
             </div>
           </div>
         </div>

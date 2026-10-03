@@ -29,13 +29,19 @@ import androidx.compose.ui.platform.LocalDensity
 fun Modifier.staggerIn(index: Int, stepMs: Int = 55): Modifier = composed {
     val reduce = LocalReduceMotion.current
     val progress = remember { Animatable(if (reduce) 1f else 0f) }
-    val px = with(LocalDensity.current) { 18.dp.toPx() }
+    val px = with(LocalDensity.current) { 28.dp.toPx() }
     LaunchedEffect(Unit) {
-        if (!reduce) progress.animateTo(1f, tween(Motion.Long, delayMillis = (index.coerceAtMost(10)) * stepMs, easing = Motion.Emphasized))
+        if (!reduce) {
+            kotlinx.coroutines.delay((index.coerceAtMost(10)) * stepMs.toLong())
+            progress.animateTo(1f, androidx.compose.animation.core.spring(dampingRatio = 0.72f, stiffness = 220f))
+        }
     }
     graphicsLayer {
-        alpha = progress.value
-        translationY = (1f - progress.value) * px
+        val p = progress.value
+        alpha = p.coerceIn(0f, 1f)
+        translationY = (1f - p) * px
+        val sc = 0.94f + 0.06f * p
+        scaleX = sc; scaleY = sc
     }
 }
 
@@ -70,4 +76,26 @@ fun shimmerAlpha(): State<Float> {
 fun Modifier.shimmer(): Modifier = composed {
     val a by shimmerAlpha()
     alpha(a)
+}
+
+
+/** Melayang naik-turun pelan (dekorasi). Diam bila "kurangi animasi" aktif. */
+fun Modifier.floating(amplitudeDp: Float = 6f, periodMs: Int = 2600, phase: Float = 0f): Modifier = composed {
+    val reduce = LocalReduceMotion.current
+    val t = rememberInfiniteTransition(label = "float")
+    val v by t.animateFloat(0f, 1f, infiniteRepeatable(tween(periodMs, easing = androidx.compose.animation.core.LinearEasing)), label = "f")
+    val px = with(LocalDensity.current) { amplitudeDp.dp.toPx() }
+    graphicsLayer { if (!reduce) translationY = kotlin.math.sin((v + phase) * 2f * Math.PI.toFloat()) * px }
+}
+
+/** Efek "memantul" sekali saat [key] berubah, mis. ketika ceklis tercapai. */
+fun Modifier.popOnChange(key: Any?): Modifier = composed {
+    val reduce = LocalReduceMotion.current
+    val s = remember { Animatable(1f) }
+    var first by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(true) }
+    LaunchedEffect(key) {
+        if (first) { first = false; return@LaunchedEffect }
+        if (!reduce) { s.snapTo(0.6f); s.animateTo(1f, androidx.compose.animation.core.spring(dampingRatio = 0.35f, stiffness = 400f)) }
+    }
+    graphicsLayer { scaleX = s.value; scaleY = s.value }
 }

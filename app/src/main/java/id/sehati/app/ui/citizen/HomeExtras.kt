@@ -16,6 +16,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -67,9 +71,27 @@ fun HomeHero(
     modifier: Modifier = Modifier,
 ) {
     val date = remember { LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, d MMMM", Locale("id"))) }
-    Surface(shape = RoundedCornerShape(28.dp), color = Color.Transparent, modifier = modifier.fillMaxWidth()) {
+    val reduce = LocalReduceMotion.current
+    val inf = androidx.compose.animation.core.rememberInfiniteTransition(label = "hero")
+    val shift by inf.animateFloat(0f, if (reduce) 0f else 1f,
+        androidx.compose.animation.core.infiniteRepeatable(androidx.compose.animation.core.tween(6000), androidx.compose.animation.core.RepeatMode.Reverse), label = "shift")
+    Surface(shape = RoundedCornerShape(30.dp), color = Color.Transparent,
+        modifier = modifier.fillMaxWidth().shadow(18.dp, RoundedCornerShape(30.dp), ambientColor = Primary.copy(alpha = 0.3f), spotColor = Primary.copy(alpha = 0.4f))) {
+        Box {
+        Box(Modifier.matchParentSize().drawWithCache {
+            val w = size.width; val h = size.height
+            val brush = Brush.linearGradient(HeroGradient, start = androidx.compose.ui.geometry.Offset(w * (0.0f + 0.3f * shift), 0f), end = androidx.compose.ui.geometry.Offset(w * (0.7f + 0.3f * shift), h))
+            onDrawBehind {
+                drawRect(brush)
+                drawCircle(Color.White.copy(alpha = 0.10f), radius = h * 0.55f, center = androidx.compose.ui.geometry.Offset(w * 0.92f, h * 0.05f))
+                drawCircle(Color.White.copy(alpha = 0.07f), radius = h * 0.35f, center = androidx.compose.ui.geometry.Offset(w * 0.08f, h * 1.02f))
+            }
+        })
+        // Hati kecil melayang sebagai dekorasi
+        Icon(Icons.Rounded.Favorite, null, tint = Color.White.copy(alpha = 0.16f), modifier = Modifier.align(Alignment.TopEnd).padding(top = 64.dp, end = 120.dp).size(26.dp).floating(5f, 3000))
+        Icon(Icons.Rounded.Favorite, null, tint = Color.White.copy(alpha = 0.12f), modifier = Modifier.align(Alignment.BottomStart).padding(start = 150.dp, bottom = 96.dp).size(18.dp).floating(4f, 2400, 0.5f))
         Column(
-            Modifier.background(heroBrush()).padding(18.dp),
+            Modifier.padding(18.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             Row(verticalAlignment = Alignment.Top) {
@@ -82,10 +104,11 @@ fun HomeHero(
                     Box(contentAlignment = Alignment.Center) { Icon(Icons.Rounded.NotificationsActive, "Pengingat", tint = Color.White) }
                 }
                 Spacer(Modifier.width(8.dp))
-                Surface(onClick = onEmergency, shape = RoundedCornerShape(22.dp), color = RiskRed, modifier = Modifier.height(44.dp).testTag("home_sos_button")) {
+                val beat by heartbeatScale()
+                Surface(onClick = onEmergency, shape = RoundedCornerShape(22.dp), color = Color.White, modifier = Modifier.height(44.dp).testTag("home_sos_button")) {
                     Row(Modifier.padding(horizontal = 14.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Rounded.Sos, null, tint = Color.White); Spacer(Modifier.width(4.dp))
-                        Text("Darurat", color = Color.White, style = MaterialTheme.typography.labelLarge)
+                        Icon(Icons.Rounded.Sos, null, tint = RiskRed, modifier = Modifier.graphicsLayer { scaleX = 1f + (beat - 1f) * 0.6f; scaleY = scaleX }); Spacer(Modifier.width(4.dp))
+                        Text("Darurat", color = RiskRed, style = MaterialTheme.typography.labelLarge)
                     }
                 }
             }
@@ -95,6 +118,7 @@ fun HomeHero(
                 QuickAction(Icons.Rounded.SelfImprovement, "Napas", onBreath, "qa_breath")
                 QuickAction(Icons.Rounded.MedicalServices, "P3K jantung", onEmergency, "qa_emergency")
             }
+        }
         }
     }
 }
@@ -107,7 +131,7 @@ private fun QuickAction(icon: ImageVector, label: String, onClick: () -> Unit, t
             .clickable(interactionSource = src, indication = null, role = Role.Button, onClick = onClick).padding(vertical = 4.dp).testTag(tag),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Box(Modifier.size(52.dp).background(Color.White, RoundedCornerShape(16.dp)), contentAlignment = Alignment.Center) { Icon(icon, null, tint = PrimaryDark) }
+        Box(Modifier.size(54.dp).shadow(6.dp, RoundedCornerShape(18.dp), ambientColor = PrimaryDeep, spotColor = PrimaryDeep).background(Color.White, RoundedCornerShape(18.dp)), contentAlignment = Alignment.Center) { Icon(icon, null, tint = Primary, modifier = Modifier.size(26.dp)) }
         Spacer(Modifier.height(6.dp))
         Text(label, style = MaterialTheme.typography.labelMedium, color = Color.White, maxLines = 1)
     }

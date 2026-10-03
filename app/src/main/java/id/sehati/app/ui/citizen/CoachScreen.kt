@@ -257,7 +257,7 @@ fun CoachScreen(onBack: () -> Unit, onOpenAcademy: (String) -> Unit = {}, onEmer
             }
         }
         LazyColumn(Modifier.weight(1f).padding(horizontal = 20.dp), state = listState, verticalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(vertical = 8.dp)) {
-            items(s.messages, key = { it.id }) { m -> MessageBubble(m, onOpenAcademy, onEmergency, onAsk = vm::send) }
+            items(s.messages, key = { it.id }) { m -> Box(Modifier.animateItem().staggerIn(0)) { MessageBubble(m, onOpenAcademy, onEmergency, onAsk = vm::send) } }
         }
         if (!s.busy) {
             LazyRow(Modifier.padding(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {

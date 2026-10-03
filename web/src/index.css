@@ -5,20 +5,20 @@
 
 /* ---------- Token warna (sumber: tema aplikasi Android) ---------- */
 :root {
-  --bg: #f8fafc;
+  --bg: #fff8f6;
   --surface: #ffffff;
-  --surface-2: #f1f5f9;
-  --surface-3: #e2e8f0;
-  --fg: #0f172a;
-  --fg-2: #334155;
-  --muted: #64748b;
-  --line: #e2e8f0;
-  --line-strong: #cbd5e1;
+  --surface-2: #fbf1ef;
+  --surface-3: #f2e3e1;
+  --fg: #1c1917;
+  --fg-2: #44403c;
+  --muted: #78716c;
+  --line: #f2e3e1;
+  --line-strong: #e7cfcc;
 
-  --primary: #0284c7;
-  --primary-strong: #0369a1;
-  --primary-soft: #e0f2fe;
-  --accent: #0369a1; /* teks/tautan berwarna primer */
+  --primary: #e11d48;
+  --primary-strong: #be123c;
+  --primary-soft: #ffe4e6;
+  --accent: #be123c; /* teks/tautan berwarna primer */
   --on-primary: #ffffff;
   --wellness: #10b981;
   --wellness-soft: #ecfdf5;
@@ -32,40 +32,40 @@
   --risk-orange: #ea580c;
   --risk-orange-bg: #fff7ed;
   --risk-orange-fg: #c2410c;
-  --risk-red: #dc2626;
+  --risk-red: #b91c1c;
   --risk-red-bg: #fef2f2;
   --risk-red-fg: #b91c1c;
 
   /* Skala sekuensial satu hue (biru) untuk peta panas */
-  --seq-1: #e0f2fe;
-  --seq-2: #bae6fd;
-  --seq-3: #7dd3fc;
-  --seq-4: #38bdf8;
-  --seq-5: #0284c7;
-  --seq-6: #075985;
+  --seq-1: #fff1f2;
+  --seq-2: #fecdd3;
+  --seq-3: #fda4af;
+  --seq-4: #fb7185;
+  --seq-5: #e11d48;
+  --seq-6: #881337;
 
   --shadow-sm: 0 1px 2px rgb(15 23 42 / 0.05);
-  --shadow-md: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px -8px rgb(15 23 42 / 0.12);
-  --shadow-lg: 0 24px 48px -16px rgb(15 23 42 / 0.25);
-  --ring: #0284c7;
+  --shadow-md: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px -8px rgb(136 19 55 / 0.14);
+  --shadow-lg: 0 24px 48px -16px rgb(136 19 55 / 0.25);
+  --ring: #e11d48;
   color-scheme: light;
 }
 
 .dark {
-  --bg: #0a111f;
-  --surface: #0f1a2d;
-  --surface-2: #15233b;
-  --surface-3: #1e2f4d;
-  --fg: #e8eef7;
-  --fg-2: #c3cfdf;
-  --muted: #8fa1b9;
-  --line: #1f2f4a;
-  --line-strong: #2c4063;
+  --bg: #140b0d;
+  --surface: #1c1114;
+  --surface-2: #26171b;
+  --surface-3: #331f24;
+  --fg: #f7ecec;
+  --fg-2: #dfc9cb;
+  --muted: #b39a9d;
+  --line: #3a2328;
+  --line-strong: #4d2f35;
 
-  --primary: #0ea5e9;
-  --primary-strong: #0284c7;
-  --primary-soft: rgb(14 165 233 / 0.14);
-  --accent: #7dd3fc;
+  --primary: #fb7185;
+  --primary-strong: #e11d48;
+  --primary-soft: rgb(251 113 133 / 0.14);
+  --accent: #fda4af;
   --on-primary: #ffffff;
   --wellness: #34d399;
   --wellness-soft: rgb(16 185 129 / 0.14);
@@ -83,17 +83,17 @@
   --risk-red-bg: rgb(220 38 38 / 0.16);
   --risk-red-fg: #fca5a5;
 
-  --seq-1: #12324f;
-  --seq-2: #0c4a6e;
-  --seq-3: #075985;
-  --seq-4: #0369a1;
-  --seq-5: #0ea5e9;
-  --seq-6: #7dd3fc;
+  --seq-1: #3b1720;
+  --seq-2: #5c1a2b;
+  --seq-3: #881337;
+  --seq-4: #be123c;
+  --seq-5: #fb7185;
+  --seq-6: #fecdd3;
 
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3);
   --shadow-md: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -8px rgb(0 0 0 / 0.5);
   --shadow-lg: 0 24px 48px -16px rgb(0 0 0 / 0.6);
-  --ring: #38bdf8;
+  --ring: #fb7185;
   color-scheme: dark;
 }
 

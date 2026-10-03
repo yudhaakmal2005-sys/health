@@ -8,12 +8,12 @@ export function LogoMark({ size = 36, animated = false, className = '' }: { size
       <defs>
         <linearGradient id={`g${gid}`} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#0EA5E9" />
-          <stop offset="1" stopColor="#0369A1" />
+          <stop offset="1" stopColor="#BE123C" />
         </linearGradient>
       </defs>
       <g className={animated ? 'ring-spin' : undefined}>
         <circle cx="32" cy="32" r="30" fill="none" stroke="#7DD3FC" strokeOpacity="0.55" strokeWidth="2.5" />
-        <path d="M32 2a30 30 0 0 1 26 15" fill="none" stroke="#0284C7" strokeWidth="2.5" strokeLinecap="round" />
+        <path d="M32 2a30 30 0 0 1 26 15" fill="none" stroke="#E11D48" strokeWidth="2.5" strokeLinecap="round" />
       </g>
       <circle cx="32" cy="32" r="24" fill={`url(#g${gid})`} />
       <g className={animated ? 'heartbeat' : undefined}>

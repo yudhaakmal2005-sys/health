@@ -71,7 +71,7 @@ fun HeartHomeSection(
             }
             s.pillars.forEach { p ->
                 Row(Modifier.fillMaxWidth().heightIn(min = 36.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(if (p.done) Icons.Rounded.CheckCircle else Icons.Rounded.RadioButtonUnchecked, null, tint = if (p.done) Wellness else TextMuted, modifier = Modifier.size(22.dp))
+                    Icon(if (p.done) Icons.Rounded.CheckCircle else Icons.Rounded.RadioButtonUnchecked, null, tint = if (p.done) Wellness else TextMuted, modifier = Modifier.size(24.dp).popOnChange(p.done))
                     Spacer(Modifier.width(10.dp))
                     Column(Modifier.weight(1f)) {
                         Text(p.title, style = MaterialTheme.typography.bodyMedium, color = TextPrimary, fontWeight = if (p.done) FontWeight.Medium else FontWeight.Normal)
