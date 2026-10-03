@@ -18,7 +18,7 @@ object FollowUpRules {
     fun advise(
         sys: Int?, dia: Int?, glucose: Float?, glucoseFasting: Boolean = false, cholesterol: Float?,
         previousBp: List<Pair<Int, Int>> = emptyList(),
-        t: ClinicalThresholds = ClinicalThresholds(),
+        t: ClinicalThresholds = ClinicalConfig.current,
     ): List<FollowUpAdvice> {
         val out = mutableListOf<FollowUpAdvice>()
         if (sys != null && dia != null) {

@@ -228,7 +228,7 @@ fun LogisticsTab(vm: AdminViewModel) {
 fun SettingsTab(vm: AdminViewModel) {
     val s by vm.state.collectAsStateWithLifecycle()
     val msg by vm.syncMessage.collectAsStateWithLifecycle()
-    val t = ClinicalThresholds()
+    val t = ClinicalConfig.current
     val rules = listOf(
         BloodPressureRules.interpret(120, 80).rule, GlucoseRules.interpret(100f).rule, LipidRules.interpret(150f).rule,
         AnthropometryRules.classify(170f, 65f).rule,

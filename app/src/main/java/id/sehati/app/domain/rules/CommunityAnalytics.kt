@@ -44,7 +44,7 @@ object CommunityAnalytics {
 
     fun calculate(
         citizens: List<CitizenRec>, checks: List<CheckRec>, assessments: List<AssessmentRec>,
-        followUps: List<FollowUpRec>, profiles: List<ProfileRec>, t: ClinicalThresholds = ClinicalThresholds(),
+        followUps: List<FollowUpRec>, profiles: List<ProfileRec>, t: ClinicalThresholds = ClinicalConfig.current,
     ): CommunityStats {
         val byUserChecks = checks.groupBy { it.userId }
         val screenedIds = byUserChecks.keys.intersect(citizens.map { it.id }.toSet())

@@ -14,7 +14,7 @@ data class EducationModule(
 )
 
 object Academy {
-    val categories = listOf("Hipertensi", "Diabetes", "Jantung", "Rokok", "Aktivitas", "Makanan", "Tidur", "Stres", "Obesitas")
+    val categories = listOf("Jantung", "Hipertensi", "Diabetes", "Rokok", "Aktivitas", "Makanan", "Tidur", "Stres", "Obesitas")
 
     val modules: List<EducationModule> = listOf(
         EducationModule(
@@ -32,6 +32,67 @@ object Academy {
                 QuizQuestion("Mana kebiasaan yang membantu menjaga tekanan darah?", listOf("Banyak makanan asin", "Mengurangi garam dan aktif bergerak", "Begadang rutin"), 1, "Kurangi garam dan aktif bergerak membantu menjaga tekanan darah."),
             ),
             "Hari ini, pilih satu makanan asin yang akan kamu kurangi.",
+        ),
+        EducationModule(
+            "serangan", "Jantung", "Tanda bahaya serangan jantung", 3,
+            "Mengenali tanda bahaya dan tahu langkah pertama dapat menyelamatkan nyawa.",
+            listOf(
+                "Tanda yang paling umum: nyeri, rasa tertekan, atau berat di dada selama beberapa menit; dapat menjalar ke lengan kiri, rahang, leher, atau punggung.",
+                "Tanda lain: sesak napas, keringat dingin, mual, pusing, atau lemas mendadak. Pada perempuan dan lansia, tanda bisa tidak khas.",
+                "Langkah pertama: hentikan aktivitas, dudukkan, dan segera hubungi 119 atau 112 atau bawa ke IGD terdekat. Jangan menunggu hilang sendiri, jangan berkendara sendiri.",
+                "Bila ada alat pijat jantung/AED di dekatmu dan kamu terlatih, mulai bantuan hidup dasar saat orang tidak sadar dan tidak bernapas.",
+            ),
+            listOf(
+                QuizQuestion("Apa yang dilakukan pertama saat dicurigai serangan jantung?", listOf("Menunggu sampai hilang", "Segera hubungi 119/112 atau ke IGD", "Tidur dulu"), 1, "Waktu sangat berharga; semakin cepat ditangani, semakin baik."),
+                QuizQuestion("Apakah nyeri dada selalu terasa seperti ditusuk?", listOf("Ya", "Tidak, bisa berupa rasa tertekan atau berat"), 1, "Rasa tertekan/berat juga merupakan tanda yang umum."),
+            ),
+            "Simpan nomor 119 dan 112, dan beri tahu keluargamu tanda bahaya ini.",
+        ),
+        EducationModule(
+            "faktor_pjk", "Jantung", "Faktor risiko jantung koroner", 3,
+            "Sebagian besar faktor risiko jantung koroner dapat kita ubah.",
+            listOf(
+                "Jantung koroner terjadi saat pembuluh yang memberi makan jantung menyempit karena plak lemak. Prosesnya berlangsung pelan selama bertahun-tahun.",
+                "Faktor yang dapat diubah: merokok, tekanan darah tinggi, gula darah tinggi, kolesterol tinggi, berat badan berlebih, kurang bergerak, pola makan tidak sehat, dan stres.",
+                "Faktor yang tidak dapat diubah: usia dan riwayat keluarga. Bila ada, pemeriksaan rutin menjadi lebih penting.",
+                "SEHATI menghitung berapa faktor yang terdeteksi dan menunjukkan langkah paling mudah untuk memperbaikinya. Ini bukan diagnosis.",
+            ),
+            listOf(QuizQuestion("Mana faktor risiko yang dapat diubah?", listOf("Usia", "Merokok dan tekanan darah", "Riwayat keluarga"), 1, "Merokok dan tekanan darah dapat dikendalikan.")),
+            "Buka kartu Faktor Risiko Jantung di beranda dan pilih satu faktor untuk diperbaiki.",
+        ),
+        EducationModule(
+            "kolesterol", "Jantung", "Kolesterol dan lemak darah", 2,
+            "Kolesterol tinggi tidak terasa, tetapi menambah risiko plak di pembuluh darah.",
+            listOf(
+                "Kolesterol adalah lemak darah. Kolesterol LDL ('jahat') berlebih menumpuk di dinding pembuluh darah, sedangkan HDL ('baik') membantu membersihkannya.",
+                "Kolesterol tinggi biasanya tanpa gejala sehingga hanya diketahui lewat pemeriksaan darah.",
+                "Yang membantu: kurangi gorengan, santan kental, jeroan, dan lemak jenuh; tambah sayur, buah, ikan, tempe, kacang; tetap aktif; berhenti merokok.",
+            ),
+            listOf(QuizQuestion("Bagaimana mengetahui kolesterol tinggi?", listOf("Dari rasa pusing", "Dari pemeriksaan darah", "Dari bentuk badan"), 1, "Kolesterol hanya terdeteksi lewat pemeriksaan darah.")),
+            "Ganti satu gorengan hari ini dengan versi rebus atau panggang.",
+        ),
+        EducationModule(
+            "garam", "Makanan", "Garam tersembunyi dan cara menguranginya", 2,
+            "Natrium berlebih membuat tekanan darah naik. Banyak garam ada di makanan olahan.",
+            listOf(
+                "Anjuran umum sekitar 1 sendok teh garam per hari termasuk dari makanan olahan. Satu bungkus mi instan dengan bumbu bisa menyumbang hampir seluruh batas harian.",
+                "Garam tersembunyi: kecap, saus, kerupuk, ikan asin, sosis, bumbu penyedap, dan makanan kemasan. Baca label dan pilih natrium lebih rendah.",
+                "Tips: kurangi garam pelan-pelan agar lidah terbiasa, pakai bawang, jahe, jeruk nipis, dan rempah, jangan taruh garam di meja makan.",
+            ),
+            listOf(QuizQuestion("Mana sumber garam tersembunyi?", listOf("Air putih", "Mi instan dan kecap", "Apel"), 1, "Makanan olahan dan penyedap banyak mengandung natrium.")),
+            "Hari ini, jangan tambah garam atau kecap pada makananmu.",
+        ),
+        EducationModule(
+            "mitos", "Jantung", "Mitos dan fakta tentang jantung", 2,
+            "Meluruskan anggapan yang sering salah.",
+            listOf(
+                "Mitos: serangan jantung hanya pada orang tua. Fakta: dapat terjadi lebih muda, terutama pada perokok dan penderita tekanan darah tinggi atau diabetes.",
+                "Mitos: tidak ada keluhan berarti sehat. Fakta: tekanan darah, gula darah, dan kolesterol tinggi sering tanpa gejala.",
+                "Mitos: obat boleh dihentikan bila sudah merasa baik. Fakta: jangan berhenti tanpa arahan dokter.",
+                "Mitos: herbal saja cukup. Fakta: jamu/suplemen sebaiknya didiskusikan dengan dokter, tidak menggantikan terapi.",
+            ),
+            listOf(QuizQuestion("Tekanan darah tinggi biasanya…", listOf("Selalu terasa", "Sering tanpa gejala"), 1, "Karena itu perlu diukur berkala.")),
+            "Ceritakan satu fakta jantung hari ini kepada keluarga atau tetangga.",
         ),
         EducationModule(
             "diabetes", "Diabetes", "Gula darah dan cara menjaganya", 2,
@@ -149,10 +210,12 @@ object Academy {
             when {
                 f.startsWith("bp") -> ids += "hipertensi"
                 f.startsWith("glucose") || f == "sugar" -> ids += "diabetes"
-                f == "lipid" || f == "history" || f == "family" -> ids += "jantung"
+                f == "lipid" -> ids += "kolesterol"
+                f == "history" || f == "family" -> ids += "faktor_pjk"
                 f == "smoking" -> ids += "rokok"
                 f == "inactive" || f == "sedentary" -> ids += "aktivitas"
-                f == "salt" || f == "fat" || f == "veg_fruit" -> ids += "makanan"
+                f == "salt" -> ids += "garam"
+                f == "fat" || f == "veg_fruit" -> ids += "makanan"
                 f == "sleep" -> ids += "tidur"
                 f == "stress" -> ids += "stres"
                 f == "bmi" || f == "waist" -> ids += "obesitas"

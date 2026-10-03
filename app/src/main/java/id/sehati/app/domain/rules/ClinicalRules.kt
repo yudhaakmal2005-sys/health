@@ -17,6 +17,7 @@ data class RuleInfo(
     val action: String,
 )
 
+@kotlinx.serialization.Serializable
 data class ClinicalThresholds(
     // Tekanan darah (mmHg)
     val bpLowSys: Int = 90, val bpLowDia: Int = 60,
@@ -38,7 +39,28 @@ data class ClinicalThresholds(
     val activeMinutesPerWeekGoal: Int = 150,
     val sedentaryHoursHigh: Int = 8,
 ) {
+    /** Pesan galat bila konfigurasi tidak masuk akal (urutan ambang harus naik, rentang wajar). */
+    fun validate(): String? = when {
+        bpHighSys !in 120..200 || bpHighDia !in 70..130 -> "Ambang tekanan darah tinggi di luar rentang wajar."
+        !(bpNormalSys < bpHighSys && bpHighSys < bpStage2Sys && bpStage2Sys < bpUrgentSys) -> "Ambang sistolik harus berurutan: normal < tinggi < tingkat lanjut < sangat tinggi."
+        !(bpNormalDia < bpHighDia && bpHighDia < bpStage2Dia && bpStage2Dia < bpUrgentDia) -> "Ambang diastolik harus berurutan: normal < tinggi < tingkat lanjut < sangat tinggi."
+        !(glucoseLow < gdsElevated && gdsElevated < gdsHigh) -> "Ambang gula darah sewaktu harus berurutan: rendah < di atas normal < tinggi."
+        !(gdpElevated < gdpHigh) -> "Ambang gula darah puasa harus berurutan."
+        !(cholBorderline < cholHigh) -> "Ambang kolesterol harus berurutan: batas < tinggi."
+        !(bmiUnder < bmiOver && bmiOver < bmiObese1 && bmiObese1 < bmiObese2) -> "Ambang IMT harus berurutan."
+        waistMale !in 70f..130f || waistFemale !in 60f..120f -> "Ambang lingkar perut di luar rentang wajar."
+        activeMinutesPerWeekGoal !in 30..600 -> "Target aktivitas mingguan di luar rentang wajar."
+        else -> null
+    }
+
     companion object { const val VERSION = "sehati-rules-1.0" }
+}
+
+/** Konfigurasi aktif yang dipakai semua aturan. Admin dapat mengubahnya; nilai dimuat saat aplikasi dibuka. */
+object ClinicalConfig {
+    @Volatile var current: ClinicalThresholds = ClinicalConfig.current
+    val isCustom: Boolean get() = current != ClinicalThresholds()
+    val rulesetVersion: String get() = if (isCustom) "${ClinicalThresholds.VERSION}+custom" else ClinicalThresholds.VERSION
 }
 
 enum class Severity(val rank: Int) { INFO(0), WATCH(1), ATTENTION(2), URGENT(3) }
@@ -63,7 +85,7 @@ object BloodPressureRules {
         action = "Ukur ulang dengan SOP yang benar; bila tetap tinggi, evaluasi oleh tenaga kesehatan.",
     )
 
-    fun interpret(sys: Int, dia: Int, t: ClinicalThresholds = ClinicalThresholds()): Interpretation = when {
+    fun interpret(sys: Int, dia: Int, t: ClinicalThresholds = ClinicalConfig.current): Interpretation = when {
         sys >= t.bpUrgentSys || dia >= t.bpUrgentDia -> Interpretation(
             "Sangat tinggi", Severity.URGENT,
             "Hasil pengukuran berada pada rentang sangat tinggi dan perlu dikonfirmasi serta dievaluasi tenaga kesehatan sesegera mungkin.",
@@ -96,7 +118,7 @@ object BloodPressureRules {
             "Lanjutkan pemantauan rutin.", info)
     }
 
-    fun isElevated(sys: Int, dia: Int, t: ClinicalThresholds = ClinicalThresholds()) =
+    fun isElevated(sys: Int, dia: Int, t: ClinicalThresholds = ClinicalConfig.current) =
         sys >= t.bpHighSys || dia >= t.bpHighDia
 }
 
@@ -109,7 +131,7 @@ object GlucoseRules {
         action = "Pemeriksaan lanjutan oleh tenaga kesehatan bila di atas rentang umum.",
     )
 
-    fun interpret(mgDl: Float, fasting: Boolean = false, t: ClinicalThresholds = ClinicalThresholds()): Interpretation {
+    fun interpret(mgDl: Float, fasting: Boolean = false, t: ClinicalThresholds = ClinicalConfig.current): Interpretation {
         val elevated = if (fasting) t.gdpElevated else t.gdsElevated
         val high = if (fasting) t.gdpHigh else t.gdsHigh
         val kind = if (fasting) "puasa" else "sewaktu"
@@ -142,7 +164,7 @@ object LipidRules {
         action = "Evaluasi lengkap oleh tenaga kesehatan bila tinggi.",
     )
 
-    fun interpret(mgDl: Float, t: ClinicalThresholds = ClinicalThresholds()): Interpretation = when {
+    fun interpret(mgDl: Float, t: ClinicalThresholds = ClinicalConfig.current): Interpretation = when {
         mgDl >= t.cholHigh -> Interpretation("Tinggi", Severity.ATTENTION,
             "Kolesterol total berada pada rentang tinggi dan perlu evaluasi tenaga kesehatan.",
             "Kurangi gorengan dan lemak jenuh, tambah serat.", "Rujuk ke Puskesmas untuk pemeriksaan profil lemak.", info)
@@ -171,7 +193,7 @@ object AnthropometryRules {
         return round(weightKg / (m * m) * 10f) / 10f
     }
 
-    fun classify(heightCm: Float, weightKg: Float, t: ClinicalThresholds = ClinicalThresholds()): BmiResult {
+    fun classify(heightCm: Float, weightKg: Float, t: ClinicalThresholds = ClinicalConfig.current): BmiResult {
         val v = bmi(heightCm, weightKg)
         val (cat, sev) = when {
             v <= 0f -> "Tidak valid" to Severity.INFO
@@ -184,7 +206,7 @@ object AnthropometryRules {
         return BmiResult(v, cat, sev, info)
     }
 
-    fun centralObesity(waistCm: Float, male: Boolean, t: ClinicalThresholds = ClinicalThresholds()): Boolean =
+    fun centralObesity(waistCm: Float, male: Boolean, t: ClinicalThresholds = ClinicalConfig.current): Boolean =
         waistCm > 0f && waistCm >= (if (male) t.waistMale else t.waistFemale)
 }
 

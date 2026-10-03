@@ -18,7 +18,7 @@ data class HealthProfile(
     val level: RiskLevel,
     val findings: List<Finding>,
     val plan: List<PlanItem>,
-    val rulesetVersion: String = ClinicalThresholds.VERSION,
+    val rulesetVersion: String = ClinicalConfig.rulesetVersion,
 )
 
 /** Data masukan profil; semua opsional agar profil dapat dihitung dari data parsial. */
@@ -54,11 +54,14 @@ data class HealthSnapshot(
     val sleepHours: Float = 7f,
     val stressLevel: Int = 1, // 1..5
     val redFlagSymptom: Boolean = false,
+    val knownDyslipidemia: Boolean = false,
+    /** false bila asesmen belum diisi: faktor gaya hidup/riwayat dianggap belum diketahui. */
+    val assessed: Boolean = true,
 )
 
 object RiskProfileEngine {
 
-    fun evaluate(s: HealthSnapshot, t: ClinicalThresholds = ClinicalThresholds()): HealthProfile {
+    fun evaluate(s: HealthSnapshot, t: ClinicalThresholds = ClinicalConfig.current): HealthProfile {
         val f = mutableListOf<Finding>()
         val plan = mutableListOf<PlanItem>()
 

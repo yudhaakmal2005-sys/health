@@ -13,6 +13,7 @@ enum class Permission {
     MANAGE_LOGISTICS,
     VIEW_AUDIT,
     EXPORT_REPORT,
+    CONFIGURE_RULES,           // mengubah ambang aturan (admin)
 }
 
 /** RBAC: izin ditentukan role dari sesi terautentikasi, bukan dari tombol di UI. Admin tidak punya akses data individu. */
@@ -25,7 +26,7 @@ object RbacPolicy {
         ),
         Role.ADMIN to setOf(
             Permission.ANALYTICS_AGGREGATE, Permission.FOLLOW_UP_ASSIGN, Permission.MANAGE_CADRES,
-            Permission.MANAGE_LOGISTICS, Permission.VIEW_AUDIT, Permission.EXPORT_REPORT,
+            Permission.MANAGE_LOGISTICS, Permission.VIEW_AUDIT, Permission.EXPORT_REPORT, Permission.CONFIGURE_RULES,
         ),
     )
     fun can(role: Role, p: Permission) = matrix[role]?.contains(p) == true
