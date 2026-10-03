@@ -1,0 +1,38 @@
+# Caddy: sertifikat HTTPS otomatis (Let's Encrypt) untuk {$DOMAIN}.
+{$DOMAIN} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	# API: diteruskan apa adanya (tanpa memotong /api) ke service api.
+	handle /api/* {
+		reverse_proxy api:8080 {
+			# SSE Tanya SEHATI: kirim tiap potongan segera
+			flush_interval -1
+		}
+	}
+
+	# Unduhan APK (letakkan file di deploy/download/)
+	handle_path /download/* {
+		root * /srv/download
+		header Content-Disposition attachment
+		file_server browse
+	}
+
+	# Dashboard web (hasil build web/dist), SPA fallback ke index.html
+	handle {
+		root * /srv/web
+		try_files {path} /index.html
+		file_server
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}
