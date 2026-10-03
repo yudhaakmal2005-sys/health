@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -12,7 +13,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import id.sehati.app.ui.citizen.AgendaRow
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import id.sehati.app.domain.model.Sex
@@ -52,18 +56,19 @@ fun OnboardingScreen(onBack: () -> Unit, onRegistered: () -> Unit, vm: Onboardin
 
 @Composable
 private fun ColumnScope.WelcomePage() {
-    Text("Kenali kesehatanmu.\nJaga dari sekarang.", style = MaterialTheme.typography.headlineMedium, color = TextPrimary, modifier = Modifier.staggerIn(0))
+    Text("Kenali kesehatanmu.\nJaga dari sekarang.", style = MaterialTheme.typography.headlineSmall, color = TextPrimary, fontWeight = FontWeight.SemiBold, modifier = Modifier.staggerIn(0))
     Text("Dalam beberapa langkah singkat kami akan mengenalmu, lalu menyusun gambaran kesehatan dan rencana harian yang sederhana.", style = MaterialTheme.typography.bodyLarge, color = TextSecondary, modifier = Modifier.staggerIn(1))
     listOf(
         Triple(Icons.Outlined.Quiz, "Nilai", "Jawab pertanyaan singkat tentang kebiasaan dan riwayatmu."),
         Triple(Icons.Outlined.MonitorHeart, "Pantau", "Catat aktivitas, makanan, dan hasil pemeriksaan."),
         Triple(Icons.Outlined.Groups, "Tindak lanjut", "Hasil Posyandu terhubung ke kader dan Puskesmas."),
-    ).forEachIndexed { i, (ic, t, d) ->
-        SehatiCard(Modifier.staggerIn(i + 2)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconBadge(ic, PrimaryDark, PrimaryLight)
-                Spacer(Modifier.width(12.dp))
-                Column { Text(t, style = MaterialTheme.typography.titleSmall, color = TextPrimary); Text(d, style = MaterialTheme.typography.bodyMedium, color = TextMuted) }
+    ).let { rows ->
+        SehatiCard(Modifier.staggerIn(2), contentPadding = 0) {
+            Column {
+                rows.forEachIndexed { i, (ic, t, d) ->
+                    if (i > 0) HorizontalDivider(color = SurfaceMuted, modifier = Modifier.padding(horizontal = 14.dp))
+                    AgendaRow(ic, t, d, null)
+                }
             }
         }
     }
@@ -71,14 +76,14 @@ private fun ColumnScope.WelcomePage() {
 
 @Composable
 private fun ColumnScope.WhatIsPage() {
-    Text("Sistem Edukasi & Pemantauan Kesehatan Komunitas", style = MaterialTheme.typography.titleLarge, color = PrimaryDark, modifier = Modifier.staggerIn(0))
+    Text("Sistem Edukasi & Pemantauan Kesehatan Komunitas", style = MaterialTheme.typography.titleLarge, color = TextPrimary, fontWeight = FontWeight.SemiBold, modifier = Modifier.staggerIn(0))
     Text("SEHATI membantu mencegah penyakit tidak menular seperti hipertensi dan diabetes lewat pemahaman, pemantauan, dan tindak lanjut.", style = MaterialTheme.typography.bodyLarge, color = TextSecondary, modifier = Modifier.staggerIn(1))
     SehatiCard(Modifier.staggerIn(2)) {
-        Text("Alur SEHATI", style = MaterialTheme.typography.titleSmall, color = TextPrimary)
-        Text("Warga → Kader Posyandu → Puskesmas", style = MaterialTheme.typography.titleMedium, color = PrimaryDark)
+        Text("ALUR SEHATI", style = MaterialTheme.typography.labelSmall, color = TextMuted, letterSpacing = 1.2.sp)
+        Text("Warga → Kader Posyandu → Puskesmas", style = MaterialTheme.typography.titleMedium, color = TextPrimary)
         Text("Nilai → Pahami → Pantau → Tindak → Tindak lanjut → Nilai ulang", style = MaterialTheme.typography.bodyMedium, color = TextMuted)
     }
-    InfoNote("SEHATI bukan alat diagnosis mandiri dan tidak menggantikan layanan Puskesmas atau dokter. Hasilnya adalah profil pemantauan, bukan diagnosis medis.", Modifier.staggerIn(3), icon = Icons.Outlined.Shield)
+    InfoNote("SEHATI bukan alat diagnosis mandiri dan tidak menggantikan layanan Puskesmas atau dokter. Hasilnya adalah profil pemantauan, bukan diagnosis medis.", Modifier.staggerIn(3), icon = Icons.Outlined.Shield, color = TextSecondary, bg = SurfaceMuted)
 }
 
 @Composable
@@ -90,9 +95,20 @@ private fun ColumnScope.ConsentPage(f: OnboardingForm, vm: OnboardingViewModel) 
         "Apakah dikirim ke server?" to "Secara bawaan data diproses di perangkatmu. Pengiriman ke server hanya bila kamu mengizinkan di bawah.",
         "Siapa yang dapat melihat?" to "Kamu. Kader Posyandu hanya melihat data saat melayanimu. Admin Puskesmas hanya melihat angka agregat dan daftar tindak lanjut.",
         "Bagaimana menghapusnya?" to "Kapan saja lewat Profil → Hapus data saya.",
-    ).forEachIndexed { i, (q, a) ->
-        SehatiCard(Modifier.staggerIn(i)) { Text(q, style = MaterialTheme.typography.titleSmall, color = TextPrimary); Text(a, style = MaterialTheme.typography.bodyMedium, color = TextSecondary) }
+    ).let { qa ->
+        SehatiCard(Modifier.staggerIn(0), contentPadding = 0) {
+            Column {
+                qa.forEachIndexed { i, (q, a) ->
+                    if (i > 0) HorizontalDivider(color = SurfaceMuted, modifier = Modifier.padding(horizontal = 14.dp))
+                    Column(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(q, style = MaterialTheme.typography.titleSmall, color = TextPrimary)
+                        Text(a, style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                    }
+                }
+            }
+        }
     }
+    SectionTitle("Persetujuan")
     SehatiCard {
         SwitchRow("Simpan data di perangkat (wajib)", "Diperlukan agar SEHATI dapat bekerja, termasuk saat tanpa internet.", f.consentLocal, { v -> vm.update { copy(consentLocal = v) } }, tag = "consent_local_switch")
         SwitchRow("Izinkan sinkronisasi ke server (opsional)", "Data dikirim terenkripsi ke server SEHATI agar Posyandu/Puskesmas dapat menindaklanjuti.", f.consentServer, { v -> vm.update { copy(consentServer = v) } }, tag = "consent_server_switch")
@@ -131,5 +147,5 @@ private fun ColumnScope.AccountPage(f: OnboardingForm, vm: OnboardingViewModel) 
     Text("Kamu akan mendapat SEHATI ID otomatis (contoh HM-000127). ID ini bukan pengganti NIK untuk keperluan administratif resmi.", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
     SehatiTextField(f.password, { v -> vm.update { copy(password = v) } }, "Kata sandi", password = true, tag = "onboarding_password_field", supporting = "Minimal 6 karakter")
     SehatiTextField(f.confirm, { v -> vm.update { copy(confirm = v) } }, "Ulangi kata sandi", password = true, tag = "onboarding_confirm_field")
-    InfoNote("Setelah ini kamu akan mengisi asesmen awal (±5 menit) untuk menyusun profil dan rencana kesehatanmu.", icon = Icons.Outlined.Assignment)
+    InfoNote("Setelah ini kamu akan mengisi asesmen awal (±5 menit) untuk menyusun profil dan rencana kesehatanmu.", icon = Icons.Outlined.Assignment, color = TextSecondary, bg = SurfaceMuted)
 }

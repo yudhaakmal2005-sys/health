@@ -19,7 +19,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import id.sehati.app.ui.components.*
@@ -45,31 +47,24 @@ fun KaderShell(onLogout: () -> Unit, vm: KaderViewModel = hiltViewModel()) {
     val openVisit: (String) -> Unit = { id -> visitId = id; tab = KaderTab.Exam }
 
     Column(Modifier.fillMaxSize().background2().statusBarsPadding().navigationBarsPadding().imePadding()) {
-        Surface(color = CardWhite, tonalElevation = 0.dp, shadowElevation = 1.dp) {
+        Surface(color = CardWhite, tonalElevation = 0.dp, shadowElevation = 0.dp) {
             Column(Modifier.fillMaxWidth().padding(top = 8.dp)) {
-                Row(Modifier.padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    IconBadge(Icons.Outlined.Groups, WellnessDark, WellnessLight, 40)
-                    Spacer(Modifier.width(10.dp))
+                Row(Modifier.padding(start = 16.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
-                        Text("Kader · ${s.cadre?.fullName ?: ""}", style = MaterialTheme.typography.titleSmall, color = TextPrimary, modifier = Modifier.testTag("kader_name"))
+                        Text("KADER POSYANDU", style = MaterialTheme.typography.labelSmall, color = TextMuted, letterSpacing = 1.2.sp)
+                        Text(s.cadre?.fullName ?: "", style = MaterialTheme.typography.titleSmall, color = TextPrimary, fontWeight = FontWeight.SemiBold, modifier = Modifier.testTag("kader_name"))
                         Text(s.facility, style = MaterialTheme.typography.bodySmall, color = TextMuted)
                     }
                     val pending = s.sync.pending
                     StatusPill(if (pending == 0) "Tersinkron" else "$pending menunggu", if (pending == 0) RiskGreenText else RiskYellowText, if (pending == 0) RiskGreenBg else RiskYellowBg,
                         if (pending == 0) Icons.Outlined.CloudDone else Icons.Outlined.CloudOff, Modifier.testTag("kader_sync_pill"))
-                    IconButton({ confirmLogout = true }, Modifier.size(48.dp).testTag("kader_logout_button")) { Icon(Icons.Outlined.Logout, "Keluar") }
+                    IconButton({ confirmLogout = true }, Modifier.size(48.dp).testTag("kader_logout_button")) { Icon(Icons.Outlined.Logout, "Keluar", tint = TextSecondary) }
                 }
-                Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 12.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    KaderTab.entries.forEach { t ->
-                        FilterChip(selected = tab == t, onClick = { tab = t }, label = { Text(t.label) }, leadingIcon = { Icon(t.icon, null, Modifier.size(18.dp)) },
-                            modifier = Modifier.heightIn(min = 48.dp).testTag(t.tag),
-                            colors = FilterChipDefaults.filterChipColors(selectedContainerColor = PrimaryLight, selectedLabelColor = PrimaryDark, selectedLeadingIconColor = PrimaryDark))
-                    }
-                }
+                NeutralTabStrip(KaderTab.entries, tab, { tab = it }, { it.label }, { it.tag }, Modifier.padding(top = 4.dp), icon = { it.icon })
             }
         }
         AnimatedContent(tab, Modifier.weight(1f), transitionSpec = {
-            (fadeIn(tween(Motion.Medium, 60)) + slideInVertically(tween(Motion.Medium, easing = Motion.Emphasized)) { it / 24 }) togetherWith fadeOut(tween(Motion.Short))
+            (fadeIn(tween(Motion.Medium, 60)) + slideInVertically(tween(Motion.Medium, easing = Motion.Emphasized)) { it / 48 }) togetherWith fadeOut(tween(Motion.Short))
         }, label = "kaderTab") { t ->
             when (t) {
                 KaderTab.Today -> TodayTab(vm, openVisit, onStartRegistration = { scanFirst = true; tab = KaderTab.Citizens })

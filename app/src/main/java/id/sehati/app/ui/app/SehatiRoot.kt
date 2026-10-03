@@ -42,8 +42,8 @@ fun SehatiRoot(vm: AppViewModel = hiltViewModel()) {
         AnimatedContent(
             targetState = root,
             transitionSpec = {
-                (fadeIn(tween(Motion.Medium, 80)) + scaleIn(tween(Motion.Medium, 80), initialScale = 0.98f)) togetherWith
-                    (fadeOut(tween(Motion.Short)) + scaleOut(tween(Motion.Short), targetScale = 1.01f))
+                (fadeIn(tween(Motion.Medium, 80)) + scaleIn(tween(Motion.Medium, 80), initialScale = 0.99f)) togetherWith
+                    (fadeOut(tween(Motion.Short)) + scaleOut(tween(Motion.Short), targetScale = 1f))
             },
             label = "root",
         ) { state ->
@@ -56,7 +56,7 @@ fun SehatiRoot(vm: AppViewModel = hiltViewModel()) {
                 RootState.Admin -> AdminShell(onLogout = vm::logout)
             }
         }
-        AnimatedVisibility(welcome != null, enter = fadeIn(tween(Motion.Short)), exit = fadeOut(motionTween(Motion.Long))) {
+        AnimatedVisibility(welcome != null, enter = fadeIn(tween(Motion.Short)), exit = fadeOut(motionTween(Motion.Medium))) {
             welcome?.let { w -> WelcomeOverlay(w.name, w.label, onDone = vm::dismissWelcome) }
         }
     }

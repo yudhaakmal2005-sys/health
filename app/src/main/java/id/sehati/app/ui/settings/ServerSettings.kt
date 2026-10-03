@@ -4,9 +4,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
@@ -82,8 +84,8 @@ class ServerSettingsViewModel @Inject constructor(
 fun ServerSettingsCard(modifier: Modifier = Modifier, vm: ServerSettingsViewModel = hiltViewModel()) {
     val s by vm.state.collectAsStateWithLifecycle()
     SehatiCard(modifier.testTag("server_settings_card")) {
-        Row { IconBadge(Icons.Outlined.Dns, PrimaryDark, PrimaryLight, 40); Spacer(Modifier.width(12.dp))
-            Column {
+        Row(verticalAlignment = Alignment.CenterVertically) { Icon(Icons.Outlined.Dns, null, tint = TextSecondary, modifier = Modifier.size(20.dp)); Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
                 Text("Server SEHATI", style = MaterialTheme.typography.titleSmall, color = TextPrimary)
                 Text(if (s.linked) "Akun tertaut ke server" else "Opsional: untuk berbagi data dengan kader & Puskesmas", style = MaterialTheme.typography.bodySmall, color = TextMuted)
             }
@@ -91,8 +93,8 @@ fun ServerSettingsCard(modifier: Modifier = Modifier, vm: ServerSettingsViewMode
         SehatiTextField(s.url, vm::onUrl, "Alamat server (dari Puskesmas/kader)", keyboardType = KeyboardType.Uri, tag = "server_url_field", supporting = "Contoh: https://sehati.desaku.id")
         s.message?.let { m ->
             InfoNote(m, icon = if (s.ok == true) Icons.Rounded.CheckCircle else Icons.Outlined.Info,
-                color = if (s.ok == false) RiskRedText else if (s.ok == true) RiskGreenText else PrimaryDark,
-                bg = if (s.ok == false) RiskRedBg else if (s.ok == true) RiskGreenBg else PrimaryLight)
+                color = if (s.ok == false) RiskRedText else if (s.ok == true) RiskGreenText else TextSecondary,
+                bg = if (s.ok == false) RiskRedBg else if (s.ok == true) RiskGreenBg else SurfaceMuted)
         }
         SecondaryButton("Simpan & uji koneksi", vm::saveAndTest, icon = Icons.Outlined.WifiTethering, enabled = !s.testing, tag = "server_test_button")
     }

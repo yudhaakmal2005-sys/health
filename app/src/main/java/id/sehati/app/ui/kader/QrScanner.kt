@@ -45,7 +45,7 @@ fun QrScannerPanel(onResult: (String) -> Unit, modifier: Modifier = Modifier) {
 
     if (!granted) {
         Column(modifier.fillMaxWidth().testTag("scanner_permission"), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            InfoNote("Izin kamera diperlukan untuk memindai QR warga. Kamera hanya dipakai saat layar ini terbuka. Kamu juga dapat mencari dengan SEHATI ID.", icon = Icons.Outlined.CameraAlt)
+            InfoNote("Izin kamera diperlukan untuk memindai QR warga. Kamera hanya dipakai saat layar ini terbuka. Kamu juga dapat mencari dengan SEHATI ID.", icon = Icons.Outlined.CameraAlt, color = TextSecondary, bg = SurfaceMuted)
             PrimaryButton("Izinkan kamera", { launcher.launch(Manifest.permission.CAMERA) }, tag = "grant_camera_button")
         }
         return
@@ -57,7 +57,7 @@ fun QrScannerPanel(onResult: (String) -> Unit, modifier: Modifier = Modifier) {
     DisposableEffect(Unit) { onDispose { executor.shutdown() } }
 
     AndroidView(
-        modifier = modifier.fillMaxWidth().height(300.dp).clip(RoundedCornerShape(20.dp)).testTag("scanner_preview"),
+        modifier = modifier.fillMaxWidth().height(300.dp).clip(RoundedCornerShape(16.dp)).testTag("scanner_preview"),
         factory = { c ->
             val view = PreviewView(c)
             val providerFuture = ProcessCameraProvider.getInstance(c)

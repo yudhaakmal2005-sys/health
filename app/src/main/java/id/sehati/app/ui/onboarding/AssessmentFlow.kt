@@ -5,7 +5,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
@@ -13,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -85,7 +90,7 @@ private fun ColumnScope.BodyStep(f: AssessmentForm, vm: AssessmentViewModel) {
     SehatiTextField(f.weightKg, { v -> vm.update { copy(weightKg = v.filter { it.isDigit() || it == '.' || it == ',' }.take(5)) } }, "Berat badan", keyboardType = KeyboardType.Decimal, suffix = "kg", tag = "assess_weight_field")
     SehatiTextField(f.waistCm, { v -> vm.update { copy(waistCm = v.filter { it.isDigit() || it == '.' || it == ',' }.take(5)) } }, "Lingkar perut (opsional)", keyboardType = KeyboardType.Decimal, suffix = "cm", tag = "assess_waist_field",
         supporting = "Ukur sejajar pusar, saat napas biasa.")
-    vm.bmiText(f)?.let { InfoNote(it, icon = Icons.Outlined.Calculate) }
+    vm.bmiText(f)?.let { InfoNote(it, icon = Icons.Outlined.Calculate, color = TextSecondary, bg = SurfaceMuted) }
 }
 
 @Composable
@@ -108,7 +113,7 @@ private fun ColumnScope.SmokingStep(f: AssessmentForm, vm: AssessmentViewModel) 
         FieldLabel("Jenis produk")
         ChoiceChips(PRODUCTS, f.product, { p -> vm.update { copy(product = p) } }, { it }, tagPrefix = "product")
         NumberStepper("Batang per hari", f.cigarettes, { v -> vm.update { copy(cigarettes = v) } }, 1..60, tag = "assess_cigs")
-        InfoNote("Mengurangi dan berhenti merokok membantu menurunkan risiko penyakit kardiovaskular. Kami akan membantumu bertahap.", icon = Icons.Outlined.Favorite)
+        InfoNote("Mengurangi dan berhenti merokok membantu menurunkan risiko penyakit kardiovaskular. Kami akan membantumu bertahap.", icon = Icons.Outlined.Favorite, color = TextSecondary, bg = SurfaceMuted)
     }
 }
 
@@ -152,7 +157,7 @@ private fun ColumnScope.MeasureStep(f: AssessmentForm, vm: AssessmentViewModel) 
     SehatiTextField(f.heartRate, { v -> vm.update { copy(heartRate = v.filter(Char::isDigit).take(3)) } }, "Denyut jantung (opsional)", keyboardType = KeyboardType.Number, suffix = "x/mnt", tag = "assess_hr")
     SehatiTextField(f.glucose, { v -> vm.update { copy(glucose = v.filter { it.isDigit() || it == '.' || it == ',' }.take(5)) } }, "Gula darah sewaktu (opsional)", keyboardType = KeyboardType.Decimal, suffix = "mg/dL", tag = "assess_glucose")
     SehatiTextField(f.cholesterol, { v -> vm.update { copy(cholesterol = v.filter { it.isDigit() || it == '.' || it == ',' }.take(5)) } }, "Kolesterol total (opsional)", keyboardType = KeyboardType.Decimal, suffix = "mg/dL", tag = "assess_chol")
-    SehatiCard(container = RiskRedBg, border = RiskRed.copy(alpha = 0.3f)) {
+    SehatiCard(border = RiskRed.copy(alpha = 0.3f)) {
         SwitchRow("Saat ini ada nyeri/tekanan dada, sesak berat, pingsan, atau gejala akut lain", null, f.redFlag, { v -> vm.update { copy(redFlag = v) } }, "assess_redflag")
     }
     if (f.redFlag) EmergencyBanner()
@@ -167,13 +172,18 @@ private fun ColumnScope.ResultStep(vm: AssessmentViewModel, redFlag: Boolean) {
     RiskCard(level!!, Modifier.staggerIn(0))
     SectionTitle("Yang kami temukan")
     if (findings.isEmpty()) InfoNote("Tidak ada indikator yang perlu ditindaklanjuti dari data yang tersedia. Pertahankan kebiasaan sehatmu.", icon = Icons.Rounded.CheckCircle, color = RiskGreenText, bg = RiskGreenBg)
-    findings.forEachIndexed { i, fd ->
-        val st = runCatching { Severity.valueOf(fd.severity) }.getOrDefault(Severity.WATCH).style()
-        SehatiCard(Modifier.staggerIn(i + 1)) {
-            Row(verticalAlignment = Alignment.Top) {
-                IconBadge(st.icon, st.text, st.bg, 36)
-                Spacer(Modifier.width(10.dp))
-                Column { Text(fd.title, style = MaterialTheme.typography.titleSmall, color = TextPrimary); Text(fd.detail, style = MaterialTheme.typography.bodyMedium, color = TextSecondary) }
+    if (findings.isNotEmpty()) SehatiCard(Modifier.staggerIn(1), contentPadding = 0) {
+        Column {
+            findings.forEachIndexed { i, fd ->
+                val st = runCatching { Severity.valueOf(fd.severity) }.getOrDefault(Severity.WATCH).style()
+                if (i > 0) HorizontalDivider(color = SurfaceMuted, modifier = Modifier.padding(horizontal = 14.dp))
+                Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp), verticalAlignment = Alignment.Top) {
+                    Box(Modifier.padding(top = 2.dp).size(width = 3.dp, height = 32.dp).clip(RoundedCornerShape(2.dp)).background(st.color))
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) { Text(fd.title, style = MaterialTheme.typography.titleSmall, color = TextPrimary); Text(fd.detail, style = MaterialTheme.typography.bodyMedium, color = TextSecondary) }
+                    Spacer(Modifier.width(8.dp))
+                    Icon(st.icon, null, tint = st.text, modifier = Modifier.size(18.dp))
+                }
             }
         }
     }
@@ -183,14 +193,16 @@ private fun ColumnScope.ResultStep(vm: AssessmentViewModel, redFlag: Boolean) {
 private fun ColumnScope.PlanStep(vm: AssessmentViewModel) {
     val plan by vm.plan.collectAsStateWithLifecycle()
     Text("Mulai dari yang kecil. Rencana ini akan muncul di Beranda setiap hari.", style = MaterialTheme.typography.bodyLarge, color = TextSecondary)
-    plan.forEachIndexed { i, p ->
-        SehatiCard(Modifier.staggerIn(i)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconBadge(Icons.Outlined.Flag, PrimaryDark, PrimaryLight, 36)
-                Spacer(Modifier.width(10.dp))
-                Text(p.title, style = MaterialTheme.typography.bodyLarge, color = TextPrimary)
+    if (plan.isNotEmpty()) SehatiCard(Modifier.staggerIn(0), contentPadding = 0) {
+        Column {
+            plan.forEachIndexed { i, p ->
+                if (i > 0) HorizontalDivider(color = SurfaceMuted, modifier = Modifier.padding(horizontal = 14.dp))
+                Row(Modifier.fillMaxWidth().heightIn(min = 52.dp).padding(horizontal = 14.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text("${i + 1}", style = MaterialTheme.typography.labelLarge.copy(fontFeatureSettings = "tnum"), color = TextMuted, modifier = Modifier.width(24.dp))
+                    Text(p.title, style = MaterialTheme.typography.bodyLarge, color = TextPrimary, modifier = Modifier.weight(1f))
+                }
             }
         }
     }
-    InfoNote("Rencana ini saran gaya hidup umum, bukan resep medis. Tanyakan tenaga kesehatan untuk hal yang menyangkut pengobatan.", icon = Icons.Outlined.Shield)
+    InfoNote("Rencana ini saran gaya hidup umum, bukan resep medis. Tanyakan tenaga kesehatan untuk hal yang menyangkut pengobatan.", icon = Icons.Outlined.Shield, color = TextSecondary, bg = SurfaceMuted)
 }

@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -42,29 +43,20 @@ fun AdminShell(onLogout: () -> Unit, vm: AdminViewModel = hiltViewModel()) {
     var tab by rememberSaveable { mutableStateOf(AdminTab.Overview) }
     var confirm by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxSize().background(Background).statusBarsPadding().navigationBarsPadding()) {
-        Surface(color = PrimaryDark) {
+        Surface(color = CardWhite, tonalElevation = 0.dp, shadowElevation = 0.dp) {
             Column(Modifier.fillMaxWidth().padding(top = 8.dp)) {
-                Row(Modifier.padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    IconBadge(Icons.Outlined.AdminPanelSettings, PrimaryDark, androidx.compose.ui.graphics.Color.White, 40)
-                    Spacer(Modifier.width(10.dp))
+                Row(Modifier.padding(start = 16.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
-                        Text("Admin Puskesmas", style = MaterialTheme.typography.titleSmall, color = androidx.compose.ui.graphics.Color.White, modifier = Modifier.testTag("admin_name_label"))
-                        Text(s.admin?.fullName ?: "", style = MaterialTheme.typography.bodySmall, color = PrimaryLight)
+                        Text("Admin Puskesmas", style = MaterialTheme.typography.titleSmall, color = TextPrimary, fontWeight = FontWeight.SemiBold, modifier = Modifier.testTag("admin_name_label"))
+                        Text(s.admin?.fullName ?: "", style = MaterialTheme.typography.bodySmall, color = TextMuted)
                     }
-                    IconButton({ confirm = true }, Modifier.size(48.dp).testTag("admin_logout_button")) { Icon(Icons.Outlined.Logout, "Keluar", tint = androidx.compose.ui.graphics.Color.White) }
+                    IconButton({ confirm = true }, Modifier.size(48.dp).testTag("admin_logout_button")) { Icon(Icons.Outlined.Logout, "Keluar", tint = TextSecondary) }
                 }
-                Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 12.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    AdminTab.entries.forEach { t ->
-                        FilterChip(selected = tab == t, onClick = { tab = t }, label = { Text(t.label) }, leadingIcon = { Icon(t.icon, null, Modifier.size(18.dp)) },
-                            modifier = Modifier.heightIn(min = 48.dp).testTag(t.tag),
-                            colors = FilterChipDefaults.filterChipColors(containerColor = PrimaryDark, labelColor = PrimaryLight, iconColor = PrimaryLight, selectedContainerColor = androidx.compose.ui.graphics.Color.White, selectedLabelColor = PrimaryDark, selectedLeadingIconColor = PrimaryDark),
-                            border = null)
-                    }
-                }
+                NeutralTabStrip(AdminTab.entries, tab, { tab = it }, { it.label }, { it.tag }, Modifier.padding(top = 4.dp), icon = { it.icon })
             }
         }
         AnimatedContent(tab, Modifier.weight(1f), transitionSpec = {
-            (fadeIn(tween(Motion.Medium, 60)) + slideInVertically(tween(Motion.Medium, easing = Motion.Emphasized)) { it / 24 }) togetherWith fadeOut(tween(Motion.Short))
+            (fadeIn(tween(Motion.Medium, 60)) + slideInVertically(tween(Motion.Medium, easing = Motion.Emphasized)) { it / 48 }) togetherWith fadeOut(tween(Motion.Short))
         }, label = "adminTab") { t ->
             when (t) {
                 AdminTab.Overview -> OverviewTab(vm, onOpenFollowUp = { tab = AdminTab.FollowUp }, onOpenCommunity = { tab = AdminTab.Community })

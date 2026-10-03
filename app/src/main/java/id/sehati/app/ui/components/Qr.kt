@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.Color as AColor
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,6 +19,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.google.zxing.BarcodeFormat
+import id.sehati.app.ui.theme.Hairline
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.QRCodeWriter
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
@@ -35,7 +37,7 @@ fun QrImage(content: String, modifier: Modifier = Modifier, size: Dp = 240.dp) {
     val bmp = remember(content) { qrBitmap(content).asImageBitmap() }
     Image(
         bmp, contentDescription = null,
-        modifier = modifier.size(size).clip(RoundedCornerShape(16.dp)).background(Color.White).padding(10.dp)
+        modifier = modifier.size(size).clip(RoundedCornerShape(12.dp)).background(Color.White).border(1.dp, Hairline, RoundedCornerShape(12.dp)).padding(12.dp)
             .semantics { contentDescription = "Kode QR identitas SEHATI" },
     )
 }

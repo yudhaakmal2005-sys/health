@@ -203,7 +203,7 @@ fun MetricTile(
 fun AnimatedCheck(modifier: Modifier = Modifier, size: Dp = 72.dp, color: Color = Wellness) {
     val reduce = LocalReduceMotion.current
     val t = remember { Animatable(if (reduce) 1f else 0f) }
-    val pop = remember { Animatable(if (reduce) 1f else 0.6f) }
+    val pop = remember { Animatable(if (reduce) 1f else 0.9f) }
     val popSpec = motionSpringSpec()
     LaunchedEffect(Unit) { if (!reduce) pop.animateTo(1f, popSpec) }
     LaunchedEffect(Unit) { if (!reduce) t.animateTo(1f, androidx.compose.animation.core.tween(Motion.Long, easing = Motion.Emphasized)) }
@@ -223,7 +223,7 @@ fun AnimatedCheck(modifier: Modifier = Modifier, size: Dp = 72.dp, color: Color 
 
 @Composable
 private fun motionSpringSpec(): androidx.compose.animation.core.AnimationSpec<Float> =
-    androidx.compose.animation.core.spring(dampingRatio = 0.5f, stiffness = 300f)
+    androidx.compose.animation.core.spring(dampingRatio = 0.85f, stiffness = 400f)
 
 /** Indikator langkah (wizard Posyandu / onboarding). */
 @Composable
