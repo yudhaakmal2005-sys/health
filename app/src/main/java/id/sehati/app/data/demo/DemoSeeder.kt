@@ -185,6 +185,10 @@ class DemoSeeder(
             dd.upsertHabit(HabitLogEntity("$id|$iso", id, iso, waterGlasses = 4 + (d % 4), steps = 3200 + d * 700, stepsSource = "SELF", updatedAt = now, syncStatus = "SYNCED"))
             dd.upsertSmoking(SmokingRecordEntity("$id|$iso", id, iso, if (d % 3 == 0) 2 else 0, now, syncStatus = "SYNCED"))
         }
+        // Tantangan demo: jalan sehat (otomatis) dan kurangi garam (3 hari tercatat)
+        val start = today.minusDays(5).toString()
+        dd.upsertChallenge(ChallengeEntity("$id|walk", id, "walk", start, "", null, now, "SYNCED"))
+        dd.upsertChallenge(ChallengeEntity("$id|salt", id, "salt", start, (0..2).joinToString(",") { today.minusDays(it.toLong()).toString() }, null, now, "SYNCED"))
         val items = listOf("nasi_putih" to MealCategory.BREAKFAST, "telur_rebus" to MealCategory.BREAKFAST, "tempe_goreng" to MealCategory.LUNCH, "bayam_bening" to MealCategory.LUNCH)
         items.forEachIndexed { i, (fid, meal) ->
             val f = FoodCatalog.byId(fid)!!
