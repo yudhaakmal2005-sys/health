@@ -38,6 +38,8 @@ object SyncTables {
         "smoking" to T("smoking_records", "id"),
         "education" to T("education_progress", "id"),
         "challenge" to T("challenges", "id"),
+        "medication" to T("medications", "id"),
+        "medlog" to T("medication_logs", "id"),
         "visit" to T("posyandu_visits", "id"),
         "followup" to T("follow_ups", "id"),
         "referral" to T("referrals", "id"),

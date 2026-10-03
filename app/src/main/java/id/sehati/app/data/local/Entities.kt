@@ -500,3 +500,37 @@ data class ChallengeEntity(
     val serverId: String? = null,
     val version: Int = 1,
 )
+
+/** Obat yang diresepkan tenaga kesehatan; aplikasi hanya mengingatkan, tidak memberi saran dosis. */
+@Serializable
+@Entity(tableName = "medications", indices = [Index("userId")])
+data class MedicationEntity(
+    @PrimaryKey val id: String,
+    val userId: String,
+    val name: String,
+    /** Aturan pakai sesuai resep, ditulis pengguna (mis. "1 tablet sesudah makan"). */
+    val instructions: String,
+    /** Jam minum "HH:mm" dipisah koma. */
+    val times: String,
+    val active: Boolean = true,
+    val createdAt: Long,
+    val updatedAt: Long,
+    val syncStatus: String = "LOCAL_ONLY",
+    val serverId: String? = null,
+    val version: Int = 1,
+)
+
+@Serializable
+@Entity(tableName = "medication_logs", indices = [Index("userId"), Index("medicationId")])
+data class MedicationLogEntity(
+    @PrimaryKey val id: String, // "$medicationId|$dateIso|$time"
+    val userId: String,
+    val medicationId: String,
+    val dateIso: String,
+    val time: String,
+    val takenAt: Long,
+    val updatedAt: Long,
+    val syncStatus: String = "LOCAL_ONLY",
+    val serverId: String? = null,
+    val version: Int = 1,
+)

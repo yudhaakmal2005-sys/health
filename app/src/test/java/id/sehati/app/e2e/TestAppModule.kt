@@ -42,6 +42,11 @@ object TestAppModule {
     @Provides @Singleton fun posyandu(db: SehatiDatabase, h: HealthRepository, sync: SyncRecorder, s: SessionManager, audit: AuditLogger, clock: Clock) = PosyanduRepository(db, h, sync, s, audit, clock)
     @Provides @Singleton fun thresholds(db: SehatiDatabase, settings: SettingsStore, h: HealthRepository, s: SessionManager, audit: AuditLogger, json: Json) =
         id.sehati.app.data.repository.ThresholdService(db, settings, h, s, audit, json)
+    @Provides @Singleton fun server(settings: SettingsStore, secure: SecureStore, json: Json) = id.sehati.app.data.remote.ServerClient(settings, secure, json, defaultBaseUrl = "")
+    @Provides @Singleton fun applier(db: SehatiDatabase, json: Json) = id.sehati.app.data.sync.SyncApplier(db, json)
+    @Provides @Singleton fun remote(server: id.sehati.app.data.remote.ServerClient, db: SehatiDatabase, settings: SettingsStore, applier: id.sehati.app.data.sync.SyncApplier, json: Json, clock: Clock) =
+        id.sehati.app.data.remote.RemoteAccount(server, db, settings, applier, json, clock)
+    @Provides @Singleton fun appScope() = id.sehati.app.di.AppScope()
     @Provides @Singleton fun syncEngine(db: SehatiDatabase, clock: Clock): SyncEngine {
         val loopback = LoopbackSyncTransport()
         return SyncEngine(db, { loopback }, { "device-e2e" }, clock)

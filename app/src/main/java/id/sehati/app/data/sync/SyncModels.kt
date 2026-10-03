@@ -10,6 +10,7 @@ data class SyncItemDto(
     val operation: String,
     val version: Int,
     val payload: String,
+    val subjectId: String? = null,
 )
 
 @Serializable
@@ -40,4 +41,6 @@ sealed interface TransportResult {
 interface SyncTransport {
     val label: String
     suspend fun push(request: SyncPushRequest): TransportResult
+    /** Transport nyata juga menarik data dari server setelah push. */
+    val supportsPull: Boolean get() = false
 }

@@ -15,6 +15,7 @@ class SyncController @Inject constructor(
     private val db: SehatiDatabase,
     private val engine: SyncEngine,
     private val settings: SettingsStore,
+    private val remote: id.sehati.app.data.remote.RemoteAccount,
 ) {
     val overview: Flow<SyncOverview> = combine(
         db.systemDao().observePendingCount(), db.systemDao().observeFailedCount(),
@@ -23,11 +24,16 @@ class SyncController @Inject constructor(
 
     fun recent(limit: Int = 30): Flow<List<SyncQueueEntity>> = db.systemDao().observeRecent(limit)
 
-    suspend fun syncNow(): SyncOutcome = engine.syncNow()
+    /** Kirim antrean, lalu tarik perubahan dari server (data dari kader/perangkat lain) dan konfigurasi terbaru. */
+    suspend fun syncNow(): SyncOutcome {
+        val out = engine.syncNow()
+        if (remote.isLinked) { remote.pullNow(); remote.refreshConfig() }
+        return out
+    }
 
     /** Label tujuan sinkronisasi; mode simulasi harus selalu jelas bagi pengguna. */
     suspend fun destinationLabel(): String =
-        if (BuildConfig.DEMO_MODE && settings.current().demoServerSimulation) "Simulasi demo (tidak dikirim ke server)" else "Server SEHATI"
+        if (BuildConfig.DEMO_MODE && settings.current().demoServerSimulation) "Simulasi demo (tidak dikirim ke server)" else "Server SEHATI" + (if (remote.isLinked) " · tertaut" else " · belum tertaut")
 
     fun describe(o: SyncOutcome): String = when (o) {
         is SyncOutcome.Done -> if (o.failed == 0) "${o.pushed} data tersinkron." else "${o.pushed} tersinkron, ${o.failed} gagal. Akan dicoba lagi."

@@ -45,7 +45,7 @@ class SyncEngine(
             }
             val request = SyncPushRequest(
                 deviceId(),
-                batch.map { SyncItemDto(it.id, it.entityType, it.entityId, it.operation, it.version, it.payload) },
+                batch.map { SyncItemDto(it.id, it.entityType, it.entityId, it.operation, it.version, it.payload, it.subjectId) },
             )
             when (val r = transportProvider().push(request)) {
                 is TransportResult.Offline -> { revert(batch, r.reason); return SyncOutcome.Offline(all.size - pushed) }

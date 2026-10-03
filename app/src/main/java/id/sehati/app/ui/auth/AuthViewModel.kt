@@ -14,12 +14,39 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+data class ActivationState(
+    val id: String = "", val day: String = "", val month: String = "", val year: String = "",
+    val password: String = "", val confirm: String = "", val loading: Boolean = false, val error: String? = null,
+)
+
 data class LoginState(val identifier: String = "", val password: String = "", val loading: Boolean = false, val error: String? = null)
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(private val auth: AuthRepository) : ViewModel() {
     private val _state = MutableStateFlow(LoginState())
     val state: StateFlow<LoginState> = _state.asStateFlow()
+
+    private val _activation = MutableStateFlow(ActivationState())
+    val activation: StateFlow<ActivationState> = _activation.asStateFlow()
+    fun onActivation(f: (ActivationState) -> ActivationState) = _activation.update { f(it).copy(error = null) }
+
+    /** Warga yang didaftarkan kader: aktifkan akun dengan SEHATI ID + tanggal lahir lalu buat kata sandi. */
+    fun activate() {
+        val a = _activation.value
+        val birth = runCatching { java.time.LocalDate.of(a.year.toInt(), a.month.toInt(), a.day.toInt()).toString() }.getOrNull()
+        when {
+            a.id.isBlank() -> { _activation.update { it.copy(error = "Isi SEHATI ID yang tertera di kartu/QR dari kader.") }; return }
+            birth == null -> { _activation.update { it.copy(error = "Tanggal lahir belum valid.") }; return }
+            a.password != a.confirm -> { _activation.update { it.copy(error = "Konfirmasi kata sandi belum sama.") }; return }
+        }
+        _activation.update { it.copy(loading = true) }
+        viewModelScope.launch {
+            when (val r = auth.activate(a.id, birth!!, a.password)) {
+                is AuthResult.Success -> _activation.update { ActivationState() }
+                is AuthResult.Failure -> _activation.update { it.copy(loading = false, error = r.message) }
+            }
+        }
+    }
 
     fun onIdentifier(v: String) = _state.update { it.copy(identifier = v, error = null) }
     fun onPassword(v: String) = _state.update { it.copy(password = v, error = null) }

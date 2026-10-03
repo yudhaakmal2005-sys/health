@@ -26,9 +26,9 @@ import java.util.concurrent.TimeUnit
 class SyncWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
-    private val engine: SyncEngine,
+    private val controller: id.sehati.app.data.sync.SyncController,
 ) : CoroutineWorker(context, params) {
-    override suspend fun doWork(): Result = when (val r = engine.syncNow()) {
+    override suspend fun doWork(): Result = when (val r = controller.syncNow()) {
         is SyncOutcome.Offline -> Result.retry()
         is SyncOutcome.Done -> if (r.failed > 0) Result.retry() else Result.success()
         is SyncOutcome.NotConfigured, SyncOutcome.NothingToSync -> Result.success()

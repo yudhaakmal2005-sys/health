@@ -108,6 +108,15 @@ interface DailyDao {
     @Query("SELECT * FROM challenges WHERE userId = :u") fun observeChallenges(u: String): Flow<List<ChallengeEntity>>
     @Query("SELECT * FROM challenges WHERE id = :id") suspend fun challenge(id: String): ChallengeEntity?
     @Upsert suspend fun upsertChallenge(c: ChallengeEntity)
+
+    @Query("SELECT * FROM medications WHERE userId = :u ORDER BY name") fun observeMedications(u: String): Flow<List<MedicationEntity>>
+    @Query("SELECT * FROM medications WHERE active = 1") suspend fun activeMedications(): List<MedicationEntity>
+    @Query("SELECT * FROM medications WHERE id = :id") suspend fun medication(id: String): MedicationEntity?
+    @Upsert suspend fun upsertMedication(m: MedicationEntity)
+    @Query("SELECT * FROM medication_logs WHERE userId = :u AND dateIso >= :fromIso") fun observeMedLogs(u: String, fromIso: String): Flow<List<MedicationLogEntity>>
+    @Query("SELECT * FROM medication_logs WHERE id = :id") suspend fun medLog(id: String): MedicationLogEntity?
+    @Upsert suspend fun upsertMedLog(l: MedicationLogEntity)
+    @Query("DELETE FROM medication_logs WHERE id = :id") suspend fun deleteMedLog(id: String)
 }
 
 @Dao

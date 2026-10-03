@@ -23,6 +23,9 @@ import kotlinx.serialization.json.Json
 import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 import javax.inject.Singleton
 
+/** Lingkup coroutine seumur aplikasi untuk kerja latar yang tidak boleh terputus saat layar berganti. */
+class AppScope(val scope: kotlinx.coroutines.CoroutineScope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.IO))
+
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
@@ -39,7 +42,7 @@ object AppModule {
         System.loadLibrary("sqlcipher")
         fun open(): SehatiDatabase {
             val factory = SupportOpenHelperFactory(DatabaseKeyProvider(store).passphrase())
-            val db = Room.databaseBuilder(c, SehatiDatabase::class.java, SehatiDatabase.NAME).openHelperFactory(factory).addMigrations(SehatiDatabase.MIGRATION_1_2).build()
+            val db = Room.databaseBuilder(c, SehatiDatabase::class.java, SehatiDatabase.NAME).openHelperFactory(factory).addMigrations(SehatiDatabase.MIGRATION_1_2, SehatiDatabase.MIGRATION_2_3).build()
             db.openHelper.writableDatabase // memaksa pembukaan agar kunci yang salah terdeteksi sekarang, bukan saat layar dibuka
             return db
         }
@@ -67,11 +70,25 @@ object AppModule {
     fun health(db: SehatiDatabase, sync: SyncRecorder, clock: Clock, json: Json) = HealthRepository(db, sync, clock, json)
 
     @Provides @Singleton
-    fun auth(db: SehatiDatabase, s: SessionManager, sync: SyncRecorder, audit: AuditLogger, clock: Clock) =
-        AuthRepository(db, s, sync, audit, clock)
+    fun server(settings: SettingsStore, secure: SecureStore, json: Json) = id.sehati.app.data.remote.ServerClient(settings, secure, json)
+
+    @Provides @Singleton fun applier(db: SehatiDatabase, json: Json) = SyncApplier(db, json)
 
     @Provides @Singleton
-    fun citizens(db: SehatiDatabase, sync: SyncRecorder, audit: AuditLogger, clock: Clock) = CitizenRepository(db, sync, audit, clock)
+    fun remote(server: id.sehati.app.data.remote.ServerClient, db: SehatiDatabase, settings: SettingsStore, applier: SyncApplier, json: Json, clock: Clock) =
+        id.sehati.app.data.remote.RemoteAccount(server, db, settings, applier, json, clock)
+
+    @Provides @Singleton
+    fun auth(
+        db: SehatiDatabase, s: SessionManager, sync: SyncRecorder, audit: AuditLogger, clock: Clock,
+        remote: id.sehati.app.data.remote.RemoteAccount, scope: AppScope, scheduler: id.sehati.app.data.work.WorkScheduler,
+    ) = AuthRepository(db, s, sync, audit, clock, remote, scope.scope) { scheduler.requestSync() }
+
+    @Provides @Singleton fun appScope() = AppScope()
+
+    @Provides @Singleton
+    fun citizens(db: SehatiDatabase, sync: SyncRecorder, audit: AuditLogger, clock: Clock, remote: id.sehati.app.data.remote.RemoteAccount) =
+        CitizenRepository(db, sync, audit, clock) { remote.takeReservedId(refillTo = 20) }
 
     @Provides @Singleton
     fun daily(db: SehatiDatabase, sync: SyncRecorder, clock: Clock) = DailyRepository(db, sync, clock)
@@ -81,14 +98,14 @@ object AppModule {
         PosyanduRepository(db, h, sync, s, audit, clock)
 
     @Provides @Singleton
-    fun syncEngine(db: SehatiDatabase, settings: SettingsStore, secure: SecureStore, json: Json, clock: Clock): SyncEngine {
+    fun syncEngine(db: SehatiDatabase, settings: SettingsStore, server: id.sehati.app.data.remote.ServerClient, clock: Clock): SyncEngine {
         val loopback = LoopbackSyncTransport()
         return SyncEngine(
             db = db,
             transportProvider = {
                 // Mode demo memakai server simulasi (dilabeli jelas di UI); selain itu HTTPS ke BASE_URL.
                 if (BuildConfig.DEMO_MODE && settings.current().demoServerSimulation) loopback
-                else HttpSyncTransport(BuildConfig.BASE_URL, secure, json)
+                else HttpSyncTransport(server)
             },
             deviceId = { settings.ensureDeviceId { Ids.uuid() } },
             clock = clock,

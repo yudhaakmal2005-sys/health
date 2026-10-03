@@ -24,6 +24,8 @@ class CitizenRepository(
     private val sync: SyncRecorder,
     private val audit: AuditLogger,
     private val clock: Clock,
+    /** Sumber SEHATI ID yang dipesan dari server (null → penghitung lokal). */
+    private val idSource: (suspend () -> String?)? = null,
 ) {
     private val users get() = db.userDao()
 
@@ -56,8 +58,9 @@ class CitizenRepository(
     ): UserEntity {
         require(name.isNotBlank()) { "Nama wajib diisi." }
         require(consentLocal) { "Persetujuan pencatatan data wajib dari warga." }
+        val reserved = if (consentServerSync) idSource?.invoke() else null
         return db.withTransaction {
-            val id = SehatiId.format((users.maxIdNumber() ?: 0) + 1)
+            val id = reserved ?: SehatiId.format((users.maxIdNumber() ?: 0) + 1)
             val now = clock.now()
             val hh = HouseholdEntity(Ids.uuid(), name.trim(), rw, rt, now, now)
             users.upsertHousehold(hh)

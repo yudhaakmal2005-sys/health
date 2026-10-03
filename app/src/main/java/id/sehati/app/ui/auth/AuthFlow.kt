@@ -30,7 +30,7 @@ import id.sehati.app.ui.components.*
 import id.sehati.app.ui.onboarding.OnboardingScreen
 import id.sehati.app.ui.theme.*
 
-private enum class AuthPage { Welcome, Onboarding, Login }
+private enum class AuthPage { Welcome, Onboarding, Login, Activate }
 
 @Composable
 fun AuthFlow(onAssessmentNeeded: () -> Unit) {
@@ -49,7 +49,8 @@ fun AuthFlow(onAssessmentNeeded: () -> Unit) {
         when (p) {
             AuthPage.Welcome -> WelcomeScreen(onStart = { page = AuthPage.Onboarding }, onLogin = { page = AuthPage.Login })
             AuthPage.Onboarding -> OnboardingScreen(onBack = { page = AuthPage.Welcome }, onRegistered = onAssessmentNeeded)
-            AuthPage.Login -> LoginScreen(onBack = { page = AuthPage.Welcome }, onRegister = { page = AuthPage.Onboarding })
+            AuthPage.Login -> LoginScreen(onBack = { page = AuthPage.Welcome }, onRegister = { page = AuthPage.Onboarding }, onActivate = { page = AuthPage.Activate })
+            AuthPage.Activate -> ActivateScreen(onBack = { page = AuthPage.Login })
         }
     }
 }
@@ -73,8 +74,9 @@ private fun WelcomeScreen(onStart: () -> Unit, onLogin: () -> Unit) {
 }
 
 @Composable
-private fun LoginScreen(onBack: () -> Unit, onRegister: () -> Unit, vm: AuthViewModel = hiltViewModel()) {
+private fun LoginScreen(onBack: () -> Unit, onRegister: () -> Unit, onActivate: () -> Unit, vm: AuthViewModel = hiltViewModel()) {
     val s by vm.state.collectAsStateWithLifecycle()
+    var showServer by rememberSaveable { mutableStateOf(false) }
     ScreenColumn(Modifier.statusBarsPadding().navigationBarsPadding().imePadding().testTag("login_screen")) {
         ScreenHeader("Masuk", "Gunakan SEHATI ID atau nomor kontak", onBack = onBack)
         SehatiTextField(s.identifier, vm::onIdentifier, "SEHATI ID / nomor kontak", tag = "login_id_field", enabled = !s.loading)
@@ -82,6 +84,21 @@ private fun LoginScreen(onBack: () -> Unit, onRegister: () -> Unit, vm: AuthView
         AnimatedVisibility2(s.error != null) { InfoNote(s.error.orEmpty(), color = RiskRedText, bg = RiskRedBg, icon = Icons.Rounded.ErrorOutline) }
         PrimaryButton("Masuk", vm::login, loading = s.loading, tag = "login_button")
         TextButton(onRegister, Modifier.align(Alignment.CenterHorizontally).heightIn(min = 48.dp)) { Text("Belum punya akun? Daftar") }
+        SehatiCard(onClick = onActivate, container = WellnessLight, border = Wellness.copy(alpha = 0.3f), modifier = Modifier.testTag("activate_entry")) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconBadge(Icons.Rounded.HowToReg, WellnessDark, Color.White, 40)
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("Sudah didaftarkan kader Posyandu?", style = MaterialTheme.typography.titleSmall, color = TextPrimary)
+                    Text("Aktifkan akunmu untuk melihat hasil pemeriksaan di HP sendiri.", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                }
+                Icon(Icons.Rounded.ChevronRight, null, tint = WellnessDark)
+            }
+        }
+        TextButton({ showServer = !showServer }, Modifier.align(Alignment.CenterHorizontally).heightIn(min = 48.dp).testTag("toggle_server_settings")) {
+            Icon(Icons.Rounded.Dns, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(if (showServer) "Tutup pengaturan server" else "Pengaturan server")
+        }
+        AnimatedVisibility2(showServer) { id.sehati.app.ui.settings.ServerSettingsCard() }
 
         if (BuildConfig.DEMO_MODE) {
             SehatiCard(container = SurfaceMuted) {
@@ -99,4 +116,25 @@ private fun LoginScreen(onBack: () -> Unit, onRegister: () -> Unit, vm: AuthView
 @Composable
 fun AnimatedVisibility2(visible: Boolean, content: @Composable () -> Unit) {
     androidx.compose.animation.AnimatedVisibility(visible, enter = fadeIn(tween(Motion.Short)) + androidx.compose.animation.expandVertically(), exit = fadeOut(tween(Motion.Short)) + androidx.compose.animation.shrinkVertically()) { content() }
+}
+
+@Composable
+private fun ActivateScreen(onBack: () -> Unit, vm: AuthViewModel = hiltViewModel()) {
+    val a by vm.activation.collectAsStateWithLifecycle()
+    ScreenColumn(Modifier.statusBarsPadding().navigationBarsPadding().imePadding().testTag("activate_screen")) {
+        ScreenHeader("Aktifkan akun", "Untuk warga yang didaftarkan kader", onBack = onBack)
+        InfoNote("Masukkan SEHATI ID dari kartu atau QR yang diberikan kader, lalu tanggal lahirmu sebagai verifikasi. Setelah itu buat kata sandi sendiri.", icon = Icons.Rounded.Info)
+        SehatiTextField(a.id, { v -> vm.onActivation { it.copy(id = v.uppercase()) } }, "SEHATI ID (mis. HM-000127)", tag = "activate_id_field", enabled = !a.loading)
+        FieldLabel("Tanggal lahir")
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SehatiTextField(a.day, { v -> vm.onActivation { it.copy(day = v.filter(Char::isDigit).take(2)) } }, "Tgl", Modifier.weight(1f), keyboardType = androidx.compose.ui.text.input.KeyboardType.Number, tag = "activate_day")
+            SehatiTextField(a.month, { v -> vm.onActivation { it.copy(month = v.filter(Char::isDigit).take(2)) } }, "Bln", Modifier.weight(1f), keyboardType = androidx.compose.ui.text.input.KeyboardType.Number, tag = "activate_month")
+            SehatiTextField(a.year, { v -> vm.onActivation { it.copy(year = v.filter(Char::isDigit).take(4)) } }, "Tahun", Modifier.weight(1.4f), keyboardType = androidx.compose.ui.text.input.KeyboardType.Number, tag = "activate_year")
+        }
+        SehatiTextField(a.password, { v -> vm.onActivation { it.copy(password = v) } }, "Kata sandi baru", password = true, tag = "activate_password", supporting = "Minimal 6 karakter")
+        SehatiTextField(a.confirm, { v -> vm.onActivation { it.copy(confirm = v) } }, "Ulangi kata sandi", password = true, tag = "activate_confirm")
+        AnimatedVisibility2(a.error != null) { InfoNote(a.error.orEmpty(), color = RiskRedText, bg = RiskRedBg, icon = Icons.Rounded.ErrorOutline) }
+        PrimaryButton("Aktifkan & masuk", vm::activate, loading = a.loading, tag = "activate_button")
+        Text("Memerlukan internet dan alamat server SEHATI (atur di halaman Masuk).", style = MaterialTheme.typography.bodySmall, color = TextMuted)
+    }
 }

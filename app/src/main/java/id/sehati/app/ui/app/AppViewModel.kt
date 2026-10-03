@@ -46,6 +46,7 @@ class AppViewModel @Inject constructor(
     private val seeder: DemoSeeder,
     private val settings: SettingsStore,
     private val scheduler: WorkScheduler,
+    private val remote: id.sehati.app.data.remote.RemoteAccount,
     currentUser: CurrentUser,
 ) : ViewModel() {
 
@@ -93,6 +94,8 @@ class AppViewModel @Inject constructor(
         viewModelScope.launch {
             if (BuildConfig.DEMO_MODE) { seeder.seedIfNeeded(); ready.value = true }
             sessionManager.validate()
+            runCatching { remote.applyCachedConfig() }
+            if (remote.isLinked) launch { runCatching { remote.refreshConfig(); scheduler.requestSync() } }
             scheduler.schedulePeriodicSync()
             scheduler.scheduleReminders()
         }
