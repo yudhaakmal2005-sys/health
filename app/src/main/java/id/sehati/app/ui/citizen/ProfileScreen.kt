@@ -6,7 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,7 +38,7 @@ fun ProfileScreen(
         ScreenHeader("Profil", "Identitas, privasi, dan pengaturan")
         SehatiCard(Modifier.staggerIn(0)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconBadge(Icons.Rounded.Person, PrimaryDark, PrimaryLight, 56)
+                IconBadge(Icons.Outlined.Person, PrimaryDark, PrimaryLight, 56)
                 Spacer(Modifier.width(14.dp))
                 Column(Modifier.weight(1f)) {
                     Text(u.fullName, style = MaterialTheme.typography.titleLarge, color = TextPrimary)
@@ -46,7 +46,7 @@ fun ProfileScreen(
                     Text("${AgeCalc.age(u.birthDate)} tahun · ${Sex.parse(u.sex).label} · RW ${u.rw}, ${u.village}", style = MaterialTheme.typography.bodySmall, color = TextMuted)
                 }
             }
-            SecondaryButton("Tampilkan QR", onShowQr, icon = Icons.Rounded.QrCode2, tag = "profile_show_qr_button")
+            SecondaryButton("Tampilkan QR", onShowQr, icon = Icons.Outlined.QrCode2, tag = "profile_show_qr_button")
             Text("SEHATI ID bukan pengganti NIK untuk keperluan administratif resmi.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
         }
 
@@ -54,16 +54,16 @@ fun ProfileScreen(
         SehatiCard(Modifier.testTag("sync_card")) {
             Text("Tujuan: ${s.destination}", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
             Text("Menunggu ${s.sync.pending} · gagal ${s.sync.failed} · terkirim ${s.sync.done}" + (s.sync.lastSyncAt?.let { " · terakhir ${TimeUtils.dateTime(it)}" } ?: ""), style = MaterialTheme.typography.bodySmall, color = TextMuted)
-            s.syncMessage?.let { InfoNote(it, icon = Icons.Rounded.Sync) }
-            PrimaryButton("Sinkronkan sekarang", vm::syncNow, icon = Icons.Rounded.Sync, loading = s.syncing, tag = "profile_sync_button")
-            if (!u.consentServerSync) InfoNote("Sinkronisasi ke server nonaktif. Data hanya di perangkat ini.", icon = Icons.Rounded.CloudOff, color = RiskYellowText, bg = RiskYellowBg)
+            s.syncMessage?.let { InfoNote(it, icon = Icons.Outlined.Sync) }
+            PrimaryButton("Sinkronkan sekarang", vm::syncNow, icon = Icons.Outlined.Sync, loading = s.syncing, tag = "profile_sync_button")
+            if (!u.consentServerSync) InfoNote("Sinkronisasi ke server nonaktif. Data hanya di perangkat ini.", icon = Icons.Outlined.CloudOff, color = RiskYellowText, bg = RiskYellowBg)
         }
         id.sehati.app.ui.settings.ServerSettingsCard()
 
         SectionTitle("Pengingat & obat")
         SehatiCard(Modifier.testTag("reminder_entry_card")) {
-            SecondaryButton("Atur pengingat", onOpenReminders, icon = Icons.Rounded.NotificationsActive, tag = "profile_reminders_button")
-            SecondaryButton("Obat saya", onOpenMeds, icon = Icons.Rounded.Medication, tag = "profile_meds_button")
+            SecondaryButton("Atur pengingat", onOpenReminders, icon = Icons.Outlined.NotificationsActive, tag = "profile_reminders_button")
+            SecondaryButton("Obat saya", onOpenMeds, icon = Icons.Outlined.Medication, tag = "profile_meds_button")
         }
 
         SectionTitle("Privasi & persetujuan")
@@ -87,7 +87,7 @@ fun ProfileScreen(
             SwitchRow("Jadwal Posyandu", null, n.posyandu, { vm.setNotifications(n.copy(posyandu = it)) }, "notif_posyandu")
             SwitchRow("Tindak lanjut", null, n.followUp, { vm.setNotifications(n.copy(followUp = it)) }, "notif_followup")
             if (Build.VERSION.SDK_INT >= 33) SecondaryButton("Izinkan notifikasi", { notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) })
-            SecondaryButton("Kotak masuk notifikasi", onOpenNotifications, icon = Icons.Rounded.Notifications)
+            SecondaryButton("Kotak masuk notifikasi", onOpenNotifications, icon = Icons.Outlined.Notifications)
         }
 
         if (BuildConfig.DEMO_MODE) {
@@ -99,7 +99,7 @@ fun ProfileScreen(
         }
 
         SectionTitle("Akun")
-        SecondaryButton("Keluar", { confirmLogout = true }, icon = Icons.Rounded.Logout, tag = "logout_button")
+        SecondaryButton("Keluar", { confirmLogout = true }, icon = Icons.Outlined.Logout, tag = "logout_button")
         TextButton({ confirmDelete = true }, Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("delete_data_button")) { Text("Hapus data saya", color = RiskRedText) }
         Text("SEHATI ${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.bodySmall, color = TextMuted)
         Spacer(Modifier.height(8.dp))

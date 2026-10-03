@@ -7,7 +7,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -62,8 +62,8 @@ fun MoveScreen(vm: MoveViewModel = hiltViewModel()) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text("Target ${NumberFmt.thousands(s.stepTarget)} langkah", style = MaterialTheme.typography.titleSmall, color = TextPrimary)
                     Text("Sumber langkah: ${DataSource.parse(s.stepsSource).label}", style = MaterialTheme.typography.bodySmall, color = TextMuted)
-                    StatusPill("Aktif ${TimeUtils.durationLabel(s.summary.activeMinutes)}", PrimaryDark, PrimaryLight, Icons.Rounded.DirectionsWalk)
-                    if (s.summary.passiveMinutes > 0) StatusPill("Transportasi ${TimeUtils.durationLabel(s.summary.passiveMinutes)}", TextSecondary, SurfaceMuted, Icons.Rounded.DirectionsCar)
+                    StatusPill("Aktif ${TimeUtils.durationLabel(s.summary.activeMinutes)}", PrimaryDark, PrimaryLight, Icons.Outlined.DirectionsWalk)
+                    if (s.summary.passiveMinutes > 0) StatusPill("Transportasi ${TimeUtils.durationLabel(s.summary.passiveMinutes)}", TextSecondary, SurfaceMuted, Icons.Outlined.DirectionsCar)
                 }
             }
         }
@@ -81,20 +81,20 @@ fun MoveScreen(vm: MoveViewModel = hiltViewModel()) {
                 }
                 if (!tr.gpsFixed) Text("Mencari sinyal GPS… pindah ke tempat terbuka.", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    if (tr.paused) PrimaryButton("Lanjut", vm::resume, Modifier.weight(1f), Icons.Rounded.PlayArrow, tag = "resume_session_button")
-                    else SecondaryButton("Jeda", vm::pause, Modifier.weight(1f), Icons.Rounded.Pause, tag = "pause_session_button")
-                    PrimaryButton("Selesai", vm::finishSession, Modifier.weight(1f), Icons.Rounded.Stop, tag = "finish_session_button")
+                    if (tr.paused) PrimaryButton("Lanjut", vm::resume, Modifier.weight(1f), Icons.Outlined.PlayArrow, tag = "resume_session_button")
+                    else SecondaryButton("Jeda", vm::pause, Modifier.weight(1f), Icons.Outlined.Pause, tag = "pause_session_button")
+                    PrimaryButton("Selesai", vm::finishSession, Modifier.weight(1f), Icons.Outlined.Stop, tag = "finish_session_button")
                 }
             }
         } else {
             SehatiCard(Modifier.staggerIn(1)) {
                 Text("Mulai sesi", style = MaterialTheme.typography.titleMedium, color = TextPrimary)
                 ChoiceChips(PICKABLE, kind, { kind = it }, { it.label }, tagPrefix = "kind")
-                PrimaryButton("Mulai sesi", { if (vm.trackerHasPermission()) vm.startSession(kind) else locationLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) }, icon = Icons.Rounded.PlayArrow, tag = "start_activity_button")
-                InfoNote("Lokasi hanya dibaca selama sesi berjalan dan tidak disimpan per titik. Hanya ringkasan jarak dan durasi yang tersimpan.", icon = Icons.Rounded.LocationOn)
+                PrimaryButton("Mulai sesi", { if (vm.trackerHasPermission()) vm.startSession(kind) else locationLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) }, icon = Icons.Outlined.PlayArrow, tag = "start_activity_button")
+                InfoNote("Lokasi hanya dibaca selama sesi berjalan dan tidak disimpan per titik. Hanya ringkasan jarak dan durasi yang tersimpan.", icon = Icons.Outlined.LocationOn)
             }
         }
-        notice?.let { InfoNote(it, color = RiskOrangeText, bg = RiskOrangeBg, icon = Icons.Rounded.Warning) }
+        notice?.let { InfoNote(it, color = RiskOrangeText, bg = RiskOrangeBg, icon = Icons.Outlined.Warning) }
         last?.let { r ->
             SehatiCard(Modifier.testTag("session_result_card")) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -105,14 +105,14 @@ fun MoveScreen(vm: MoveViewModel = hiltViewModel()) {
                         Text("%.2f km · %s".format(r.distanceMeters / 1000f, TimeUtils.durationLabel(((r.endAt - r.startAt) / 60000).toInt())), style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
                     }
                 }
-                if (!r.classified.isActive) InfoNote("Kecepatan rata-rata seperti kendaraan, jadi sesi ini dicatat sebagai transportasi dan tidak dihitung sebagai aktivitas fisik.", icon = Icons.Rounded.DirectionsCar)
-                else if (r.classified != r.declared) InfoNote("Jenis gerak disesuaikan menjadi ${r.classified.label.lowercase()} berdasarkan kecepatan.", icon = Icons.Rounded.Info)
+                if (!r.classified.isActive) InfoNote("Kecepatan rata-rata seperti kendaraan, jadi sesi ini dicatat sebagai transportasi dan tidak dihitung sebagai aktivitas fisik.", icon = Icons.Outlined.DirectionsCar)
+                else if (r.classified != r.declared) InfoNote("Jenis gerak disesuaikan menjadi ${r.classified.label.lowercase()} berdasarkan kecepatan.", icon = Icons.Outlined.Info)
                 TextButton3("Tutup", vm::dismissResult)
             }
         }
 
         SectionTitle("Pergerakan hari ini")
-        if (s.timeline.isEmpty()) EmptyState(Icons.Rounded.DirectionsWalk, "Belum ada pergerakan tercatat", "Mulai sesi, catat manual, atau sinkronkan Health Connect.")
+        if (s.timeline.isEmpty()) EmptyState(Icons.Outlined.DirectionsWalk, "Belum ada pergerakan tercatat", "Mulai sesi, catat manual, atau sinkronkan Health Connect.")
         else s.timeline.forEachIndexed { i, a -> TimelineRow(a, Modifier.staggerIn(i)) }
 
         SehatiCard {
@@ -126,7 +126,7 @@ fun MoveScreen(vm: MoveViewModel = hiltViewModel()) {
         SectionTitle("Health Connect")
         SehatiCard(Modifier.testTag("health_connect_card")) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconBadge(Icons.Rounded.Sync, PrimaryDark, PrimaryLight, 40)
+                IconBadge(Icons.Outlined.Sync, PrimaryDark, PrimaryLight, 40)
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text(if (s.hcLastSync > 0) "Tersambung" else "Belum tersambung", style = MaterialTheme.typography.titleSmall, color = TextPrimary)
@@ -143,7 +143,7 @@ fun MoveScreen(vm: MoveViewModel = hiltViewModel()) {
                     if (h.needsInstall) SecondaryButton("Buka Play Store", { ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.google.android.apps.healthdata"))) }, tag = "install_hc_button")
                 }
             }
-            PrimaryButton("Sinkronkan Health Connect", { vm.syncHealthConnect() }, icon = Icons.Rounded.Sync, loading = hc == HcUi.Syncing, tag = "sync_health_connect_button")
+            PrimaryButton("Sinkronkan Health Connect", { vm.syncHealthConnect() }, icon = Icons.Outlined.Sync, loading = hc == HcUi.Syncing, tag = "sync_health_connect_button")
         }
         Spacer(Modifier.height(8.dp))
     }
@@ -156,7 +156,7 @@ private fun TimelineRow(a: ActivitySessionEntity, modifier: Modifier = Modifier)
     SehatiCard(modifier, contentPadding = 12) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(TimeUtils.time(a.startAt), style = MaterialTheme.typography.titleSmall, color = TextMuted, modifier = Modifier.width(52.dp))
-            IconBadge(if (active) Icons.Rounded.DirectionsWalk else Icons.Rounded.TwoWheeler, if (active) PrimaryDark else TextSecondary, if (active) PrimaryLight else SurfaceMuted, 36)
+            IconBadge(if (active) Icons.Outlined.DirectionsWalk else Icons.Outlined.TwoWheeler, if (active) PrimaryDark else TextSecondary, if (active) PrimaryLight else SurfaceMuted, 36)
             Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
                 Text(k.label, style = MaterialTheme.typography.titleSmall, color = TextPrimary)

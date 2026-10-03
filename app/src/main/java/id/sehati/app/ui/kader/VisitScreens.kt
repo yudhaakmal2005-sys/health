@@ -2,7 +2,8 @@ package id.sehati.app.ui.kader
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,7 +32,7 @@ fun ExaminationTab(kader: KaderViewModel, selectedVisit: String?, onSelect: (Str
     if (selectedVisit == null) {
         ScreenColumn(Modifier.testTag("kader_exam_list")) {
             Text("PEMERIKSAAN", style = MaterialTheme.typography.labelLarge, color = PrimaryDark)
-            if (ks.inProgress.isEmpty()) EmptyState(Icons.Rounded.MonitorHeart, "Belum ada kunjungan berlangsung", "Daftarkan warga dari tab Warga (langkah 1), lalu lanjutkan pemeriksaan di sini.")
+            if (ks.inProgress.isEmpty()) EmptyState(Icons.Outlined.MonitorHeart, "Belum ada kunjungan berlangsung", "Daftarkan warga dari tab Warga (langkah 1), lalu lanjutkan pemeriksaan di sini.")
             ks.inProgress.forEach { r ->
                 SehatiCard(Modifier.testTag("exam_row_${r.visit.userId}"), onClick = { onSelect(r.visit.id) }) {
                     Text(r.name, style = MaterialTheme.typography.titleMedium, color = TextPrimary)
@@ -47,14 +48,14 @@ fun ExaminationTab(kader: KaderViewModel, selectedVisit: String?, onSelect: (Str
         if (ui.loading) { LoadingState(); return@ScreenColumn }
         val citizen = ui.citizen
         Row(verticalAlignment = Alignment.CenterVertically) {
-            TextButton({ onSelect(null) }, Modifier.heightIn(min = 48.dp).testTag("exam_back_button")) { Icon(Icons.Rounded.ArrowBack, null); Spacer(Modifier.width(4.dp)); Text("Daftar") }
+            TextButton({ onSelect(null) }, Modifier.heightIn(min = 48.dp).testTag("exam_back_button")) { Icon(Icons.Outlined.ArrowBack, null); Spacer(Modifier.width(4.dp)); Text("Daftar") }
         }
         SehatiCard(container = PrimaryLight, border = Primary.copy(alpha = 0.2f)) {
             Text(citizen?.fullName ?: "-", style = MaterialTheme.typography.titleLarge, color = TextPrimary)
             Text("${ui.visit?.userId} · ${citizen?.let { AgeCalc.age(it.birthDate) } ?: 0} th · RW ${citizen?.rw}", style = MaterialTheme.typography.bodyMedium, color = PrimaryDark)
         }
         StepIndicator(ui.step + 1, 5, labels = LABELS)
-        ui.error?.let { InfoNote(it, icon = Icons.Rounded.ErrorOutline, color = RiskRedText, bg = RiskRedBg, modifier = Modifier.testTag("visit_error")) }
+        ui.error?.let { InfoNote(it, icon = Icons.Outlined.ErrorOutline, color = RiskRedText, bg = RiskRedBg, modifier = Modifier.testTag("visit_error")) }
         when (ui.step) {
             0 -> MeasureStep(vm, ui)
             1 -> ReviewStep(vm, ui)
@@ -70,7 +71,7 @@ private fun ColumnScope.MeasureStep(vm: VisitViewModel, ui: VisitUi) {
     Text("LANGKAH 2 · PENGUKURAN", style = MaterialTheme.typography.labelLarge, color = PrimaryDark)
     if (ui.history.isNotEmpty()) {
         val last = ui.history.first()
-        InfoNote("Pemeriksaan terakhir ${TimeUtils.date(last.measuredAt)}: " + listOfNotNull(last.bloodPressure?.let { "TD ${it.first}/${it.second}" }, last.weightKg?.let { "BB ${it.fmt1()} kg" }, last.glucose?.let { "GDS ${it.toInt()}" }).joinToString(" · "), icon = Icons.Rounded.History)
+        InfoNote("Pemeriksaan terakhir ${TimeUtils.date(last.measuredAt)}: " + listOfNotNull(last.bloodPressure?.let { "TD ${it.first}/${it.second}" }, last.weightKg?.let { "BB ${it.fmt1()} kg" }, last.glucose?.let { "GDS ${it.toInt()}" }).joinToString(" · "), icon = Icons.Outlined.History)
     }
     FieldLabel("Antropometri")
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -79,7 +80,7 @@ private fun ColumnScope.MeasureStep(vm: VisitViewModel, ui: VisitUi) {
     }
     SehatiTextField(f.waist, { v -> vm.update { copy(waist = dec(v)) } }, "Lingkar perut", keyboardType = KeyboardType.Decimal, suffix = "cm", tag = "kader_waist")
     val bmi = vm.bmi(f)
-    if (bmi > 0f) InfoNote("IMT otomatis: ${bmi.fmt1()} · ${AnthropometryRules.classify(f.height.replace(',', '.').toFloat(), f.weight.replace(',', '.').toFloat()).category}", icon = Icons.Rounded.Calculate)
+    if (bmi > 0f) InfoNote("IMT otomatis: ${bmi.fmt1()} · ${AnthropometryRules.classify(f.height.replace(',', '.').toFloat(), f.weight.replace(',', '.').toFloat()).category}", icon = Icons.Outlined.Calculate)
     FieldLabel("Tanda vital")
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         SehatiTextField(f.systolic, { v -> vm.update { copy(systolic = v.filter(Char::isDigit).take(3)) } }, "Sistolik", Modifier.weight(1f), KeyboardType.Number, tag = "kader_sys")
@@ -95,9 +96,9 @@ private fun ColumnScope.MeasureStep(vm: VisitViewModel, ui: VisitUi) {
         SwitchRow("Manset terpasang benar?", null, f.cuffOk, { v -> vm.update { copy(cuffOk = v) } }, "quality_cuff")
         SwitchRow("Warga istirahat ≥5 menit?", null, f.rested, { v -> vm.update { copy(rested = v) } }, "quality_rested")
         SwitchRow("Perlu pengukuran ulang?", null, f.repeatNeeded, { v -> vm.update { copy(repeatNeeded = v) } }, "quality_repeat")
-        if (!f.cuffOk || !f.rested || f.repeatNeeded) InfoNote("Kualitas pengukuran belum memenuhi SOP. Ulangi pengukuran sebelum menyimpan bila memungkinkan.", icon = Icons.Rounded.Warning, color = RiskOrangeText, bg = RiskOrangeBg)
+        if (!f.cuffOk || !f.rested || f.repeatNeeded) InfoNote("Kualitas pengukuran belum memenuhi SOP. Ulangi pengukuran sebelum menyimpan bila memungkinkan.", icon = Icons.Outlined.Warning, color = RiskOrangeText, bg = RiskOrangeBg)
     }
-    vm.issues(f).filter { !it.blocking }.forEach { InfoNote(it.message, icon = Icons.Rounded.Warning, color = RiskOrangeText, bg = RiskOrangeBg) }
+    vm.issues(f).filter { !it.blocking }.forEach { InfoNote(it.message, icon = Icons.Outlined.Warning, color = RiskOrangeText, bg = RiskOrangeBg) }
     PrimaryButton("Tinjau hasil", vm::goReview, tag = "review_measurement_button")
 }
 
@@ -130,8 +131,8 @@ private fun ColumnScope.ReviewStep(vm: VisitViewModel, ui: VisitUi) {
             Text(r.interpretation, style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
         }
     }
-    InfoNote("Hasil skrining bukan diagnosis. Warga diberi tahu perlunya konfirmasi dan evaluasi tenaga kesehatan.", icon = Icons.Rounded.Shield)
-    PrimaryButton("Konfirmasi & simpan", vm::confirmAndSave, loading = ui.working, icon = Icons.Rounded.Save, tag = "save_measurement_button")
+    InfoNote("Hasil skrining bukan diagnosis. Warga diberi tahu perlunya konfirmasi dan evaluasi tenaga kesehatan.", icon = Icons.Outlined.Shield)
+    PrimaryButton("Konfirmasi & simpan", vm::confirmAndSave, loading = ui.working, icon = Icons.Outlined.Save, tag = "save_measurement_button")
     SecondaryButton("Ubah", vm::back, tag = "edit_measurement_button")
 }
 
@@ -159,7 +160,7 @@ private fun ColumnScope.EducationStep(vm: VisitViewModel, ui: VisitUi) {
             }
         }
     }
-    InfoNote("Kader tidak memberikan resep obat atau mengubah terapi. Rujuk ke tenaga kesehatan bila perlu.", icon = Icons.Rounded.Shield)
+    InfoNote("Kader tidak memberikan resep obat atau mengubah terapi. Rujuk ke tenaga kesehatan bila perlu.", icon = Icons.Outlined.Shield)
     PrimaryButton("Lanjut ke validasi", vm::saveEducation, tag = "education_next_button")
 }
 
@@ -186,7 +187,7 @@ private fun ColumnScope.ValidateStep(vm: VisitViewModel, ui: VisitUi, onFinish: 
             Checkbox(ui.confirmed, vm::setConfirmed, Modifier.testTag("kader_confirm_checkbox"))
             Text("Saya memastikan data di atas sesuai hasil pelayanan.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
         }
-        PrimaryButton("Validasi & selesaikan kunjungan", vm::validateAndSync, loading = ui.working, icon = Icons.Rounded.TaskAlt, tag = "validate_visit_button")
+        PrimaryButton("Validasi & selesaikan kunjungan", vm::validateAndSync, loading = ui.working, icon = Icons.Outlined.TaskAlt, tag = "validate_visit_button")
     } else {
         Column(Modifier.fillMaxWidth().testTag("visit_result"), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
             AnimatedCheck()
@@ -202,7 +203,7 @@ private fun ColumnScope.ValidateStep(vm: VisitViewModel, ui: VisitUi, onFinish: 
         }
         if (res.followUps.isNotEmpty()) {
             Text("Tindak lanjut dibuat", style = MaterialTheme.typography.titleSmall)
-            res.followUps.forEach { f -> InfoNote(f.reason, icon = Icons.Rounded.EventAvailable, color = RiskOrangeText, bg = RiskOrangeBg, modifier = Modifier.testTag("followup_created")) }
+            res.followUps.forEach { f -> InfoNote(f.reason, icon = Icons.Outlined.EventAvailable, color = RiskOrangeText, bg = RiskOrangeBg, modifier = Modifier.testTag("followup_created")) }
         } else InfoNote("Tidak ada tindak lanjut baru dari hasil ini.", icon = Icons.Rounded.CheckCircle, color = RiskGreenText, bg = RiskGreenBg)
         RiskCard(res.profile.level, compact = true)
         PrimaryButton("Kembali ke daftar", onFinish, tag = "visit_done_button")

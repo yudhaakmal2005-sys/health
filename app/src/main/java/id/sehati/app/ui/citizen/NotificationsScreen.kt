@@ -2,7 +2,7 @@ package id.sehati.app.ui.citizen
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.NotificationsNone
+import androidx.compose.material.icons.outlined.NotificationsNone
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -38,7 +38,7 @@ fun NotificationsScreen(onBack: () -> Unit, vm: NotificationsViewModel = hiltVie
     LaunchedEffect(items.size) { vm.markAllRead() }
     ScreenColumn(Modifier.testTag("notifications_screen")) {
         ScreenHeader("Notifikasi", "Pengingat dan tindak lanjut", onBack = onBack)
-        if (items.isEmpty()) EmptyState(Icons.Rounded.NotificationsNone, "Belum ada notifikasi", "Tindak lanjut dari kader akan muncul di sini.")
+        if (items.isEmpty()) EmptyState(Icons.Outlined.NotificationsNone, "Belum ada notifikasi", "Tindak lanjut dari kader akan muncul di sini.")
         items.forEachIndexed { i, n ->
             SehatiCard(Modifier.staggerIn(i)) {
                 Text(n.title, style = MaterialTheme.typography.titleSmall, color = TextPrimary)

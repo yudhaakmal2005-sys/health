@@ -10,7 +10,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -67,13 +67,13 @@ private fun WelcomeScreen(onStart: () -> Unit, onLogin: () -> Unit) {
             Text("Kenali kesehatanmu.\nJaga jantungmu dari sekarang.", style = MaterialTheme.typography.headlineMedium, color = TextPrimary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().staggerIn(2))
             Text("Teman pemantauan kesehatan pribadi sekaligus penghubung ke Posyandu dan Puskesmas di desamu.", style = MaterialTheme.typography.bodyLarge, color = TextSecondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().staggerIn(3))
             FlowRow(Modifier.fillMaxWidth().staggerIn(4), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf(Icons.Rounded.FavoriteBorder to "Jantung sehat", Icons.Rounded.WifiOff to "Tanpa internet", Icons.Rounded.Lock to "Data aman").forEach { (ic, t) ->
+                listOf(Icons.Outlined.FavoriteBorder to "Jantung sehat", Icons.Outlined.WifiOff to "Tanpa internet", Icons.Outlined.Lock to "Data aman").forEach { (ic, t) ->
                     StatusPill(t, PrimaryDark, PrimaryLight, ic)
                 }
             }
             Spacer(Modifier.height(8.dp))
             Column(Modifier.staggerIn(5), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                PrimaryButton("Mulai", onStart, icon = Icons.Rounded.ArrowForward, tag = "welcome_start_button")
+                PrimaryButton("Mulai", onStart, icon = Icons.Outlined.ArrowForward, tag = "welcome_start_button")
                 SecondaryButton("Sudah punya akun? Masuk", onLogin, tag = "welcome_login_button")
             }
             InfoNote("SEHATI bukan alat diagnosis dan tidak menggantikan layanan Puskesmas atau tenaga kesehatan.", Modifier.staggerIn(6))
@@ -89,22 +89,22 @@ private fun LoginScreen(onBack: () -> Unit, onRegister: () -> Unit, onActivate: 
         ScreenHeader("Masuk", "Gunakan SEHATI ID atau nomor kontak", onBack = onBack)
         SehatiTextField(s.identifier, vm::onIdentifier, "SEHATI ID / nomor kontak", tag = "login_id_field", enabled = !s.loading)
         SehatiTextField(s.password, vm::onPassword, "Kata sandi", password = true, tag = "login_password_field", enabled = !s.loading)
-        AnimatedVisibility2(s.error != null) { InfoNote(s.error.orEmpty(), color = RiskRedText, bg = RiskRedBg, icon = Icons.Rounded.ErrorOutline) }
+        AnimatedVisibility2(s.error != null) { InfoNote(s.error.orEmpty(), color = RiskRedText, bg = RiskRedBg, icon = Icons.Outlined.ErrorOutline) }
         PrimaryButton("Masuk", vm::login, loading = s.loading, tag = "login_button")
         TextButton(onRegister, Modifier.align(Alignment.CenterHorizontally).heightIn(min = 48.dp)) { Text("Belum punya akun? Daftar") }
         SehatiCard(onClick = onActivate, container = WellnessLight, border = Wellness.copy(alpha = 0.3f), modifier = Modifier.testTag("activate_entry")) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconBadge(Icons.Rounded.HowToReg, WellnessDark, Color.White, 40)
+                IconBadge(Icons.Outlined.HowToReg, WellnessDark, Color.White, 40)
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text("Sudah didaftarkan kader Posyandu?", style = MaterialTheme.typography.titleSmall, color = TextPrimary)
                     Text("Aktifkan akunmu untuk melihat hasil pemeriksaan di HP sendiri.", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                 }
-                Icon(Icons.Rounded.ChevronRight, null, tint = WellnessDark)
+                Icon(Icons.Outlined.ChevronRight, null, tint = WellnessDark)
             }
         }
         TextButton({ showServer = !showServer }, Modifier.align(Alignment.CenterHorizontally).heightIn(min = 48.dp).testTag("toggle_server_settings")) {
-            Icon(Icons.Rounded.Dns, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(if (showServer) "Tutup pengaturan server" else "Pengaturan server")
+            Icon(Icons.Outlined.Dns, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(if (showServer) "Tutup pengaturan server" else "Pengaturan server")
         }
         AnimatedVisibility2(showServer) { id.sehati.app.ui.settings.ServerSettingsCard() }
 
@@ -112,9 +112,9 @@ private fun LoginScreen(onBack: () -> Unit, onRegister: () -> Unit, onActivate: 
             SehatiCard(container = SurfaceMuted) {
                 Text("MODE DEMO", style = MaterialTheme.typography.labelMedium, color = PrimaryDark, fontWeight = FontWeight.Bold)
                 Text("Dataset sintetis (bukan data nyata). Setiap tombol tetap melalui proses login.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
-                SecondaryButton("Warga · HM-000127 (Tariska)", { vm.demoLogin(Role.WARGA) }, icon = Icons.Rounded.Person, enabled = !s.loading, tag = "demo_login_warga")
-                SecondaryButton("Kader Posyandu · KD-000001", { vm.demoLogin(Role.KADER) }, icon = Icons.Rounded.Groups, enabled = !s.loading, tag = "demo_login_kader")
-                SecondaryButton("Admin Puskesmas · AD-000001", { vm.demoLogin(Role.ADMIN) }, icon = Icons.Rounded.AdminPanelSettings, enabled = !s.loading, tag = "demo_login_admin")
+                SecondaryButton("Warga · HM-000127 (Tariska)", { vm.demoLogin(Role.WARGA) }, icon = Icons.Outlined.Person, enabled = !s.loading, tag = "demo_login_warga")
+                SecondaryButton("Kader Posyandu · KD-000001", { vm.demoLogin(Role.KADER) }, icon = Icons.Outlined.Groups, enabled = !s.loading, tag = "demo_login_kader")
+                SecondaryButton("Admin Puskesmas · AD-000001", { vm.demoLogin(Role.ADMIN) }, icon = Icons.Outlined.AdminPanelSettings, enabled = !s.loading, tag = "demo_login_admin")
                 Text("Kata sandi demo: ${id.sehati.app.data.demo.DemoSeeder.DEMO_PASSWORD}", style = MaterialTheme.typography.bodySmall, color = TextMuted)
             }
         }
@@ -131,7 +131,7 @@ private fun ActivateScreen(onBack: () -> Unit, vm: AuthViewModel = hiltViewModel
     val a by vm.activation.collectAsStateWithLifecycle()
     ScreenColumn(Modifier.statusBarsPadding().navigationBarsPadding().imePadding().testTag("activate_screen")) {
         ScreenHeader("Aktifkan akun", "Untuk warga yang didaftarkan kader", onBack = onBack)
-        InfoNote("Masukkan SEHATI ID dari kartu atau QR yang diberikan kader, lalu tanggal lahirmu sebagai verifikasi. Setelah itu buat kata sandi sendiri.", icon = Icons.Rounded.Info)
+        InfoNote("Masukkan SEHATI ID dari kartu atau QR yang diberikan kader, lalu tanggal lahirmu sebagai verifikasi. Setelah itu buat kata sandi sendiri.", icon = Icons.Outlined.Info)
         SehatiTextField(a.id, { v -> vm.onActivation { it.copy(id = v.uppercase()) } }, "SEHATI ID (mis. HM-000127)", tag = "activate_id_field", enabled = !a.loading)
         FieldLabel("Tanggal lahir")
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -141,7 +141,7 @@ private fun ActivateScreen(onBack: () -> Unit, vm: AuthViewModel = hiltViewModel
         }
         SehatiTextField(a.password, { v -> vm.onActivation { it.copy(password = v) } }, "Kata sandi baru", password = true, tag = "activate_password", supporting = "Minimal 6 karakter")
         SehatiTextField(a.confirm, { v -> vm.onActivation { it.copy(confirm = v) } }, "Ulangi kata sandi", password = true, tag = "activate_confirm")
-        AnimatedVisibility2(a.error != null) { InfoNote(a.error.orEmpty(), color = RiskRedText, bg = RiskRedBg, icon = Icons.Rounded.ErrorOutline) }
+        AnimatedVisibility2(a.error != null) { InfoNote(a.error.orEmpty(), color = RiskRedText, bg = RiskRedBg, icon = Icons.Outlined.ErrorOutline) }
         PrimaryButton("Aktifkan & masuk", vm::activate, loading = a.loading, tag = "activate_button")
         Text("Memerlukan internet dan alamat server SEHATI (atur di halaman Masuk).", style = MaterialTheme.typography.bodySmall, color = TextMuted)
     }

@@ -3,7 +3,8 @@ package id.sehati.app.ui.admin
 import android.content.Intent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,7 +30,7 @@ fun OverviewTab(vm: AdminViewModel, onOpenFollowUp: () -> Unit, onOpenCommunity:
     ScreenColumn(Modifier.testTag("admin_overview_screen")) {
         Text("OVERVIEW", style = MaterialTheme.typography.labelLarge, color = PrimaryDark)
         if (st == null) { LoadingState(); return@ScreenColumn }
-        InfoNote(CommunityAnalytics.TERMINOLOGY, icon = Icons.Rounded.Info)
+        InfoNote(CommunityAnalytics.TERMINOLOGY, icon = Icons.Outlined.Info)
 
         Text("Masalah kesehatan apa yang terlihat?", style = MaterialTheme.typography.titleMedium)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -55,7 +56,7 @@ fun OverviewTab(vm: AdminViewModel, onOpenFollowUp: () -> Unit, onOpenCommunity:
             RiskLevel.entries.forEach { lvl -> val c = lvl.style(); BarRow(lvl.label, st.riskDistribution[lvl] ?: 0, max, c.color) }
         }
         Text("Di mana masalahnya?", style = MaterialTheme.typography.titleMedium)
-        SecondaryButton("Lihat Heart Map per RW", onOpenCommunity, icon = Icons.Rounded.Map, tag = "admin_open_map")
+        SecondaryButton("Lihat Heart Map per RW", onOpenCommunity, icon = Icons.Outlined.Map, tag = "admin_open_map")
         Text("Siapa yang perlu ditindaklanjuti?", style = MaterialTheme.typography.titleMedium)
         s.registry.take(3).forEach { r -> RegistryCard(r, null, {}, {}, Modifier.testTag("overview_followup_${r.follow.userId}"), compact = true) }
         if (s.registry.isEmpty()) InfoNote("Tidak ada tindak lanjut terbuka.", icon = Icons.Rounded.CheckCircle, color = RiskGreenText, bg = RiskGreenBg)
@@ -84,10 +85,10 @@ fun CommunityTab(vm: AdminViewModel) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 pair.forEachIndexed { col, c ->
                     val (bg, fg, icon) = when (c.state) {
-                        MapState.INSUFFICIENT -> Triple(SurfaceMuted, TextSecondary, Icons.Rounded.HelpOutline)
+                        MapState.INSUFFICIENT -> Triple(SurfaceMuted, TextSecondary, Icons.Outlined.HelpOutline)
                         MapState.LOWER -> Triple(RiskGreenBg, RiskGreenText, Icons.Rounded.CheckCircle)
-                        MapState.HIGHER -> Triple(RiskOrangeBg, RiskOrangeText, Icons.Rounded.MonitorHeart)
-                        MapState.FOLLOW_UP_CONCENTRATION -> Triple(RiskRedBg, RiskRedText, Icons.Rounded.EventAvailable)
+                        MapState.HIGHER -> Triple(RiskOrangeBg, RiskOrangeText, Icons.Outlined.MonitorHeart)
+                        MapState.FOLLOW_UP_CONCENTRATION -> Triple(RiskRedBg, RiskRedText, Icons.Outlined.EventAvailable)
                     }
                     SehatiCard(Modifier.weight(1f).staggerIn(row * 2 + col).testTag("map_rw_${c.rw}"), container = bg, border = fg.copy(alpha = 0.3f), contentPadding = 14) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -104,7 +105,7 @@ fun CommunityTab(vm: AdminViewModel) {
             }
         }
         Text("Legenda: abu = data belum cukup · hijau = kebutuhan pemantauan lebih rendah · oranye = lebih tinggi · merah = konsentrasi tindak lanjut.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
-        InfoNote("Heart Map hanya menampilkan data agregat. Sel dengan kurang dari ${CommunityAnalytics.MIN_CELL} peserta diskrining ditandai \"Data belum cukup\" untuk melindungi privasi dan mencegah salah tafsir.", icon = Icons.Rounded.Shield)
+        InfoNote("Heart Map hanya menampilkan data agregat. Sel dengan kurang dari ${CommunityAnalytics.MIN_CELL} peserta diskrining ditandai \"Data belum cukup\" untuk melindungi privasi dan mencegah salah tafsir.", icon = Icons.Outlined.Shield)
     }
 }
 
@@ -115,10 +116,10 @@ fun FollowUpAdminTab(vm: AdminViewModel) {
     val activeCadres = s.cadres.filter { it.cadre.active }
     ScreenColumn(Modifier.testTag("admin_followup_screen")) {
         Text("FOLLOW-UP REQUIRED", style = MaterialTheme.typography.labelLarge, color = PrimaryDark)
-        error?.let { InfoNote(it, icon = Icons.Rounded.ErrorOutline, color = RiskRedText, bg = RiskRedBg) }
+        error?.let { InfoNote(it, icon = Icons.Outlined.ErrorOutline, color = RiskRedText, bg = RiskRedBg) }
         if (s.registry.isEmpty()) EmptyState(Icons.Rounded.CheckCircle, "Tidak ada tindak lanjut terbuka", "Semua tindak lanjut sudah selesai.")
         s.registry.forEachIndexed { i, r -> RegistryCard(r, activeCadres, { cid -> vm.assign(r.follow.id, cid) }, { vm.scheduleRecheck(r.follow.id, 7) }, Modifier.staggerIn(i).testTag("registry_${r.follow.userId}")) }
-        InfoNote("Admin tidak mengakses detail kesehatan individu. SEHATI tidak menerbitkan diagnosis; tindak lanjut bersifat administratif dan memerlukan verifikasi tenaga kesehatan.", icon = Icons.Rounded.Shield)
+        InfoNote("Admin tidak mengakses detail kesehatan individu. SEHATI tidak menerbitkan diagnosis; tindak lanjut bersifat administratif dan memerlukan verifikasi tenaga kesehatan.", icon = Icons.Outlined.Shield)
     }
 }
 
@@ -166,9 +167,9 @@ fun ReportsTab(vm: AdminViewModel) {
             Text("Ringkasan laporan", style = MaterialTheme.typography.titleSmall)
             Text(vm.reportText().orEmpty(), style = MaterialTheme.typography.bodySmall, color = TextSecondary, modifier = Modifier.testTag("report_preview"))
         }
-        PrimaryButton("Bagikan laporan (teks)", { share(vm.reportText(), "Laporan SEHATI") }, icon = Icons.Rounded.Share, tag = "share_report_button")
-        SecondaryButton("Bagikan data per RW (CSV)", { share(vm.reportCsv(), "SEHATI per RW (CSV)") }, icon = Icons.Rounded.TableChart, tag = "share_csv_button")
-        InfoNote("Laporan hanya berisi angka agregat dan terminologi \"distribusi hasil skrining\". Tidak ada nama, NIK, nomor HP, alamat, atau hasil individu.", icon = Icons.Rounded.Shield)
+        PrimaryButton("Bagikan laporan (teks)", { share(vm.reportText(), "Laporan SEHATI") }, icon = Icons.Outlined.Share, tag = "share_report_button")
+        SecondaryButton("Bagikan data per RW (CSV)", { share(vm.reportCsv(), "SEHATI per RW (CSV)") }, icon = Icons.Outlined.TableChart, tag = "share_csv_button")
+        InfoNote("Laporan hanya berisi angka agregat dan terminologi \"distribusi hasil skrining\". Tidak ada nama, NIK, nomor HP, alamat, atau hasil individu.", icon = Icons.Outlined.Shield)
     }
 }
 
@@ -180,14 +181,14 @@ fun CadresTab(vm: AdminViewModel) {
     var created by remember { mutableStateOf<String?>(null) }
     ScreenColumn(Modifier.testTag("admin_cadres_screen")) {
         Text("CADRES", style = MaterialTheme.typography.labelLarge, color = PrimaryDark)
-        error?.let { InfoNote(it, icon = Icons.Rounded.ErrorOutline, color = RiskRedText, bg = RiskRedBg) }
+        error?.let { InfoNote(it, icon = Icons.Outlined.ErrorOutline, color = RiskRedText, bg = RiskRedBg) }
         created?.let { InfoNote("Akun kader $it dibuat. Berikan ID dan kata sandi sementara kepada kader.", icon = Icons.Rounded.CheckCircle, color = RiskGreenText, bg = RiskGreenBg, modifier = Modifier.testTag("cadre_created_note")) }
-        PrimaryButton("Tambah kader", { adding = true; vm.clearError() }, icon = Icons.Rounded.PersonAdd, tag = "add_cadre_button")
-        if (s.cadres.isEmpty()) EmptyState(Icons.Rounded.Groups, "Belum ada kader", "Kader akan muncul setelah akun diprovisikan.")
+        PrimaryButton("Tambah kader", { adding = true; vm.clearError() }, icon = Icons.Outlined.PersonAdd, tag = "add_cadre_button")
+        if (s.cadres.isEmpty()) EmptyState(Icons.Outlined.Groups, "Belum ada kader", "Kader akan muncul setelah akun diprovisikan.")
         s.cadres.forEachIndexed { i, c ->
             SehatiCard(Modifier.staggerIn(i).testTag("cadre_${c.cadre.sehatiId}")) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconBadge(Icons.Rounded.Person, WellnessDark, WellnessLight, 40)
+                    IconBadge(Icons.Outlined.Person, WellnessDark, WellnessLight, 40)
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
                         Text(c.name, style = MaterialTheme.typography.titleSmall)
@@ -214,10 +215,10 @@ fun LogisticsTab(vm: AdminViewModel) {
                     Column(Modifier.weight(1f)) {
                         Text(l.name, style = MaterialTheme.typography.titleSmall)
                         Text("Stok ${l.stock} ${l.unit} · minimum ${l.minStock}", style = MaterialTheme.typography.bodySmall, color = TextMuted)
-                        if (low) StatusPill("Stok menipis", RiskOrangeText, Color.White, Icons.Rounded.Warning)
+                        if (low) StatusPill("Stok menipis", RiskOrangeText, Color.White, Icons.Outlined.Warning)
                     }
-                    IconButton({ vm.adjustStock(l.id, -1) }, Modifier.size(48.dp).testTag("stock_minus_${l.id}")) { Icon(Icons.Rounded.Remove, "Kurangi stok ${l.name}") }
-                    IconButton({ vm.adjustStock(l.id, 5) }, Modifier.size(48.dp).testTag("stock_plus_${l.id}")) { Icon(Icons.Rounded.Add, "Tambah stok ${l.name}") }
+                    IconButton({ vm.adjustStock(l.id, -1) }, Modifier.size(48.dp).testTag("stock_minus_${l.id}")) { Icon(Icons.Outlined.Remove, "Kurangi stok ${l.name}") }
+                    IconButton({ vm.adjustStock(l.id, 5) }, Modifier.size(48.dp).testTag("stock_plus_${l.id}")) { Icon(Icons.Outlined.Add, "Tambah stok ${l.name}") }
                 }
             }
         }
@@ -240,7 +241,7 @@ fun SettingsTab(vm: AdminViewModel) {
             Text("Tujuan: ${s.destination}", style = MaterialTheme.typography.bodySmall, color = TextMuted)
             KeyValueRow("Menunggu", s.sync.pending.toString()); KeyValueRow("Gagal", s.sync.failed.toString())
             msg?.let { InfoNote(it) }
-            SecondaryButton("Sinkronkan sekarang", vm::syncNow, icon = Icons.Rounded.Sync, tag = "admin_sync_button")
+            SecondaryButton("Sinkronkan sekarang", vm::syncNow, icon = Icons.Outlined.Sync, tag = "admin_sync_button")
         }
         SehatiCard {
             Text("Versi aturan klinis: ${ClinicalThresholds.VERSION}", style = MaterialTheme.typography.titleSmall)

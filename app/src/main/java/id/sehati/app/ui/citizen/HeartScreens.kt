@@ -5,7 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -20,6 +21,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import id.sehati.app.domain.content.Academy
@@ -28,21 +30,21 @@ import id.sehati.app.ui.components.*
 import id.sehati.app.ui.theme.*
 
 internal fun challengeIcon(key: String): ImageVector = when (key) {
-    "walk" -> Icons.Rounded.DirectionsWalk
-    "salt" -> Icons.Rounded.Grain
-    "smoke" -> Icons.Rounded.SmokeFree
-    "water" -> Icons.Rounded.WaterDrop
-    "veg" -> Icons.Rounded.Eco
-    else -> Icons.Rounded.Bedtime
+    "walk" -> Icons.Outlined.DirectionsWalk
+    "salt" -> Icons.Outlined.Grain
+    "smoke" -> Icons.Outlined.SmokeFree
+    "water" -> Icons.Outlined.WaterDrop
+    "veg" -> Icons.Outlined.Eco
+    else -> Icons.Outlined.Bedtime
 }
 
 private data class BandStyle(val text: Color, val bg: Color, val icon: ImageVector)
 
 private fun HeartBand.style() = when (this) {
-    HeartBand.INSUFFICIENT -> BandStyle(TextSecondary, SurfaceMuted, Icons.Rounded.HelpOutline)
+    HeartBand.INSUFFICIENT -> BandStyle(TextSecondary, SurfaceMuted, Icons.Outlined.HelpOutline)
     HeartBand.FEW -> BandStyle(RiskGreenText, RiskGreenBg, Icons.Rounded.CheckCircle)
-    HeartBand.SOME -> BandStyle(RiskYellowText, RiskYellowBg, Icons.Rounded.Info)
-    HeartBand.MANY -> BandStyle(RiskOrangeText, RiskOrangeBg, Icons.Rounded.Warning)
+    HeartBand.SOME -> BandStyle(RiskYellowText, RiskYellowBg, Icons.Outlined.Info)
+    HeartBand.MANY -> BandStyle(RiskOrangeText, RiskOrangeBg, Icons.Outlined.Warning)
 }
 
 /** Bagian "Jantung Sehat" di beranda: pilar harian, faktor risiko, tantangan, fakta hari ini. */
@@ -60,40 +62,42 @@ fun HeartHomeSection(
         Box {
         SehatiCard(Modifier.staggerIn(2).testTag("heart_pillars_card")) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                ProgressRing(done / 5f, size = 84.dp, stroke = 9.dp, color = RiskRed, track = RiskRedBg) {
-                    Text("$done/5", style = MaterialTheme.typography.titleLarge, color = TextPrimary)
+                ProgressRing(done / 5f, size = 84.dp, stroke = 8.dp, color = Primary, track = SurfaceMuted) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("$done/5", style = MaterialTheme.typography.titleLarge.copy(fontFeatureSettings = "tnum"), color = TextPrimary, fontWeight = FontWeight.ExtraBold)
+                        Text("KEBIASAAN", style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp), color = TextMuted)
+                    }
                 }
                 Spacer(Modifier.width(16.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(if (done == 5) "Luar biasa! Lima pilar tercapai." else "Lima pilar jantung sehat", style = MaterialTheme.typography.titleSmall, color = TextPrimary)
-                    Text("Kebiasaan kecil hari ini untuk menjaga jantung.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
+                    val next = s.pillars.firstOrNull { !it.done }
+                    Text(if (done == 5) "Kelima kebiasaan tercapai hari ini" else next?.title ?: "Lima kebiasaan jantung sehat", style = MaterialTheme.typography.titleMedium, color = TextPrimary)
+                    Text(if (done == 5) "Pertahankan besok." else next?.hint ?: "", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                 }
             }
             s.pillars.forEach { p ->
                 Row(Modifier.fillMaxWidth().heightIn(min = 36.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(if (p.done) Icons.Rounded.CheckCircle else Icons.Rounded.RadioButtonUnchecked, null, tint = if (p.done) Wellness else TextMuted, modifier = Modifier.size(24.dp).popOnChange(p.done))
+                    Icon(if (p.done) Icons.Rounded.CheckCircle else Icons.Outlined.RadioButtonUnchecked, null, tint = if (p.done) Wellness else BorderColor, modifier = Modifier.size(20.dp).popOnChange(p.done))
                     Spacer(Modifier.width(10.dp))
                     Column(Modifier.weight(1f)) {
                         Text(p.title, style = MaterialTheme.typography.bodyMedium, color = TextPrimary, fontWeight = if (p.done) FontWeight.Medium else FontWeight.Normal)
-                        if (!p.done) Text(p.hint, style = MaterialTheme.typography.bodySmall, color = TextMuted)
                     }
                 }
             }
         }
-        Confetti(celebrate, Modifier.matchParentSize())
         }
 
         s.report?.let { r ->
             val st = r.band.style()
             SehatiCard(Modifier.staggerIn(3).testTag("heart_risk_card"), onClick = onOpenRisk) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconBadge(Icons.Rounded.MonitorHeart, RiskRed, RiskRedBg, 44)
+                    IconBadge(Icons.Outlined.MonitorHeart, RiskRed, RiskRedBg, 44)
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
                         Text("Faktor risiko jantung koroner", style = MaterialTheme.typography.titleSmall, color = TextPrimary)
                         Text(if (r.known < 5) "${r.known} dari ${r.total} faktor sudah diketahui" else "${r.present} dari ${r.total} faktor terdeteksi", style = MaterialTheme.typography.bodySmall, color = TextMuted)
                     }
-                    Icon(Icons.Rounded.ChevronRight, null, tint = TextMuted)
+                    Icon(Icons.Outlined.ChevronRight, null, tint = TextMuted)
                 }
                 StatusPill(r.band.label, st.text, st.bg, st.icon)
                 Text(r.band.explanation, style = MaterialTheme.typography.bodySmall, color = TextSecondary)
@@ -105,7 +109,7 @@ fun HeartHomeSection(
         if (active.isEmpty()) {
             SehatiCard(Modifier.staggerIn(4).testTag("challenge_empty_card"), onClick = onOpenChallenges, container = WellnessLight, border = Wellness.copy(alpha = 0.3f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconBadge(Icons.Rounded.EmojiEvents, WellnessDark, Color.White, 44)
+                    IconBadge(Icons.Outlined.EmojiEvents, WellnessDark, Color.White, 44)
                     Spacer(Modifier.width(12.dp))
                     Column {
                         Text("Mulai tantanganmu", style = MaterialTheme.typography.titleSmall, color = TextPrimary)
@@ -117,7 +121,7 @@ fun HeartHomeSection(
 
         FactCard(s, vm::answerFact)
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Rounded.LocalFireDepartment, null, tint = RiskOrange)
+            Icon(Icons.Outlined.LocalFireDepartment, null, tint = RiskOrange)
             Spacer(Modifier.width(8.dp))
             Text("Streak ${s.progress.streakDays} hari · ${s.progress.learningPoints} poin · ${s.progress.badges.count { it.earned }} lencana", style = MaterialTheme.typography.titleSmall, color = TextPrimary, modifier = Modifier.weight(1f))
             TextButton(onOpenChallenges, Modifier.heightIn(min = 48.dp).testTag("open_challenges")) { Text("Lihat", color = PrimaryDark) }
@@ -131,7 +135,7 @@ private fun FactCard(s: HeartUiState, onAnswer: () -> Unit) {
     val answered = choice != null
     SehatiCard(Modifier.testTag("daily_fact_card"), container = PrimaryLight, border = Primary.copy(alpha = 0.25f)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconBadge(Icons.Rounded.Lightbulb, Color.White, Primary, 36)
+            IconBadge(Icons.Outlined.Lightbulb, Color.White, Primary, 36)
             Spacer(Modifier.width(10.dp))
             Text("Fakta atau mitos?", style = MaterialTheme.typography.titleSmall, color = PrimaryDark)
         }
@@ -169,7 +173,7 @@ internal fun ChallengeCard(p: ChallengeProgress, onCheckIn: (String) -> Unit, mo
         }
         BarRow("Hari tercapai", p.done, p.def.target, if (p.status == ChallengeStatus.COMPLETED) Wellness else Primary, valueLabel = "${p.done}/${p.def.target}")
         when (p.status) {
-            ChallengeStatus.COMPLETED -> StatusPill("Selesai! Hebat 🎉", RiskGreenText, RiskGreenBg, Icons.Rounded.EmojiEvents)
+            ChallengeStatus.COMPLETED -> StatusPill("Selesai! Hebat 🎉", RiskGreenText, RiskGreenBg, Icons.Outlined.EmojiEvents)
             ChallengeStatus.EXPIRED -> Text("Waktu habis. Kamu bisa mencoba lagi.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
             ChallengeStatus.ACTIVE -> Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Sisa ${p.daysLeft} hari", style = MaterialTheme.typography.bodySmall, color = TextMuted, modifier = Modifier.weight(1f))
@@ -216,7 +220,7 @@ fun ChallengesScreen(onBack: () -> Unit, onOpenAcademy: (String) -> Unit, vm: He
             SehatiCard(Modifier.testTag("badge_${b.id}").semantics { contentDescription = "${b.title}, ${if (b.earned) "diraih" else "belum diraih"}" }, container = if (b.earned) WellnessLight else SurfaceMuted) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(Modifier.size(44.dp).background(if (b.earned) Wellness else BorderColor, CircleShape), contentAlignment = Alignment.Center) {
-                        Icon(if (b.earned) Icons.Rounded.EmojiEvents else Icons.Rounded.Lock, null, tint = Color.White)
+                        Icon(if (b.earned) Icons.Outlined.EmojiEvents else Icons.Outlined.Lock, null, tint = Color.White)
                     }
                     Spacer(Modifier.width(12.dp))
                     Column {
@@ -249,14 +253,14 @@ fun HeartRiskScreen(onBack: () -> Unit, onOpenAcademy: (String) -> Unit, vm: Hea
             }
             Text(r.band.explanation, style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
         }
-        if (r.ageFactor) InfoNote("Usiamu termasuk kelompok yang risikonya bertambah. Faktor ini tidak dapat diubah, tetapi pemeriksaan rutin membantu.", icon = Icons.Rounded.Cake)
-        InfoNote(HeartRisk.DISCLAIMER, icon = Icons.Rounded.Info)
+        if (r.ageFactor) InfoNote("Usiamu termasuk kelompok yang risikonya bertambah. Faktor ini tidak dapat diubah, tetapi pemeriksaan rutin membantu.", icon = Icons.Outlined.Cake)
+        InfoNote(HeartRisk.DISCLAIMER, icon = Icons.Outlined.Info)
         SectionTitle("Faktor yang dinilai")
         r.factors.forEachIndexed { i, f ->
             val (c, bg, ic) = when (f.status) {
-                FactorStatus.PRESENT -> Triple(RiskOrangeText, RiskOrangeBg, Icons.Rounded.Warning)
+                FactorStatus.PRESENT -> Triple(RiskOrangeText, RiskOrangeBg, Icons.Outlined.Warning)
                 FactorStatus.ABSENT -> Triple(RiskGreenText, RiskGreenBg, Icons.Rounded.CheckCircle)
-                FactorStatus.UNKNOWN -> Triple(TextSecondary, SurfaceMuted, Icons.Rounded.HelpOutline)
+                FactorStatus.UNKNOWN -> Triple(TextSecondary, SurfaceMuted, Icons.Outlined.HelpOutline)
             }
             SehatiCard(Modifier.staggerIn(i).testTag("factor_${f.id}")) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -268,7 +272,7 @@ fun HeartRiskScreen(onBack: () -> Unit, onOpenAcademy: (String) -> Unit, vm: Hea
                 f.moduleId?.let { m -> Academy.byId(m)?.let { mod -> TextButton({ onOpenAcademy(m) }, Modifier.heightIn(min = 48.dp)) { Text("Pelajari: ${mod.title}", color = PrimaryDark) } } }
             }
         }
-        InfoNote("Bila ada nyeri dada, sesak berat, atau keringat dingin mendadak, segera hubungi ${id.sehati.app.domain.content.HeartKnowledge.EMERGENCY_NUMBERS}.", icon = Icons.Rounded.LocalHospital, color = RiskRedText, bg = RiskRedBg)
+        InfoNote("Bila ada nyeri dada, sesak berat, atau keringat dingin mendadak, segera hubungi ${id.sehati.app.domain.content.HeartKnowledge.EMERGENCY_NUMBERS}.", icon = Icons.Outlined.LocalHospital, color = RiskRedText, bg = RiskRedBg)
         Spacer(Modifier.height(8.dp))
     }
 }

@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.foundation.border
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -64,112 +66,105 @@ class HomeExtrasViewModel @Inject constructor(current: CurrentUser, remote: Remo
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HomeExtrasState())
 }
 
-/** Kepala beranda: sapaan, tanggal, tombol darurat, dan aksi cepat. */
+/** Kepala beranda: tanggal, sapaan, pengingat, tombol darurat yang tenang, dan aksi cepat bergaris tipis. */
 @Composable
 fun HomeHero(
     greeting: String, name: String, onEmergency: () -> Unit, onAsk: () -> Unit, onMeds: () -> Unit, onBreath: () -> Unit, onReminders: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val date = remember { LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, d MMMM", Locale("id"))) }
-    val reduce = LocalReduceMotion.current
-    val inf = androidx.compose.animation.core.rememberInfiniteTransition(label = "hero")
-    val shift by inf.animateFloat(0f, if (reduce) 0f else 1f,
-        androidx.compose.animation.core.infiniteRepeatable(androidx.compose.animation.core.tween(6000), androidx.compose.animation.core.RepeatMode.Reverse), label = "shift")
-    Surface(shape = RoundedCornerShape(30.dp), color = Color.Transparent,
-        modifier = modifier.fillMaxWidth().shadow(18.dp, RoundedCornerShape(30.dp), ambientColor = Primary.copy(alpha = 0.3f), spotColor = Primary.copy(alpha = 0.4f))) {
-        Box {
-        Box(Modifier.matchParentSize().drawWithCache {
-            val w = size.width; val h = size.height
-            val brush = Brush.linearGradient(HeroGradient, start = androidx.compose.ui.geometry.Offset(w * (0.0f + 0.3f * shift), 0f), end = androidx.compose.ui.geometry.Offset(w * (0.7f + 0.3f * shift), h))
-            onDrawBehind {
-                drawRect(brush)
-                drawCircle(Color.White.copy(alpha = 0.10f), radius = h * 0.55f, center = androidx.compose.ui.geometry.Offset(w * 0.92f, h * 0.05f))
-                drawCircle(Color.White.copy(alpha = 0.07f), radius = h * 0.35f, center = androidx.compose.ui.geometry.Offset(w * 0.08f, h * 1.02f))
-            }
-        })
-        // Hati kecil melayang sebagai dekorasi
-        Icon(Icons.Rounded.Favorite, null, tint = Color.White.copy(alpha = 0.16f), modifier = Modifier.align(Alignment.TopEnd).padding(top = 64.dp, end = 120.dp).size(26.dp).floating(5f, 3000))
-        Icon(Icons.Rounded.Favorite, null, tint = Color.White.copy(alpha = 0.12f), modifier = Modifier.align(Alignment.BottomStart).padding(start = 150.dp, bottom = 96.dp).size(18.dp).floating(4f, 2400, 0.5f))
-        Column(
-            Modifier.padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
-        ) {
-            Row(verticalAlignment = Alignment.Top) {
-                Column(Modifier.weight(1f)) {
-                    Text("$greeting,", style = MaterialTheme.typography.bodyLarge, color = Color.White.copy(alpha = 0.85f))
-                    Text(name, style = MaterialTheme.typography.headlineMedium, color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.testTag("home_greeting_name"))
-                    Text(date.replaceFirstChar { it.uppercase() }, style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.8f))
-                }
-                Surface(onClick = onReminders, shape = CircleShape, color = Color.White.copy(alpha = 0.18f), modifier = Modifier.size(44.dp).testTag("home_reminders_button")) {
-                    Box(contentAlignment = Alignment.Center) { Icon(Icons.Rounded.NotificationsActive, "Pengingat", tint = Color.White) }
-                }
-                Spacer(Modifier.width(8.dp))
-                val beat by heartbeatScale()
-                Surface(onClick = onEmergency, shape = RoundedCornerShape(22.dp), color = Color.White, modifier = Modifier.height(44.dp).testTag("home_sos_button")) {
-                    Row(Modifier.padding(horizontal = 14.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Rounded.Sos, null, tint = RiskRed, modifier = Modifier.graphicsLayer { scaleX = 1f + (beat - 1f) * 0.6f; scaleY = scaleX }); Spacer(Modifier.width(4.dp))
-                        Text("Darurat", color = RiskRed, style = MaterialTheme.typography.labelLarge)
-                    }
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        Row(Modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(date.replaceFirstChar { it.uppercase() }, style = MaterialTheme.typography.labelMedium, color = TextMuted)
+                Row {
+                    Text("$greeting, ", style = MaterialTheme.typography.titleLarge, color = TextPrimary)
+                    Text(name, style = MaterialTheme.typography.titleLarge, color = TextPrimary, fontWeight = FontWeight.Bold, modifier = Modifier.testTag("home_greeting_name"))
                 }
             }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                QuickAction(Icons.Rounded.AutoAwesome, "Tanya", onAsk, "qa_ask")
-                QuickAction(Icons.Rounded.Medication, "Obat", onMeds, "qa_meds")
-                QuickAction(Icons.Rounded.SelfImprovement, "Napas", onBreath, "qa_breath")
-                QuickAction(Icons.Rounded.MedicalServices, "P3K jantung", onEmergency, "qa_emergency")
+            Surface(onClick = onReminders, shape = CircleShape, color = CardWhite, border = androidx.compose.foundation.BorderStroke(1.dp, Hairline), modifier = Modifier.size(44.dp).testTag("home_reminders_button")) {
+                Box(contentAlignment = Alignment.Center) { Icon(Icons.Outlined.Notifications, "Pengingat", tint = TextSecondary, modifier = Modifier.size(20.dp)) }
+            }
+            Spacer(Modifier.width(8.dp))
+            Surface(onClick = onEmergency, shape = RoundedCornerShape(22.dp), color = CardWhite, border = androidx.compose.foundation.BorderStroke(1.dp, Primary.copy(alpha = 0.35f)), modifier = Modifier.height(44.dp).testTag("home_sos_button")) {
+                Row(Modifier.padding(horizontal = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Outlined.Call, null, tint = Primary, modifier = Modifier.size(18.dp)); Spacer(Modifier.width(6.dp))
+                    Text("Darurat", color = Primary, style = MaterialTheme.typography.labelLarge)
+                }
             }
         }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            QuickAction(Icons.Outlined.ChatBubbleOutline, "Tanya", onAsk, "qa_ask", Modifier.weight(1f))
+            QuickAction(Icons.Outlined.Medication, "Obat", onMeds, "qa_meds", Modifier.weight(1f))
+            QuickAction(Icons.Outlined.Air, "Napas", onBreath, "qa_breath", Modifier.weight(1f))
+            QuickAction(Icons.Outlined.MedicalServices, "P3K", onEmergency, "qa_emergency", Modifier.weight(1f))
         }
     }
 }
 
 @Composable
-private fun QuickAction(icon: ImageVector, label: String, onClick: () -> Unit, tag: String) {
+private fun QuickAction(icon: ImageVector, label: String, onClick: () -> Unit, tag: String, modifier: Modifier = Modifier) {
     val src = remember { MutableInteractionSource() }
     Column(
-        Modifier.width(76.dp).clip(RoundedCornerShape(16.dp)).pressScale(src)
-            .clickable(interactionSource = src, indication = null, role = Role.Button, onClick = onClick).padding(vertical = 4.dp).testTag(tag),
+        modifier.clip(RoundedCornerShape(14.dp)).background(CardWhite).border(1.dp, Hairline, RoundedCornerShape(14.dp)).pressScale(src, 0.97f)
+            .clickable(interactionSource = src, indication = androidx.compose.material3.ripple(color = TextMuted), role = Role.Button, onClick = onClick)
+            .padding(vertical = 12.dp).testTag(tag),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Box(Modifier.size(54.dp).shadow(6.dp, RoundedCornerShape(18.dp), ambientColor = PrimaryDeep, spotColor = PrimaryDeep).background(Color.White, RoundedCornerShape(18.dp)), contentAlignment = Alignment.Center) { Icon(icon, null, tint = Primary, modifier = Modifier.size(26.dp)) }
+        Icon(icon, null, tint = TextPrimary, modifier = Modifier.size(22.dp))
         Spacer(Modifier.height(6.dp))
-        Text(label, style = MaterialTheme.typography.labelMedium, color = Color.White, maxLines = 1)
+        Text(label, style = MaterialTheme.typography.labelMedium, color = TextSecondary, maxLines = 1)
     }
 }
 
-/** Kartu agenda: Posyandu berikutnya di RW warga dan obat yang belum diminum hari ini. */
+/** Satu baris agenda: ikon garis dalam kotak netral, judul + keterangan, dan nilai ringkas di kanan. */
+@Composable
+fun AgendaRow(icon: ImageVector, title: String, sub: String?, trailing: String?, modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, trailingColor: Color = TextSecondary) {
+    Row(
+        modifier.fillMaxWidth().then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier).heightIn(min = 56.dp).padding(horizontal = 14.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(Modifier.size(36.dp).clip(RoundedCornerShape(10.dp)).background(SurfaceMuted), contentAlignment = Alignment.Center) {
+            Icon(icon, null, tint = TextSecondary, modifier = Modifier.size(18.dp))
+        }
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.titleSmall, color = TextPrimary)
+            if (!sub.isNullOrBlank()) Text(sub, style = MaterialTheme.typography.bodySmall, color = TextMuted)
+        }
+        if (trailing != null) Text(trailing, style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum"), color = trailingColor, modifier = Modifier.padding(start = 8.dp))
+    }
+}
+
+/** Agenda: Posyandu berikutnya di RW warga dan obat yang belum diminum hari ini, dalam satu kartu berdaftar. */
 @Composable
 fun UpcomingCards(onOpenMeds: () -> Unit, vm: HomeExtrasViewModel = hiltViewModel()) {
     val s by vm.state.collectAsStateWithLifecycle()
-    s.nextPosyandu?.let { p ->
-        val date = runCatching { LocalDate.parse(p.date) }.getOrNull()
-        val days = date?.let { ChronoUnit.DAYS.between(LocalDate.now(), it).toInt() }
-        SehatiCard(Modifier.staggerIn(2).testTag("home_posyandu_card"), container = WellnessLight, border = Wellness.copy(alpha = 0.3f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.size(56.dp).background(Color.White, RoundedCornerShape(14.dp)), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                    Text(date?.format(DateTimeFormatter.ofPattern("MMM", Locale("id")))?.uppercase().orEmpty(), style = MaterialTheme.typography.labelSmall, color = WellnessDark)
-                    Text(date?.dayOfMonth?.toString().orEmpty(), style = MaterialTheme.typography.titleLarge, color = TextPrimary, fontWeight = FontWeight.Bold)
-                }
-                Spacer(Modifier.width(14.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(when (days) { 0 -> "Posyandu hari ini"; 1 -> "Posyandu besok"; null -> "Posyandu"; else -> "Posyandu $days hari lagi" }, style = MaterialTheme.typography.titleSmall, color = TextPrimary)
-                    Text(listOf(p.location, listOf(p.startTime, p.endTime).filter { it.isNotBlank() }.joinToString("–")).filter { it.isNotBlank() }.joinToString(" · "),
-                        style = MaterialTheme.typography.bodySmall, color = TextSecondary)
-                    Text("Cek tensi, gula darah & berat badan. Bawa QR SEHATI.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
-                }
+    if (s.nextPosyandu == null && !s.hasMeds) return
+    SectionTitle("Agenda")
+    SehatiCard(Modifier.staggerIn(2), contentPadding = 0) {
+        Column {
+            s.nextPosyandu?.let { p ->
+                val date = runCatching { LocalDate.parse(p.date) }.getOrNull()
+                val days = date?.let { ChronoUnit.DAYS.between(LocalDate.now(), it).toInt() }
+                AgendaRow(
+                    Icons.Outlined.CalendarMonth,
+                    when (days) { 0 -> "Posyandu hari ini"; 1 -> "Posyandu besok"; null -> "Posyandu"; else -> "Posyandu $days hari lagi" },
+                    listOf(p.location, listOf(p.startTime, p.endTime).filter { it.isNotBlank() }.joinToString("–")).filter { it.isNotBlank() }.joinToString(" · ").ifBlank { "Cek tensi, gula darah & berat badan" },
+                    date?.format(DateTimeFormatter.ofPattern("EEE, d MMM", Locale("id"))),
+                    Modifier.testTag("home_posyandu_card"),
+                )
             }
-        }
-    }
-    if (s.hasMeds) {
-        SehatiCard(Modifier.staggerIn(2).testTag("home_meds_card"), onClick = onOpenMeds) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconBadge(Icons.Rounded.Medication, if (s.dosesLeft == 0) WellnessDark else PrimaryDark, if (s.dosesLeft == 0) WellnessLight else PrimaryLight, 44)
-                Spacer(Modifier.width(12.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(if (s.dosesLeft == 0) "Semua obat hari ini sudah diminum" else "${s.dosesLeft} jadwal obat belum diminum", style = MaterialTheme.typography.titleSmall, color = TextPrimary)
-                    s.nextDose?.let { Text("Berikutnya: $it", style = MaterialTheme.typography.bodySmall, color = TextMuted) }
-                }
-                Icon(Icons.Rounded.ChevronRight, null, tint = TextMuted)
+            if (s.nextPosyandu != null && s.hasMeds) HorizontalDivider(color = SurfaceMuted, modifier = Modifier.padding(horizontal = 14.dp))
+            if (s.hasMeds) {
+                AgendaRow(
+                    Icons.Outlined.Medication,
+                    if (s.dosesLeft == 0) "Obat hari ini sudah diminum" else "${s.dosesLeft} jadwal obat belum diminum",
+                    s.nextDose?.let { "Berikutnya: $it" },
+                    if (s.dosesLeft == 0) "Selesai" else null,
+                    Modifier.testTag("home_meds_card"), onClick = onOpenMeds,
+                    trailingColor = WellnessDark,
+                )
             }
         }
     }

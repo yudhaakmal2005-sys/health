@@ -2,7 +2,7 @@ package id.sehati.app.ui.citizen
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -36,7 +36,7 @@ fun HealthScreen(onShowQr: () -> Unit, onOpenAcademy: (String?) -> Unit, onRetak
         if (s.findings.any { it.id == "symptom_red_flag" }) EmergencyBanner()
         RiskCard(s.level, Modifier.staggerIn(0))
 
-        PrimaryButton("Tunjukkan QR ke kader", onShowQr, icon = Icons.Rounded.QrCode2, tag = "show_qr_button")
+        PrimaryButton("Tunjukkan QR ke kader", onShowQr, icon = Icons.Outlined.QrCode2, tag = "show_qr_button")
 
         if (s.findings.isNotEmpty()) {
             SectionTitle("Yang perlu diperhatikan")
@@ -59,7 +59,7 @@ fun HealthScreen(onShowQr: () -> Unit, onOpenAcademy: (String?) -> Unit, onRetak
                 val open = f.status != FollowUpStatus.DONE.name && f.status != FollowUpStatus.CANCELLED.name
                 SehatiCard(Modifier.testTag("followup_${f.id}"), container = if (open) RiskOrangeBg else CardWhite, border = if (open) RiskOrange.copy(alpha = 0.3f) else BorderColor) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        IconBadge(Icons.Rounded.EventAvailable, if (open) RiskOrangeText else RiskGreenText, if (open) Color2(RiskOrange) else RiskGreenBg, 36)
+                        IconBadge(Icons.Outlined.EventAvailable, if (open) RiskOrangeText else RiskGreenText, if (open) Color2(RiskOrange) else RiskGreenBg, 36)
                         Spacer(Modifier.width(10.dp))
                         Column(Modifier.weight(1f)) {
                             Text(FollowUpType.parse(f.type).label, style = MaterialTheme.typography.titleSmall, color = TextPrimary)
@@ -69,7 +69,7 @@ fun HealthScreen(onShowQr: () -> Unit, onOpenAcademy: (String?) -> Unit, onRetak
                     }
                 }
             }
-            s.referrals.firstOrNull()?.let { InfoNote("Permintaan rujukan tercatat (${it.status.lowercase()}). Rujukan membantu proses administrasi dan bukan diagnosis.", icon = Icons.Rounded.LocalHospital) }
+            s.referrals.firstOrNull()?.let { InfoNote("Permintaan rujukan tercatat (${it.status.lowercase()}). Rujukan membantu proses administrasi dan bukan diagnosis.", icon = Icons.Outlined.LocalHospital) }
         }
 
         // Tren tekanan darah
@@ -87,10 +87,10 @@ fun HealthScreen(onShowQr: () -> Unit, onOpenAcademy: (String?) -> Unit, onRetak
         }
 
         SectionTitle("Riwayat pemeriksaan", action = "Catat sendiri", onAction = { adding = true })
-        if (s.checks.isEmpty()) EmptyState(Icons.Rounded.MonitorHeart, "Belum ada pemeriksaan", "Catat hasil pengukuran sendiri atau datang ke Posyandu.", action = "Catat pengukuran", onAction = { adding = true })
+        if (s.checks.isEmpty()) EmptyState(Icons.Outlined.MonitorHeart, "Belum ada pemeriksaan", "Catat hasil pengukuran sendiri atau datang ke Posyandu.", action = "Catat pengukuran", onAction = { adding = true })
         s.checks.forEachIndexed { i, c -> CheckRow(c, Modifier.staggerIn(i)) }
 
-        SecondaryButton("Ulangi asesmen", onRetakeAssessment, icon = Icons.Rounded.Refresh, tag = "retake_assessment_button")
+        SecondaryButton("Ulangi asesmen", onRetakeAssessment, icon = Icons.Outlined.Refresh, tag = "retake_assessment_button")
         FloatingNote()
         Spacer(Modifier.height(8.dp))
     }
@@ -105,7 +105,7 @@ fun HealthScreen(onShowQr: () -> Unit, onOpenAcademy: (String?) -> Unit, onRetak
 private fun Color2(c: androidx.compose.ui.graphics.Color) = c.copy(alpha = 0.15f)
 
 @Composable
-private fun FloatingNote() = InfoNote(PROFILE_NOTE, icon = Icons.Rounded.Shield)
+private fun FloatingNote() = InfoNote(PROFILE_NOTE, icon = Icons.Outlined.Shield)
 private const val PROFILE_NOTE = "Profil dan hasil di sini adalah pemantauan berbasis data yang dimasukkan, bukan diagnosis medis."
 
 @Composable

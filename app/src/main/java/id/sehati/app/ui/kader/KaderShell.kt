@@ -11,7 +11,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -26,12 +26,12 @@ import id.sehati.app.ui.components.*
 import id.sehati.app.ui.theme.*
 
 private enum class KaderTab(val label: String, val icon: ImageVector, val tag: String) {
-    Today("Hari Ini", Icons.Rounded.Today, "kader_tab_today"),
-    Citizens("Warga", Icons.Rounded.Groups, "kader_tab_citizens"),
-    Exam("Pemeriksaan", Icons.Rounded.MonitorHeart, "kader_tab_exam"),
-    FollowUp("Follow-Up", Icons.Rounded.EventAvailable, "kader_tab_followup"),
-    Home("Kunjungan Rumah", Icons.Rounded.Home, "kader_tab_home"),
-    Sync("Sinkronisasi", Icons.Rounded.Sync, "kader_tab_sync"),
+    Today("Hari Ini", Icons.Outlined.Today, "kader_tab_today"),
+    Citizens("Warga", Icons.Outlined.Groups, "kader_tab_citizens"),
+    Exam("Pemeriksaan", Icons.Outlined.MonitorHeart, "kader_tab_exam"),
+    FollowUp("Follow-Up", Icons.Outlined.EventAvailable, "kader_tab_followup"),
+    Home("Kunjungan Rumah", Icons.Outlined.Home, "kader_tab_home"),
+    Sync("Sinkronisasi", Icons.Outlined.Sync, "kader_tab_sync"),
 }
 
 /** Workstation kader (bukan navigasi warga): strip tab di atas, alur mengikuti layanan Posyandu ILP. */
@@ -48,7 +48,7 @@ fun KaderShell(onLogout: () -> Unit, vm: KaderViewModel = hiltViewModel()) {
         Surface(color = CardWhite, tonalElevation = 0.dp, shadowElevation = 1.dp) {
             Column(Modifier.fillMaxWidth().padding(top = 8.dp)) {
                 Row(Modifier.padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    IconBadge(Icons.Rounded.Groups, WellnessDark, WellnessLight, 40)
+                    IconBadge(Icons.Outlined.Groups, WellnessDark, WellnessLight, 40)
                     Spacer(Modifier.width(10.dp))
                     Column(Modifier.weight(1f)) {
                         Text("Kader · ${s.cadre?.fullName ?: ""}", style = MaterialTheme.typography.titleSmall, color = TextPrimary, modifier = Modifier.testTag("kader_name"))
@@ -56,8 +56,8 @@ fun KaderShell(onLogout: () -> Unit, vm: KaderViewModel = hiltViewModel()) {
                     }
                     val pending = s.sync.pending
                     StatusPill(if (pending == 0) "Tersinkron" else "$pending menunggu", if (pending == 0) RiskGreenText else RiskYellowText, if (pending == 0) RiskGreenBg else RiskYellowBg,
-                        if (pending == 0) Icons.Rounded.CloudDone else Icons.Rounded.CloudOff, Modifier.testTag("kader_sync_pill"))
-                    IconButton({ confirmLogout = true }, Modifier.size(48.dp).testTag("kader_logout_button")) { Icon(Icons.Rounded.Logout, "Keluar") }
+                        if (pending == 0) Icons.Outlined.CloudDone else Icons.Outlined.CloudOff, Modifier.testTag("kader_sync_pill"))
+                    IconButton({ confirmLogout = true }, Modifier.size(48.dp).testTag("kader_logout_button")) { Icon(Icons.Outlined.Logout, "Keluar") }
                 }
                 Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 12.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     KaderTab.entries.forEach { t ->

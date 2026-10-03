@@ -9,7 +9,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import id.sehati.app.domain.model.PROFILE_DISCLAIMER
 import id.sehati.app.domain.model.RiskLevel
 import id.sehati.app.domain.model.SyncStatus
@@ -42,30 +44,31 @@ data class RiskStyle(val color: Color, val bg: Color, val text: Color, val icon:
 
 fun RiskLevel.style() = when (this) {
     RiskLevel.HEALTHY_HABIT -> RiskStyle(RiskGreen, RiskGreenBg, RiskGreenText, Icons.Rounded.CheckCircle)
-    RiskLevel.RISK_AWARENESS -> RiskStyle(RiskYellow, RiskYellowBg, RiskYellowText, Icons.Rounded.Visibility)
-    RiskLevel.HIGHER_MONITORING -> RiskStyle(RiskOrange, RiskOrangeBg, RiskOrangeText, Icons.Rounded.MonitorHeart)
-    RiskLevel.MEDICAL_FOLLOW_UP -> RiskStyle(RiskRed, RiskRedBg, RiskRedText, Icons.Rounded.MedicalServices)
+    RiskLevel.RISK_AWARENESS -> RiskStyle(RiskYellow, RiskYellowBg, RiskYellowText, Icons.Outlined.Visibility)
+    RiskLevel.HIGHER_MONITORING -> RiskStyle(RiskOrange, RiskOrangeBg, RiskOrangeText, Icons.Outlined.MonitorHeart)
+    RiskLevel.MEDICAL_FOLLOW_UP -> RiskStyle(RiskRed, RiskRedBg, RiskRedText, Icons.Outlined.MedicalServices)
 }
 
 fun Severity.style() = when (this) {
     Severity.INFO -> RiskStyle(RiskGreen, RiskGreenBg, RiskGreenText, Icons.Rounded.CheckCircle)
-    Severity.WATCH -> RiskStyle(RiskYellow, RiskYellowBg, RiskYellowText, Icons.Rounded.Info)
-    Severity.ATTENTION -> RiskStyle(RiskOrange, RiskOrangeBg, RiskOrangeText, Icons.Rounded.Warning)
-    Severity.URGENT -> RiskStyle(RiskRed, RiskRedBg, RiskRedText, Icons.Rounded.Error)
+    Severity.WATCH -> RiskStyle(RiskYellow, RiskYellowBg, RiskYellowText, Icons.Outlined.Info)
+    Severity.ATTENTION -> RiskStyle(RiskOrange, RiskOrangeBg, RiskOrangeText, Icons.Outlined.Warning)
+    Severity.URGENT -> RiskStyle(RiskRed, RiskRedBg, RiskRedText, Icons.Outlined.Error)
 }
 
 /** Warna risiko selalu disertai ikon + label + penjelasan (tidak mengandalkan warna saja). */
 @Composable
 fun RiskCard(level: RiskLevel, modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, compact: Boolean = false) {
     val st = level.style()
-    SehatiCard(modifier.testTag("health_status_card"), onClick = onClick, container = st.bg, border = st.color.copy(alpha = 0.35f)) {
+    SehatiCard(modifier.testTag("health_status_card"), onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconBadge(st.icon, Color.White, st.color, 44)
+            Box(Modifier.size(width = 3.dp, height = 36.dp).clip(RoundedCornerShape(2.dp)).background(st.color))
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text("Profil SEHATI", style = MaterialTheme.typography.labelMedium, color = st.text)
-                Text(level.label, style = MaterialTheme.typography.titleLarge, color = st.text, fontWeight = FontWeight.Bold)
+                Text("PROFIL SEHATI", style = MaterialTheme.typography.labelSmall, color = TextMuted, letterSpacing = 1.2.sp)
+                Text(level.label, style = MaterialTheme.typography.titleLarge, color = TextPrimary, fontWeight = FontWeight.Bold)
             }
+            StatusPill(level.shortLabel(), st.text, st.bg, st.icon)
         }
         Text(level.summary, style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
         if (!compact) Text(PROFILE_DISCLAIMER, style = MaterialTheme.typography.bodySmall, color = TextMuted)
@@ -75,10 +78,10 @@ fun RiskCard(level: RiskLevel, modifier: Modifier = Modifier, onClick: (() -> Un
 @Composable
 fun SyncChip(status: SyncStatus, modifier: Modifier = Modifier) {
     val (icon, c, bg) = when (status) {
-        SyncStatus.SYNCED -> Triple(Icons.Rounded.CloudDone, RiskGreenText, RiskGreenBg)
-        SyncStatus.SYNCING -> Triple(Icons.Rounded.Sync, PrimaryDark, PrimaryLight)
-        SyncStatus.SYNC_FAILED -> Triple(Icons.Rounded.SyncProblem, RiskRedText, RiskRedBg)
-        SyncStatus.LOCAL_ONLY -> Triple(Icons.Rounded.CloudOff, RiskYellowText, RiskYellowBg)
+        SyncStatus.SYNCED -> Triple(Icons.Outlined.CloudDone, RiskGreenText, RiskGreenBg)
+        SyncStatus.SYNCING -> Triple(Icons.Outlined.Sync, PrimaryDark, PrimaryLight)
+        SyncStatus.SYNC_FAILED -> Triple(Icons.Outlined.SyncProblem, RiskRedText, RiskRedBg)
+        SyncStatus.LOCAL_ONLY -> Triple(Icons.Outlined.CloudOff, RiskYellowText, RiskYellowBg)
     }
     StatusPill(status.label, c, bg, icon, modifier.semantics { contentDescription = "Status sinkronisasi: ${status.label}" })
 }
@@ -86,7 +89,7 @@ fun SyncChip(status: SyncStatus, modifier: Modifier = Modifier) {
 @Composable
 fun EmptyState(icon: ImageVector, title: String, body: String, modifier: Modifier = Modifier, action: String? = null, onAction: (() -> Unit)? = null) {
     Column(modifier.fillMaxWidth().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        IconBadge(icon, PrimaryDark, PrimaryLight, 64)
+        IconBadge(icon, TextMuted, SurfaceMuted, 56)
         Text(title, style = MaterialTheme.typography.titleMedium, color = TextPrimary, textAlign = TextAlign.Center)
         Text(body, style = MaterialTheme.typography.bodyMedium, color = TextMuted, textAlign = TextAlign.Center)
         if (action != null && onAction != null) SecondaryButton(action, onAction, Modifier.widthIn(max = 280.dp))
@@ -104,7 +107,7 @@ fun LoadingState(modifier: Modifier = Modifier, label: String = "Memuat…") {
 @Composable
 fun ErrorState(message: String, modifier: Modifier = Modifier, retry: String? = null, onRetry: (() -> Unit)? = null) {
     Column(modifier.fillMaxWidth().padding(24.dp).testTag("error_state"), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        IconBadge(Icons.Rounded.ErrorOutline, RiskRedText, RiskRedBg, 64)
+        IconBadge(Icons.Outlined.ErrorOutline, RiskRedText, RiskRedBg, 64)
         Text(message, style = MaterialTheme.typography.bodyMedium, color = TextSecondary, textAlign = TextAlign.Center)
         if (retry != null && onRetry != null) SecondaryButton(retry, onRetry, Modifier.widthIn(max = 280.dp))
     }
@@ -122,10 +125,10 @@ fun EmergencyBanner(modifier: Modifier = Modifier) {
     Surface(modifier.fillMaxWidth().testTag("emergency_banner").semantics { contentDescription = "Peringatan darurat. ${RedFlag.EMERGENCY_MESSAGE}" },
         shape = RoundedCornerShape(18.dp), color = RiskRedBg, border = androidx.compose.foundation.BorderStroke(1.5.dp, RiskRed)) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.Top) {
-            Icon(Icons.Rounded.Warning, null, tint = RiskRed, modifier = Modifier.size(28.dp).scale(scale))
+            Icon(Icons.Outlined.Warning, null, tint = RiskRed, modifier = Modifier.size(28.dp).scale(scale))
             Spacer(Modifier.width(12.dp))
             Column {
-                Text("⚠ ${RedFlag.EMERGENCY_TITLE}", style = MaterialTheme.typography.titleMedium, color = RiskRedText, fontWeight = FontWeight.Bold)
+                Text(RedFlag.EMERGENCY_TITLE, style = MaterialTheme.typography.titleMedium, color = RiskRedText, fontWeight = FontWeight.Bold)
                 Text(RedFlag.EMERGENCY_MESSAGE, style = MaterialTheme.typography.bodyMedium, color = RiskRedText)
             }
         }
@@ -133,8 +136,8 @@ fun EmergencyBanner(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun InfoNote(text: String, modifier: Modifier = Modifier, icon: ImageVector = Icons.Rounded.Info, color: Color = PrimaryDark, bg: Color = PrimaryLight) {
-    Surface(modifier.fillMaxWidth(), shape = RoundedCornerShape(14.dp), color = bg) {
+fun InfoNote(text: String, modifier: Modifier = Modifier, icon: ImageVector = Icons.Outlined.Info, color: Color = PrimaryDark, bg: Color = PrimaryLight) {
+    Surface(modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp), color = bg) {
         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.Top) {
             Icon(icon, null, tint = color, modifier = Modifier.size(18.dp).padding(top = 2.dp))
             Spacer(Modifier.width(8.dp))
@@ -149,9 +152,9 @@ fun ProgressRing(
     progress: Float,
     modifier: Modifier = Modifier,
     size: Dp = 112.dp,
-    stroke: Dp = 12.dp,
+    stroke: Dp = 8.dp,
     color: Color = Primary,
-    track: Color = PrimaryLight,
+    track: Color = SurfaceMuted,
     content: @Composable BoxScope.() -> Unit = {},
 ) {
     val anim by animateFloatAsState(progress.coerceIn(0f, 1f), motionTween(Motion.Ring), label = "ring")
@@ -180,14 +183,14 @@ fun MetricTile(
 ) {
     SehatiCard(modifier.then(if (tag.isNotEmpty()) Modifier.testTag(tag) else Modifier), onClick = onClick, contentPadding = 14) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconBadge(icon, color, bg, 36)
-            Spacer(Modifier.width(8.dp))
-            Text(label, style = MaterialTheme.typography.labelLarge, color = TextSecondary)
+            Icon(icon, null, tint = TextMuted, modifier = Modifier.size(16.dp))
+            Spacer(Modifier.width(6.dp))
+            Text(label, style = MaterialTheme.typography.labelMedium, color = TextMuted)
         }
-        Text(value, style = MaterialTheme.typography.headlineSmall, color = TextPrimary, fontWeight = FontWeight.Bold)
+        Text(value, style = MaterialTheme.typography.headlineSmall.copy(fontFeatureSettings = "tnum"), color = TextPrimary, fontWeight = FontWeight.Bold)
         if (progress != null) {
             val p by animateFloatAsState(progress.coerceIn(0f, 1f), motionTween(Motion.Long), label = "bar")
-            Box(Modifier.fillMaxWidth().height(6.dp).clip(CircleShape).background(bg)) {
+            Box(Modifier.fillMaxWidth().height(4.dp).clip(CircleShape).background(SurfaceMuted)) {
                 Box(Modifier.fillMaxWidth(p).fillMaxHeight().clip(CircleShape).background(color))
             }
         }
@@ -229,11 +232,18 @@ fun StepIndicator(current: Int, total: Int, modifier: Modifier = Modifier, label
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             repeat(total) { i ->
                 val c by animateFloatAsState(if (i <= current) 1f else 0f, motionTween(Motion.Medium), label = "step$i")
-                Box(Modifier.weight(1f).height(6.dp).clip(CircleShape).background(PrimaryLight)) {
+                Box(Modifier.weight(1f).height(3.dp).clip(CircleShape).background(SurfaceMuted)) {
                     Box(Modifier.fillMaxWidth(c).fillMaxHeight().clip(CircleShape).background(Primary))
                 }
             }
         }
         if (labels != null) Text("Langkah ${current + 1} dari $total · ${labels.getOrNull(current).orEmpty()}", style = MaterialTheme.typography.labelMedium, color = TextMuted)
     }
+}
+
+private fun RiskLevel.shortLabel() = when (this) {
+    RiskLevel.HEALTHY_HABIT -> "Baik"
+    RiskLevel.RISK_AWARENESS -> "Waspada"
+    RiskLevel.HIGHER_MONITORING -> "Pantau"
+    RiskLevel.MEDICAL_FOLLOW_UP -> "Rujuk"
 }

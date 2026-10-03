@@ -4,7 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,9 +33,9 @@ fun TodayTab(vm: KaderViewModel, onOpenVisit: (String) -> Unit, onStartRegistrat
             StatBox("Berlangsung", s.allRows.count { !it.completed }.toString(), Primary, Modifier.weight(1f))
             StatBox("Perhatian", s.allRows.count { it.needsAttention }.toString(), RiskOrange, Modifier.weight(1f))
         }
-        PrimaryButton("Daftarkan warga (QR / SEHATI ID)", onStartRegistration, icon = Icons.Rounded.QrCodeScanner, tag = "scan_qr_button")
+        PrimaryButton("Daftarkan warga (QR / SEHATI ID)", onStartRegistration, icon = Icons.Outlined.QrCodeScanner, tag = "scan_qr_button")
         ChoiceChips(RegisterFilter.entries, s.filter, vm::setFilter, { it.label }, tagPrefix = "filter")
-        if (s.rows.isEmpty()) EmptyState(Icons.Rounded.Groups, "Belum ada warga pada filter ini", "Daftarkan warga dengan QR atau SEHATI ID.")
+        if (s.rows.isEmpty()) EmptyState(Icons.Outlined.Groups, "Belum ada warga pada filter ini", "Daftarkan warga dengan QR atau SEHATI ID.")
         s.rows.forEachIndexed { i, r ->
             SehatiCard(Modifier.staggerIn(i).testTag("register_row_${r.visit.userId}"), onClick = { onOpenVisit(r.visit.id) }, contentPadding = 14) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -45,11 +46,11 @@ fun TodayTab(vm: KaderViewModel, onOpenVisit: (String) -> Unit, onStartRegistrat
                     }
                     Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         when {
-                            r.hasFollowUp -> StatusPill("Follow-up", RiskOrangeText, RiskOrangeBg, Icons.Rounded.EventAvailable)
+                            r.hasFollowUp -> StatusPill("Follow-up", RiskOrangeText, RiskOrangeBg, Icons.Outlined.EventAvailable)
                             r.completed -> StatusPill("Selesai", RiskGreenText, RiskGreenBg, Icons.Rounded.CheckCircle)
-                            else -> StatusPill("Berlangsung", PrimaryDark, PrimaryLight, Icons.Rounded.HourglassTop)
+                            else -> StatusPill("Berlangsung", PrimaryDark, PrimaryLight, Icons.Outlined.HourglassTop)
                         }
-                        if (r.needsAttention) StatusPill("Perlu perhatian", RiskRedText, RiskRedBg, Icons.Rounded.Warning)
+                        if (r.needsAttention) StatusPill("Perlu perhatian", RiskRedText, RiskRedBg, Icons.Outlined.Warning)
                         SyncChip(r.sync)
                     }
                 }
@@ -84,15 +85,15 @@ fun CitizensTab(vm: KaderViewModel, onVisit: (String) -> Unit, startWithScanner:
             QrScannerPanel(onResult = { vm.onScanned(it); scanning = false })
             SecondaryButton("Tutup pemindai", { scanning = false })
         } else {
-            SecondaryButton("Pindai QR warga", { vm.clearScan(); scanning = true }, icon = Icons.Rounded.QrCodeScanner, tag = "open_scanner_button")
+            SecondaryButton("Pindai QR warga", { vm.clearScan(); scanning = true }, icon = Icons.Outlined.QrCodeScanner, tag = "open_scanner_button")
         }
         SehatiTextField(query, { query = it; vm.onQuery(it) }, "Cari SEHATI ID atau nama", tag = "citizen_search_field")
-        scanMsg?.let { InfoNote(it, icon = Icons.Rounded.ErrorOutline, color = RiskRedText, bg = RiskRedBg) }
-        error?.let { InfoNote(it, icon = Icons.Rounded.ErrorOutline, color = RiskRedText, bg = RiskRedBg, modifier = Modifier.testTag("kader_error")) }
+        scanMsg?.let { InfoNote(it, icon = Icons.Outlined.ErrorOutline, color = RiskRedText, bg = RiskRedBg) }
+        error?.let { InfoNote(it, icon = Icons.Outlined.ErrorOutline, color = RiskRedText, bg = RiskRedBg, modifier = Modifier.testTag("kader_error")) }
         scanned?.let { CitizenCard(it, vm, onVisit, Modifier.testTag("scanned_citizen")) }
         results.filter { it.sehatiId != scanned?.sehatiId }.forEachIndexed { i, c -> CitizenCard(c, vm, onVisit, Modifier.staggerIn(i)) }
-        if (query.isNotBlank() && results.isEmpty()) EmptyState(Icons.Rounded.PersonSearch, "Warga tidak ditemukan", "Periksa SEHATI ID, atau daftarkan warga baru.")
-        TextButton({ registering = true }, Modifier.heightIn(min = 48.dp).testTag("register_new_citizen_button")) { Icon(Icons.Rounded.PersonAdd, null); Spacer(Modifier.width(8.dp)); Text("Daftarkan warga baru") }
+        if (query.isNotBlank() && results.isEmpty()) EmptyState(Icons.Outlined.PersonSearch, "Warga tidak ditemukan", "Periksa SEHATI ID, atau daftarkan warga baru.")
+        TextButton({ registering = true }, Modifier.heightIn(min = 48.dp).testTag("register_new_citizen_button")) { Icon(Icons.Outlined.PersonAdd, null); Spacer(Modifier.width(8.dp)); Text("Daftarkan warga baru") }
     }
     if (registering) NewCitizenDialog(vm, onDismiss = { registering = false; vm.resetNew() }, onCreated = { u -> registering = false; query = u.sehatiId; vm.onQuery(u.sehatiId); created = u })
     created?.let { u -> CitizenIdCardDialog(u) { created = null } }
@@ -112,7 +113,7 @@ private fun CitizenIdCardDialog(u: id.sehati.app.data.local.UserEntity, onDismis
                 InfoNote(
                     "Sampaikan ke warga: unduh SEHATI → Masuk → \"Sudah didaftarkan kader?\" → isi SEHATI ID dan tanggal lahir → buat kata sandi. " +
                         "Hasil pemeriksaan di Posyandu akan muncul di HP warga." + if (!u.consentServerSync) " (Perlu persetujuan sinkronisasi server.)" else "",
-                    icon = Icons.Rounded.PhoneAndroid,
+                    icon = Icons.Outlined.PhoneAndroid,
                 )
                 Text("Foto layar ini atau tulis SEHATI ID di buku KMS/kartu warga.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
             }
@@ -125,7 +126,7 @@ private fun CitizenIdCardDialog(u: id.sehati.app.data.local.UserEntity, onDismis
 private fun CitizenCard(c: CitizenSummary, vm: KaderViewModel, onVisit: (String) -> Unit, modifier: Modifier = Modifier) {
     SehatiCard(modifier.testTag("citizen_${c.sehatiId}")) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconBadge(Icons.Rounded.Person, PrimaryDark, PrimaryLight, 44)
+            IconBadge(Icons.Outlined.Person, PrimaryDark, PrimaryLight, 44)
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Text(c.name, style = MaterialTheme.typography.titleMedium, color = TextPrimary)
@@ -134,7 +135,7 @@ private fun CitizenCard(c: CitizenSummary, vm: KaderViewModel, onVisit: (String)
         }
         KeyValueRow("Pemeriksaan terakhir", c.lastCheckAt?.let { TimeUtils.date(it) } ?: "Belum ada")
         KeyValueRow("Status tindak lanjut", if (c.followUpOpen) "Perlu tindak lanjut" else "Tidak ada", valueColor = if (c.followUpOpen) RiskOrangeText else TextPrimary)
-        PrimaryButton("Daftarkan kunjungan hari ini", { vm.registerVisit(c.sehatiId, onVisit) }, icon = Icons.Rounded.HowToReg, tag = "register_visit_${c.sehatiId}")
+        PrimaryButton("Daftarkan kunjungan hari ini", { vm.registerVisit(c.sehatiId, onVisit) }, icon = Icons.Outlined.HowToReg, tag = "register_visit_${c.sehatiId}")
         Text("Riwayat kesehatan hanya terbuka selama kunjungan aktif dan dicatat dalam audit.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
     }
 }

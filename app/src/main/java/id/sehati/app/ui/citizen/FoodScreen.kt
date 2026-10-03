@@ -16,7 +16,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -68,7 +68,7 @@ fun FoodScreen(vm: FoodViewModel = hiltViewModel()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(meal.label, style = MaterialTheme.typography.titleMedium, color = TextPrimary, modifier = Modifier.weight(1f))
                     Text("${list.sumOf { it.kcal }} kkal", style = MaterialTheme.typography.labelLarge, color = TextMuted)
-                    IconButton({ addFor = meal }, Modifier.size(48.dp).testTag("add_food_${meal.name}")) { Icon(Icons.Rounded.AddCircle, "Tambah makanan ${meal.label}", tint = Primary) }
+                    IconButton({ addFor = meal }, Modifier.size(48.dp).testTag("add_food_${meal.name}")) { Icon(Icons.Outlined.AddCircle, "Tambah makanan ${meal.label}", tint = Primary) }
                 }
                 if (list.isEmpty()) Text("Belum ada catatan", style = MaterialTheme.typography.bodySmall, color = TextMuted)
                 list.forEach { e ->
@@ -77,13 +77,13 @@ fun FoodScreen(vm: FoodViewModel = hiltViewModel()) {
                             Text(e.name, style = MaterialTheme.typography.bodyLarge, color = TextPrimary)
                             Text("${trim(e.portions)}× ${e.portionLabel} · ${e.kcal} kkal · Na ${e.sodiumMg.roundToInt()} mg", style = MaterialTheme.typography.bodySmall, color = TextMuted)
                         }
-                        IconButton({ vm.delete(e) }, Modifier.size(48.dp)) { Icon(Icons.Rounded.DeleteOutline, "Hapus ${e.name}", tint = TextMuted) }
+                        IconButton({ vm.delete(e) }, Modifier.size(48.dp)) { Icon(Icons.Outlined.DeleteOutline, "Hapus ${e.name}", tint = TextMuted) }
                     }
                 }
             }
         }
 
-        InfoNote(FoodCatalog.ESTIMATE_NOTE, icon = Icons.Rounded.Info)
+        InfoNote(FoodCatalog.ESTIMATE_NOTE, icon = Icons.Outlined.Info)
         SectionTitle("Ide menu sehat")
         Recipes.list.forEach { r ->
             SehatiCard {
@@ -126,7 +126,7 @@ private fun AddFoodSheet(meal: MealCategory, onAdd: (FoodItem, Float) -> Unit) {
                             Text(f.name, style = MaterialTheme.typography.bodyLarge, color = TextPrimary)
                             Text("${f.portion} · ${f.kcal} kkal", style = MaterialTheme.typography.bodySmall, color = TextMuted)
                         }
-                        if (f.heartFriendly) StatusPill("Ramah jantung", RiskGreenText, RiskGreenBg, Icons.Rounded.Favorite)
+                        if (f.heartFriendly) StatusPill("Ramah jantung", RiskGreenText, RiskGreenBg, Icons.Outlined.Favorite)
                     }
                 }
             }
@@ -137,7 +137,7 @@ private fun AddFoodSheet(meal: MealCategory, onAdd: (FoodItem, Float) -> Unit) {
             Text("≈ ${(p.kcal * portions).roundToInt()} kkal · natrium ${(p.sodiumMg * portions).roundToInt()} mg · gula ${"%.1f".format(p.sugar * portions)} g", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
             if (!p.heartFriendly) {
                 val alt = FoodCatalog.healthierAlternatives(p)
-                if (alt.isNotEmpty()) InfoNote("Alternatif lebih ramah jantung: ${alt.joinToString { it.name }}", icon = Icons.Rounded.Lightbulb)
+                if (alt.isNotEmpty()) InfoNote("Alternatif lebih ramah jantung: ${alt.joinToString { it.name }}", icon = Icons.Outlined.Lightbulb)
             }
             InfoNote(FoodCatalog.ESTIMATE_NOTE)
             PrimaryButton("Tambahkan", { onAdd(p, portions) }, tag = "confirm_add_food_button")
@@ -171,12 +171,12 @@ private fun PhotoScanRow(onPick: (FoodItem) -> Unit) {
             SecondaryButton("Foto makanan", {
                 val granted = androidx.core.content.ContextCompat.checkSelfPermission(ctx, Manifest.permission.CAMERA) == android.content.pm.PackageManager.PERMISSION_GRANTED
                 if (granted) camera.launch(null) else permission.launch(Manifest.permission.CAMERA)
-            }, Modifier.weight(1f), icon = Icons.Rounded.PhotoCamera, tag = "scan_food_camera")
-            SecondaryButton("Dari galeri", { gallery.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }, Modifier.weight(1f), icon = Icons.Rounded.Image, tag = "scan_food_gallery")
+            }, Modifier.weight(1f), icon = Icons.Outlined.PhotoCamera, tag = "scan_food_camera")
+            SecondaryButton("Dari galeri", { gallery.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }, Modifier.weight(1f), icon = Icons.Outlined.Image, tag = "scan_food_gallery")
         }
         if (busy) Text("Mengenali makanan…", style = MaterialTheme.typography.bodySmall, color = TextMuted, modifier = Modifier.shimmer())
         suggestions?.let { list ->
-            if (list.isEmpty()) InfoNote("Makanan belum dikenali. Coba foto lebih dekat atau cari manual di bawah.", icon = Icons.Rounded.SearchOff)
+            if (list.isEmpty()) InfoNote("Makanan belum dikenali. Coba foto lebih dekat atau cari manual di bawah.", icon = Icons.Outlined.SearchOff)
             else {
                 Text("Mungkin ini makananmu (ketuk untuk memilih):", style = MaterialTheme.typography.labelLarge, color = TextSecondary)
                 list.forEach { sg -> AssistChip({ onPick(sg.item) }, { Text(sg.item.name) }, Modifier.heightIn(min = 48.dp).testTag("scan_suggestion_${sg.item.id}")) }

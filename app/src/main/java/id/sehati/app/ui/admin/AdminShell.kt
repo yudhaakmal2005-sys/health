@@ -11,7 +11,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -26,13 +26,13 @@ import id.sehati.app.ui.components.*
 import id.sehati.app.ui.theme.*
 
 private enum class AdminTab(val label: String, val icon: ImageVector, val tag: String) {
-    Overview("Overview", Icons.Rounded.Dashboard, "admin_tab_overview"),
-    Community("Community", Icons.Rounded.Map, "admin_tab_community"),
-    FollowUp("Follow-Up", Icons.Rounded.EventAvailable, "admin_tab_followup"),
-    Reports("Reports", Icons.Rounded.Assessment, "admin_tab_reports"),
-    Cadres("Cadres", Icons.Rounded.Groups, "admin_tab_cadres"),
-    Logistics("Logistics", Icons.Rounded.Inventory2, "admin_tab_logistics"),
-    Settings("Settings", Icons.Rounded.Settings, "admin_tab_settings"),
+    Overview("Overview", Icons.Outlined.Dashboard, "admin_tab_overview"),
+    Community("Community", Icons.Outlined.Map, "admin_tab_community"),
+    FollowUp("Follow-Up", Icons.Outlined.EventAvailable, "admin_tab_followup"),
+    Reports("Reports", Icons.Outlined.Assessment, "admin_tab_reports"),
+    Cadres("Cadres", Icons.Outlined.Groups, "admin_tab_cadres"),
+    Logistics("Logistics", Icons.Outlined.Inventory2, "admin_tab_logistics"),
+    Settings("Settings", Icons.Outlined.Settings, "admin_tab_settings"),
 }
 
 /** Dashboard Puskesmas: hanya agregat + registri tindak lanjut; tidak ada akses detail kesehatan individu. */
@@ -45,13 +45,13 @@ fun AdminShell(onLogout: () -> Unit, vm: AdminViewModel = hiltViewModel()) {
         Surface(color = PrimaryDark) {
             Column(Modifier.fillMaxWidth().padding(top = 8.dp)) {
                 Row(Modifier.padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    IconBadge(Icons.Rounded.AdminPanelSettings, PrimaryDark, androidx.compose.ui.graphics.Color.White, 40)
+                    IconBadge(Icons.Outlined.AdminPanelSettings, PrimaryDark, androidx.compose.ui.graphics.Color.White, 40)
                     Spacer(Modifier.width(10.dp))
                     Column(Modifier.weight(1f)) {
                         Text("Admin Puskesmas", style = MaterialTheme.typography.titleSmall, color = androidx.compose.ui.graphics.Color.White, modifier = Modifier.testTag("admin_name_label"))
                         Text(s.admin?.fullName ?: "", style = MaterialTheme.typography.bodySmall, color = PrimaryLight)
                     }
-                    IconButton({ confirm = true }, Modifier.size(48.dp).testTag("admin_logout_button")) { Icon(Icons.Rounded.Logout, "Keluar", tint = androidx.compose.ui.graphics.Color.White) }
+                    IconButton({ confirm = true }, Modifier.size(48.dp).testTag("admin_logout_button")) { Icon(Icons.Outlined.Logout, "Keluar", tint = androidx.compose.ui.graphics.Color.White) }
                 }
                 Row(Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 12.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     AdminTab.entries.forEach { t ->

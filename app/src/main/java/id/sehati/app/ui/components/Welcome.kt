@@ -13,7 +13,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -66,7 +66,7 @@ fun HeartLogo(size: Dp = 120.dp, onDark: Boolean = false, modifier: Modifier = M
         Box(
             Modifier.size(size * 0.62f).scale(beat).background(if (onDark) Color.White else Primary, androidx.compose.foundation.shape.CircleShape),
             contentAlignment = Alignment.Center,
-        ) { Icon(Icons.Rounded.Favorite, null, tint = if (onDark) PrimaryDark else Color.White, modifier = Modifier.size(size * 0.34f)) }
+        ) { Icon(Icons.Outlined.Favorite, null, tint = if (onDark) PrimaryDark else Color.White, modifier = Modifier.size(size * 0.34f)) }
     }
 }
 

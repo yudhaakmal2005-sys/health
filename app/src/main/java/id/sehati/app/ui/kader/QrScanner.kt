@@ -13,7 +13,7 @@ import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.CameraAlt
+import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -45,7 +45,7 @@ fun QrScannerPanel(onResult: (String) -> Unit, modifier: Modifier = Modifier) {
 
     if (!granted) {
         Column(modifier.fillMaxWidth().testTag("scanner_permission"), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            InfoNote("Izin kamera diperlukan untuk memindai QR warga. Kamera hanya dipakai saat layar ini terbuka. Kamu juga dapat mencari dengan SEHATI ID.", icon = Icons.Rounded.CameraAlt)
+            InfoNote("Izin kamera diperlukan untuk memindai QR warga. Kamera hanya dipakai saat layar ini terbuka. Kamu juga dapat mencari dengan SEHATI ID.", icon = Icons.Outlined.CameraAlt)
             PrimaryButton("Izinkan kamera", { launcher.launch(Manifest.permission.CAMERA) }, tag = "grant_camera_button")
         }
         return

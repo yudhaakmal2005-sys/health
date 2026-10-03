@@ -2,7 +2,8 @@ package id.sehati.app.ui.citizen
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -55,7 +56,7 @@ fun AcademyScreen(onBack: () -> Unit, onOpen: (String) -> Unit, vm: AcademyViewM
             val p = progress[m.id]
             SehatiCard(Modifier.staggerIn(i).testTag("module_${m.id}"), onClick = { onOpen(m.id) }) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconBadge(if (p?.completedAt != null) Icons.Rounded.CheckCircle else Icons.Rounded.School, if (p?.completedAt != null) RiskGreenText else PrimaryDark, if (p?.completedAt != null) RiskGreenBg else PrimaryLight, 44)
+                    IconBadge(if (p?.completedAt != null) Icons.Rounded.CheckCircle else Icons.Outlined.School, if (p?.completedAt != null) RiskGreenText else PrimaryDark, if (p?.completedAt != null) RiskGreenBg else PrimaryLight, 44)
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
                         Text(m.title, style = MaterialTheme.typography.titleSmall, color = TextPrimary)
@@ -82,8 +83,8 @@ fun AcademyDetailScreen(moduleId: String, onBack: () -> Unit, vm: AcademyViewMod
             Text("Aksi kecil", style = MaterialTheme.typography.labelLarge, color = WellnessDark)
             Text(m.challenge, style = MaterialTheme.typography.bodyLarge, color = TextPrimary)
         }
-        InfoNote("Materi edukasi umum, bukan pengganti saran tenaga kesehatan.", icon = Icons.Rounded.Shield)
-        PrimaryButton("Mulai kuis (${m.quiz.size} soal)", { quiz = true }, icon = Icons.Rounded.Quiz, tag = "start_quiz_button")
+        InfoNote("Materi edukasi umum, bukan pengganti saran tenaga kesehatan.", icon = Icons.Outlined.Shield)
+        PrimaryButton("Mulai kuis (${m.quiz.size} soal)", { quiz = true }, icon = Icons.Outlined.Quiz, tag = "start_quiz_button")
     }
 }
 
@@ -99,7 +100,7 @@ private fun QuizScreen(m: EducationModule, onClose: () -> Unit, onFinish: (Int) 
             AnimatedCheck(Modifier.align(Alignment.CenterHorizontally))
             Text("Skor $score dari ${m.quiz.size}", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.align(Alignment.CenterHorizontally).testTag("quiz_score"))
             Text(if (score * 100 >= m.quiz.size * 60) "Materi tuntas. Selamat!" else "Baca lagi materinya, lalu coba lagi.", style = MaterialTheme.typography.bodyLarge, color = TextSecondary, modifier = Modifier.align(Alignment.CenterHorizontally))
-            InfoNote("Aksi hari ini: ${m.challenge}", icon = Icons.Rounded.Flag)
+            InfoNote("Aksi hari ini: ${m.challenge}", icon = Icons.Outlined.Flag)
             PrimaryButton("Selesai", onClose, tag = "quiz_done_button")
         } else {
             val q = m.quiz[index]
@@ -114,12 +115,12 @@ private fun QuizScreen(m: EducationModule, onClose: () -> Unit, onFinish: (Int) 
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(o, style = MaterialTheme.typography.bodyLarge, color = TextPrimary, modifier = Modifier.weight(1f))
                         if (correct) Icon(Icons.Rounded.CheckCircle, "Benar", tint = RiskGreenText)
-                        if (wrong) Icon(Icons.Rounded.Cancel, "Salah", tint = RiskRedText)
+                        if (wrong) Icon(Icons.Outlined.Cancel, "Salah", tint = RiskRedText)
                     }
                 }
             }
             if (picked != null) {
-                InfoNote(q.explanation, icon = Icons.Rounded.Lightbulb)
+                InfoNote(q.explanation, icon = Icons.Outlined.Lightbulb)
                 PrimaryButton(if (index == m.quiz.lastIndex) "Lihat skor" else "Soal berikutnya", {
                     if (index == m.quiz.lastIndex) { finished = true; onFinish(score) } else { index++; picked = null }
                 }, tag = "quiz_next_button")

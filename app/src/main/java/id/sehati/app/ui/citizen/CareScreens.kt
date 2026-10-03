@@ -13,7 +13,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -54,8 +54,8 @@ fun EmergencyScreen(onBack: () -> Unit) {
             Text("Nyeri dada, sesak berat, pingsan, atau wajah mencong mendadak?", style = MaterialTheme.typography.titleMedium, color = RiskRedText, fontWeight = FontWeight.Bold)
             Text("Jangan menunggu. Hubungi ambulans atau segera ke IGD terdekat. Jangan mengemudi sendiri.", style = MaterialTheme.typography.bodyMedium, color = RiskRedText)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                PrimaryButton("Telepon 119", { dial(ctx, "119") }, Modifier.weight(1f), icon = Icons.Rounded.Call, tag = "call_119")
-                SecondaryButton("Telepon 112", { dial(ctx, "112") }, Modifier.weight(1f), icon = Icons.Rounded.Call, tag = "call_112")
+                PrimaryButton("Telepon 119", { dial(ctx, "119") }, Modifier.weight(1f), icon = Icons.Outlined.Call, tag = "call_119")
+                SecondaryButton("Telepon 112", { dial(ctx, "112") }, Modifier.weight(1f), icon = Icons.Outlined.Call, tag = "call_112")
             }
             Text("119 = layanan ambulans/gawat darurat (PSC 119). 112 = nomor darurat umum.", style = MaterialTheme.typography.bodySmall, color = RiskRedText)
         }
@@ -66,7 +66,7 @@ fun EmergencyScreen(onBack: () -> Unit) {
             "Nyeri menjalar ke lengan kiri, rahang, leher, atau punggung",
             "Sesak napas, keringat dingin, mual, atau lemas mendadak",
             "Pada perempuan & lansia gejala bisa tidak khas",
-        ), Icons.Rounded.Favorite, RiskRed)
+        ), Icons.Outlined.Favorite, RiskRed)
 
         SectionTitle("Langkah pertama")
         Steps(listOf(
@@ -96,7 +96,7 @@ fun EmergencyScreen(onBack: () -> Unit) {
 
         SectionTitle("Pijat jantung (RJP) tangan saja")
         CprCoach()
-        InfoNote("Panduan ini untuk orang dewasa dan bukan pengganti pelatihan. Ikuti instruksi petugas 119 di telepon.", icon = Icons.Rounded.Info)
+        InfoNote("Panduan ini untuk orang dewasa dan bukan pengganti pelatihan. Ikuti instruksi petugas 119 di telepon.", icon = Icons.Outlined.Info)
         Spacer(Modifier.height(8.dp))
     }
 }
@@ -164,7 +164,7 @@ private fun CprCoach() {
             }
         }
         if (running) Text("Tekan setiap kali lingkaran berdenyut", style = MaterialTheme.typography.bodyMedium, color = TextSecondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-        PrimaryButton(if (running) "Berhenti" else "Mulai metronom RJP", { running = !running }, icon = if (running) Icons.Rounded.Stop else Icons.Rounded.PlayArrow, tag = "cpr_toggle")
+        PrimaryButton(if (running) "Berhenti" else "Mulai metronom RJP", { running = !running }, icon = if (running) Icons.Outlined.Stop else Icons.Outlined.PlayArrow, tag = "cpr_toggle")
     }
 }
 
@@ -215,8 +215,8 @@ fun BreathingScreen(onBack: () -> Unit) {
             }
             Text(if (running || finished) "$cycles siklus" else "Pola 4-4-6: tarik 4 detik, tahan 4 detik, hembuskan 6 detik.", style = MaterialTheme.typography.bodyMedium, color = TextSecondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
             if (!running) ChoiceChips(listOf(1, 2, 5), minutes, { minutes = it }, { "$it menit" }, tagPrefix = "breath_min")
-            PrimaryButton(if (running) "Berhenti" else "Mulai", { running = !running }, icon = if (running) Icons.Rounded.Stop else Icons.Rounded.SelfImprovement, tag = "breath_toggle")
+            PrimaryButton(if (running) "Berhenti" else "Mulai", { running = !running }, icon = if (running) Icons.Outlined.Stop else Icons.Outlined.SelfImprovement, tag = "breath_toggle")
         }
-        InfoNote("Latihan napas rutin membantu mengelola stres, salah satu faktor yang memengaruhi tekanan darah. Hentikan bila pusing.", icon = Icons.Rounded.Spa)
+        InfoNote("Latihan napas rutin membantu mengelola stres, salah satu faktor yang memengaruhi tekanan darah. Hentikan bila pusing.", icon = Icons.Outlined.Spa)
     }
 }

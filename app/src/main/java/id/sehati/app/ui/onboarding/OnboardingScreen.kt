@@ -3,7 +3,7 @@ package id.sehati.app.ui.onboarding
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -55,9 +55,9 @@ private fun ColumnScope.WelcomePage() {
     Text("Kenali kesehatanmu.\nJaga dari sekarang.", style = MaterialTheme.typography.headlineMedium, color = TextPrimary, modifier = Modifier.staggerIn(0))
     Text("Dalam beberapa langkah singkat kami akan mengenalmu, lalu menyusun gambaran kesehatan dan rencana harian yang sederhana.", style = MaterialTheme.typography.bodyLarge, color = TextSecondary, modifier = Modifier.staggerIn(1))
     listOf(
-        Triple(Icons.Rounded.Quiz, "Nilai", "Jawab pertanyaan singkat tentang kebiasaan dan riwayatmu."),
-        Triple(Icons.Rounded.MonitorHeart, "Pantau", "Catat aktivitas, makanan, dan hasil pemeriksaan."),
-        Triple(Icons.Rounded.Groups, "Tindak lanjut", "Hasil Posyandu terhubung ke kader dan Puskesmas."),
+        Triple(Icons.Outlined.Quiz, "Nilai", "Jawab pertanyaan singkat tentang kebiasaan dan riwayatmu."),
+        Triple(Icons.Outlined.MonitorHeart, "Pantau", "Catat aktivitas, makanan, dan hasil pemeriksaan."),
+        Triple(Icons.Outlined.Groups, "Tindak lanjut", "Hasil Posyandu terhubung ke kader dan Puskesmas."),
     ).forEachIndexed { i, (ic, t, d) ->
         SehatiCard(Modifier.staggerIn(i + 2)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -78,7 +78,7 @@ private fun ColumnScope.WhatIsPage() {
         Text("Warga → Kader Posyandu → Puskesmas", style = MaterialTheme.typography.titleMedium, color = PrimaryDark)
         Text("Nilai → Pahami → Pantau → Tindak → Tindak lanjut → Nilai ulang", style = MaterialTheme.typography.bodyMedium, color = TextMuted)
     }
-    InfoNote("SEHATI bukan alat diagnosis mandiri dan tidak menggantikan layanan Puskesmas atau dokter. Hasilnya adalah profil pemantauan, bukan diagnosis medis.", Modifier.staggerIn(3), icon = Icons.Rounded.Shield)
+    InfoNote("SEHATI bukan alat diagnosis mandiri dan tidak menggantikan layanan Puskesmas atau dokter. Hasilnya adalah profil pemantauan, bukan diagnosis medis.", Modifier.staggerIn(3), icon = Icons.Outlined.Shield)
 }
 
 @Composable
@@ -131,5 +131,5 @@ private fun ColumnScope.AccountPage(f: OnboardingForm, vm: OnboardingViewModel) 
     Text("Kamu akan mendapat SEHATI ID otomatis (contoh HM-000127). ID ini bukan pengganti NIK untuk keperluan administratif resmi.", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
     SehatiTextField(f.password, { v -> vm.update { copy(password = v) } }, "Kata sandi", password = true, tag = "onboarding_password_field", supporting = "Minimal 6 karakter")
     SehatiTextField(f.confirm, { v -> vm.update { copy(confirm = v) } }, "Ulangi kata sandi", password = true, tag = "onboarding_confirm_field")
-    InfoNote("Setelah ini kamu akan mengisi asesmen awal (±5 menit) untuk menyusun profil dan rencana kesehatanmu.", icon = Icons.Rounded.Assignment)
+    InfoNote("Setelah ini kamu akan mengisi asesmen awal (±5 menit) untuk menyusun profil dan rencana kesehatanmu.", icon = Icons.Outlined.Assignment)
 }

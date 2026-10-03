@@ -10,7 +10,6 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
-import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,7 +24,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import id.sehati.app.ui.components.popOnChange
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -38,11 +36,11 @@ import androidx.navigation.navArgument
 import id.sehati.app.ui.theme.*
 
 private enum class Tab(val route: String, val label: String, val selected: ImageVector, val unselected: ImageVector) {
-    Home("home", "Beranda", Icons.Rounded.Home, Icons.Outlined.Home),
-    Move("move", "Aktivitas", Icons.Rounded.DirectionsRun, Icons.Outlined.DirectionsRun),
-    Food("food", "Makanan", Icons.Rounded.Restaurant, Icons.Outlined.Restaurant),
-    Health("health", "Kesehatan", Icons.Rounded.Favorite, Icons.Outlined.FavoriteBorder),
-    Profile("profile", "Profil", Icons.Rounded.Person, Icons.Outlined.Person),
+    Home("home", "Beranda", Icons.Outlined.Home, Icons.Outlined.Home),
+    Move("move", "Aktivitas", Icons.Outlined.DirectionsRun, Icons.Outlined.DirectionsRun),
+    Food("food", "Makanan", Icons.Outlined.Restaurant, Icons.Outlined.Restaurant),
+    Health("health", "Kesehatan", Icons.Outlined.Favorite, Icons.Outlined.MonitorHeart),
+    Profile("profile", "Profil", Icons.Outlined.Person, Icons.Outlined.Person),
 }
 
 /** Navigasi warga: 5 tab. Fitur sekunder (Akademi, Pelatih, QR, Notifikasi) berada di dalam halaman terkait. */
@@ -79,7 +77,7 @@ fun CitizenShell(onLogout: () -> Unit, onRetakeAssessment: () -> Unit) {
             nav, startDestination = "home", modifier = Modifier.padding(pad),
             enterTransition = {
                 val tabs = Tab.entries.map { it.route }
-                if (initialState.destination.route in tabs && targetState.destination.route in tabs) fadeIn(tween(Motion.Medium)) + androidx.compose.animation.scaleIn(tween(Motion.Medium, easing = Motion.Emphasized), initialScale = 0.97f)
+                if (initialState.destination.route in tabs && targetState.destination.route in tabs) fadeIn(tween(Motion.Medium))
                 else fadeIn(tween(Motion.Medium)) + slideInHorizontally(tween(420, easing = Motion.Emphasized)) { it / 4 }
             },
             exitTransition = { fadeOut(tween(Motion.Short)) + slideOutHorizontally(tween(420, easing = Motion.Emphasized)) { -it / 10 } },
@@ -109,35 +107,36 @@ fun CitizenShell(onLogout: () -> Unit, onRetakeAssessment: () -> Unit) {
     }
 }
 
-/** Navigasi bawah: pil merah yang meluncur ke tab terpilih, ikon memantul, label muncul halus. */
+/** Navigasi bawah: garis rambut di atas, ikon garis + label selalu tampil, garis aksen tipis meluncur ke tab aktif. */
 @Composable
 private fun SehatiBottomBar(route: String?, onSelect: (String) -> Unit) {
-    Surface(color = CardWhite, shadowElevation = 12.dp, modifier = Modifier.testTag("citizen_nav")) {
-        Row(
-            Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 8.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Tab.entries.forEach { t ->
-                val sel = route == t.route
-                val weight by androidx.compose.animation.core.animateFloatAsState(if (sel) 1.6f else 1f, androidx.compose.animation.core.spring(dampingRatio = 0.7f, stiffness = 300f), label = "w")
-                val bg by androidx.compose.animation.animateColorAsState(if (sel) PrimaryLight else androidx.compose.ui.graphics.Color.Transparent, tween(Motion.Medium), label = "bg")
-                val tint by androidx.compose.animation.animateColorAsState(if (sel) PrimaryDark else TextMuted, tween(Motion.Medium), label = "tint")
-                val src = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-                Row(
-                    Modifier.weight(weight).height(52.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(26.dp))
-                        .background(bg)
-                        .clickable(interactionSource = src, indication = androidx.compose.material3.ripple(color = Primary), role = androidx.compose.ui.semantics.Role.Tab) { if (!sel) onSelect(t.route) }
-                        .semantics { selected = sel; contentDescription = t.label }
-                        .testTag("nav_${t.route}"),
-                    horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    androidx.compose.material3.Icon(if (sel) t.selected else t.unselected, null, tint = tint, modifier = Modifier.size(24.dp).popOnChange(sel))
-                    androidx.compose.animation.AnimatedVisibility(sel, enter = fadeIn(tween(Motion.Medium)) + androidx.compose.animation.expandHorizontally(), exit = fadeOut(tween(Motion.Short)) + androidx.compose.animation.shrinkHorizontally()) {
-                        Text(t.label, style = MaterialTheme.typography.labelMedium, color = tint, maxLines = 1, modifier = Modifier.padding(start = 6.dp))
+    val tabs = Tab.entries
+    val selIndex = tabs.indexOfFirst { it.route == route }.coerceAtLeast(0)
+    Surface(color = CardWhite, modifier = Modifier.testTag("citizen_nav")) {
+        Column(Modifier.fillMaxWidth().navigationBarsPadding()) {
+            HorizontalDivider(color = Hairline, thickness = 1.dp)
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                val slot = maxWidth / tabs.size
+                val x by androidx.compose.animation.core.animateDpAsState(slot * selIndex + (slot - 28.dp) / 2, motionTween(Motion.Medium), label = "ind")
+                Box(Modifier.offset(x = x).width(28.dp).height(2.dp).clip(androidx.compose.foundation.shape.RoundedCornerShape(1.dp)).background(Primary))
+                Row(Modifier.fillMaxWidth().padding(top = 6.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    tabs.forEach { t ->
+                        val sel = route == t.route
+                        val tint by androidx.compose.animation.animateColorAsState(if (sel) Primary else TextMuted, tween(Motion.Medium), label = "tint")
+                        Column(
+                            Modifier.weight(1f).heightIn(min = 52.dp)
+                                .clickable(role = androidx.compose.ui.semantics.Role.Tab) { if (!sel) onSelect(t.route) }
+                                .semantics { selected = sel; contentDescription = t.label }
+                                .testTag("nav_${t.route}"),
+                            horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
+                        ) {
+                            androidx.compose.material3.Icon(t.unselected, null, tint = tint, modifier = Modifier.size(22.dp))
+                            Spacer(Modifier.height(3.dp))
+                            Text(t.label, style = MaterialTheme.typography.labelSmall, color = tint, maxLines = 1)
+                        }
                     }
                 }
             }
         }
     }
 }
-

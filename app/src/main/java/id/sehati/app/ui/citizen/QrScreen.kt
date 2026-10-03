@@ -2,7 +2,7 @@ package id.sehati.app.ui.citizen
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Shield
+import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,7 +35,7 @@ fun QrScreen(onBack: () -> Unit, vm: QrViewModel = hiltViewModel()) {
                 Text(it.sehatiId, style = MaterialTheme.typography.headlineMedium, color = PrimaryDark, modifier = Modifier.testTag("qr_sehati_id"))
                 Text(it.fullName, style = MaterialTheme.typography.bodyLarge, color = TextSecondary)
             }
-            InfoNote("QR hanya berisi SEHATI ID dan kode acak. Tidak ada NIK, alamat, atau data kesehatan di dalamnya. Kader tetap membutuhkan SEHATI ID bila kamera tidak dapat membaca.", icon = Icons.Rounded.Shield)
+            InfoNote("QR hanya berisi SEHATI ID dan kode acak. Tidak ada NIK, alamat, atau data kesehatan di dalamnya. Kader tetap membutuhkan SEHATI ID bila kamera tidak dapat membaca.", icon = Icons.Outlined.Shield)
         }
     }
 }

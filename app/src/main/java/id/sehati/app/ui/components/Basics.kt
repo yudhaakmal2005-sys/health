@@ -14,8 +14,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -23,7 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
@@ -67,11 +67,11 @@ fun ScreenHeader(
     Row(modifier.fillMaxWidth().padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
         if (onBack != null) {
             IconButton(onClick = onBack, modifier = Modifier.size(48.dp).testTag("back_button")) {
-                Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Kembali")
+                Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Kembali")
             }
         }
         Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.headlineSmall, color = TextPrimary, modifier = Modifier.semantics { })
+            Text(title, style = MaterialTheme.typography.titleLarge, color = TextPrimary, modifier = Modifier.semantics { })
             if (subtitle != null) Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = TextMuted)
         }
         trailing?.invoke()
@@ -88,32 +88,27 @@ fun SehatiCard(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val source = remember { MutableInteractionSource() }
-    val shape = RoundedCornerShape(24.dp)
-    val elevated = container == CardWhite
-    val base = modifier.fillMaxWidth()
-        .then(if (elevated) Modifier.shadow(10.dp, shape, ambientColor = Primary.copy(alpha = 0.10f), spotColor = Primary.copy(alpha = 0.14f)) else Modifier)
-        .animateContentSize(motionSpringSpecSize())
-    val mod = if (onClick != null) base.pressScale(source, 0.965f).clip(shape).clickable(
-        interactionSource = source, indication = ripple(color = Primary), role = Role.Button, onClick = onClick,
+    val shape = RoundedCornerShape(16.dp)
+    val base = modifier.fillMaxWidth().animateContentSize(motionSpringSpecSize())
+    val mod = if (onClick != null) base.pressScale(source, 0.985f).clip(shape).clickable(
+        interactionSource = source, indication = ripple(color = TextMuted), role = Role.Button, onClick = onClick,
     ) else base
-    Surface(mod, shape = shape, color = container, border = BorderStroke(1.dp, if (elevated) border.copy(alpha = 0.6f) else border), tonalElevation = 0.dp) {
+    Surface(mod, shape = shape, color = container, border = BorderStroke(1.dp, border), tonalElevation = 0.dp) {
         Column(Modifier.padding(contentPadding.dp), verticalArrangement = Arrangement.spacedBy(8.dp), content = content)
     }
 }
 
 private fun motionSpringSpecSize() = androidx.compose.animation.core.spring<androidx.compose.ui.unit.IntSize>(
-    dampingRatio = androidx.compose.animation.core.Spring.DampingRatioLowBouncy, stiffness = androidx.compose.animation.core.Spring.StiffnessMediumLow,
+    dampingRatio = androidx.compose.animation.core.Spring.DampingRatioNoBouncy, stiffness = androidx.compose.animation.core.Spring.StiffnessMediumLow,
 )
 
 @Composable
 fun SectionTitle(title: String, modifier: Modifier = Modifier, action: String? = null, onAction: (() -> Unit)? = null) {
-    Row(modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(width = 4.dp, height = 18.dp).clip(CircleShape).background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(Primary, Sunset))))
-        Spacer(Modifier.width(10.dp))
-        Text(title, style = MaterialTheme.typography.titleLarge, color = TextPrimary, modifier = Modifier.weight(1f))
+    Row(modifier.fillMaxWidth().padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(title, style = MaterialTheme.typography.titleMedium, color = TextPrimary, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
         if (action != null && onAction != null) TextButton(onClick = onAction, modifier = Modifier.heightIn(min = 48.dp)) {
             Text(action, color = PrimaryDark, style = MaterialTheme.typography.labelLarge)
-            Icon(androidx.compose.material.icons.Icons.Rounded.ChevronRight, null, tint = PrimaryDark, modifier = Modifier.size(18.dp))
+            Icon(androidx.compose.material.icons.Icons.Outlined.ChevronRight, null, tint = PrimaryDark, modifier = Modifier.size(18.dp))
         }
     }
 }
@@ -130,19 +125,17 @@ fun PrimaryButton(
 ) {
     val source = remember { MutableInteractionSource() }
     val active = enabled && !loading
-    val shape = RoundedCornerShape(18.dp)
+    val shape = RoundedCornerShape(14.dp)
     Button(
         onClick = onClick, enabled = active, interactionSource = source,
-        modifier = modifier.fillMaxWidth().heightIn(min = 54.dp).pressScale(source, 0.95f)
-            .then(if (active) Modifier.shadow(8.dp, shape, ambientColor = Primary.copy(alpha = 0.25f), spotColor = Primary.copy(alpha = 0.35f)) else Modifier)
+        modifier = modifier.fillMaxWidth().heightIn(min = 52.dp).pressScale(source, 0.98f)
             .then(if (tag.isNotEmpty()) Modifier.testTag(tag) else Modifier),
         shape = shape, contentPadding = PaddingValues(0.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = Color.White, disabledContainerColor = BorderColor, disabledContentColor = TextMuted),
+        elevation = ButtonDefaults.buttonElevation(0.dp, 0.dp, 0.dp, 0.dp, 0.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = Primary, contentColor = Color.White, disabledContainerColor = SurfaceMuted, disabledContentColor = TextMuted),
     ) {
         Box(
-            Modifier.fillMaxWidth().heightIn(min = 54.dp)
-                .then(if (active) Modifier.background(androidx.compose.ui.graphics.Brush.horizontalGradient(listOf(Primary, Color(0xFFF43F5E), Sunset.copy(alpha = 0.92f)))) else Modifier)
-                .padding(horizontal = 16.dp),
+            Modifier.fillMaxWidth().heightIn(min = 52.dp).padding(horizontal = 16.dp),
             contentAlignment = Alignment.Center,
         ) {
             androidx.compose.animation.AnimatedContent(loading, label = "btn") { l ->
@@ -161,9 +154,9 @@ fun SecondaryButton(text: String, onClick: () -> Unit, modifier: Modifier = Modi
     val source = remember { MutableInteractionSource() }
     OutlinedButton(
         onClick = onClick, enabled = enabled, interactionSource = source,
-        modifier = modifier.fillMaxWidth().heightIn(min = 52.dp).pressScale(source, 0.95f).then(if (tag.isNotEmpty()) Modifier.testTag(tag) else Modifier),
-        shape = RoundedCornerShape(18.dp), border = BorderStroke(1.dp, Primary.copy(alpha = 0.22f)),
-        colors = ButtonDefaults.outlinedButtonColors(containerColor = PrimarySoft, contentColor = PrimaryDark),
+        modifier = modifier.fillMaxWidth().heightIn(min = 52.dp).pressScale(source, 0.98f).then(if (tag.isNotEmpty()) Modifier.testTag(tag) else Modifier),
+        shape = RoundedCornerShape(14.dp), border = BorderStroke(1.dp, Hairline),
+        colors = ButtonDefaults.outlinedButtonColors(containerColor = CardWhite, contentColor = TextPrimary),
     ) {
         if (icon != null) { Icon(icon, null, Modifier.size(20.dp)); Spacer(Modifier.width(8.dp)) }
         Text(text, style = MaterialTheme.typography.labelLarge)
@@ -193,8 +186,8 @@ fun SehatiTextField(
         suffix = suffix?.let { { Text(it) } },
         keyboardOptions = KeyboardOptions(keyboardType = if (password) KeyboardType.Password else keyboardType),
         visualTransformation = if (password) androidx.compose.ui.text.input.PasswordVisualTransformation() else VisualTransformation.None,
-        shape = RoundedCornerShape(14.dp),
-        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, unfocusedBorderColor = BorderColor, focusedContainerColor = CardWhite, unfocusedContainerColor = CardWhite),
+        shape = RoundedCornerShape(12.dp),
+        colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, focusedLabelColor = PrimaryDark, cursorColor = Primary, unfocusedBorderColor = BorderColor, focusedContainerColor = CardWhite, unfocusedContainerColor = CardWhite),
     )
 }
 
@@ -213,8 +206,9 @@ fun <T> ChoiceChips(
             FilterChip(
                 selected = o == selected, onClick = { onSelect(o) }, label = { Text(label(o)) },
                 modifier = Modifier.heightIn(min = 48.dp).testTag("${tagPrefix}_${label(o)}"),
-                shape = RoundedCornerShape(12.dp),
-                colors = FilterChipDefaults.filterChipColors(selectedContainerColor = PrimaryLight, selectedLabelColor = PrimaryDark),
+                shape = RoundedCornerShape(10.dp),
+                border = FilterChipDefaults.filterChipBorder(enabled = true, selected = o == selected, borderColor = Hairline, selectedBorderColor = Primary.copy(alpha = 0.5f), selectedBorderWidth = 1.dp),
+                colors = FilterChipDefaults.filterChipColors(containerColor = CardWhite, labelColor = TextSecondary, selectedContainerColor = PrimaryLight, selectedLabelColor = PrimaryDark, selectedLeadingIconColor = PrimaryDark),
             )
         }
     }
@@ -228,9 +222,10 @@ fun <T> MultiChips(options: List<T>, selected: Set<T>, onToggle: (T) -> Unit, la
             FilterChip(
                 selected = o in selected, onClick = { onToggle(o) }, label = { Text(label(o)) },
                 modifier = Modifier.heightIn(min = 48.dp).testTag("${tagPrefix}_${label(o)}"),
-                leadingIcon = if (o in selected) { { Icon(Icons.Rounded.Check, null, Modifier.size(18.dp)) } } else null,
-                shape = RoundedCornerShape(12.dp),
-                colors = FilterChipDefaults.filterChipColors(selectedContainerColor = PrimaryLight, selectedLabelColor = PrimaryDark),
+                leadingIcon = if (o in selected) { { Icon(Icons.Outlined.Check, null, Modifier.size(18.dp)) } } else null,
+                shape = RoundedCornerShape(10.dp),
+                border = FilterChipDefaults.filterChipBorder(enabled = true, selected = o in selected, borderColor = Hairline, selectedBorderColor = Primary.copy(alpha = 0.5f), selectedBorderWidth = 1.dp),
+                colors = FilterChipDefaults.filterChipColors(containerColor = CardWhite, labelColor = TextSecondary, selectedContainerColor = PrimaryLight, selectedLabelColor = PrimaryDark, selectedLeadingIconColor = PrimaryDark),
             )
         }
     }
@@ -249,15 +244,16 @@ fun SwitchRow(title: String, subtitle: String? = null, checked: Boolean, onChang
 
 @Composable
 fun IconBadge(icon: ImageVector, tint: Color, background: Color, size: Int = 44, contentDescription: String? = null) {
-    Box(Modifier.size(size.dp).clip(CircleShape).background(background), contentAlignment = Alignment.Center) {
-        Icon(icon, contentDescription, tint = tint, modifier = Modifier.size((size * 0.5f).dp))
+    // Kotak sudut lembut, ikon garis; warna latar dibuat sangat tipis agar tidak "ramai".
+    Box(Modifier.size(size.dp).clip(RoundedCornerShape((size * 0.28f).dp)).background(if (background == Color.Transparent) background else background.copy(alpha = 0.7f)), contentAlignment = Alignment.Center) {
+        Icon(icon, contentDescription, tint = tint, modifier = Modifier.size((size * 0.48f).dp))
     }
 }
 
 @Composable
 fun StatusPill(text: String, color: Color, background: Color, icon: ImageVector? = null, modifier: Modifier = Modifier) {
-    Surface(modifier, shape = RoundedCornerShape(100.dp), color = background) {
-        Row(Modifier.padding(horizontal = 10.dp, vertical = 5.dp), verticalAlignment = Alignment.CenterVertically) {
+    Surface(modifier, shape = RoundedCornerShape(6.dp), color = background) {
+        Row(Modifier.padding(horizontal = 8.dp, vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
             if (icon != null) { Icon(icon, null, tint = color, modifier = Modifier.size(14.dp)); Spacer(Modifier.width(4.dp)) }
             Text(text, style = MaterialTheme.typography.labelMedium, color = color, fontWeight = FontWeight.SemiBold)
         }
@@ -279,6 +275,6 @@ fun ConfirmDialog(title: String, message: String, confirm: String, onConfirm: ()
         title = { Text(title) }, text = { Text(message) },
         confirmButton = { TextButton(onClick = onConfirm, modifier = Modifier.heightIn(min = 48.dp).testTag("${tag}_confirm")) { Text(confirm) } },
         dismissButton = { TextButton(onClick = onDismiss, modifier = Modifier.heightIn(min = 48.dp)) { Text(dismiss) } },
-        shape = RoundedCornerShape(24.dp), containerColor = CardWhite,
+        shape = RoundedCornerShape(16.dp), containerColor = CardWhite,
     )
 }

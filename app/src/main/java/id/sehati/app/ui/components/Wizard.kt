@@ -11,8 +11,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Remove
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -82,11 +82,11 @@ fun NumberStepper(
     Row(modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(label, style = MaterialTheme.typography.bodyLarge, color = TextPrimary, modifier = Modifier.weight(1f))
         FilledTonalIconButton(onClick = { onChange((value - step).coerceIn(range)) }, enabled = value > range.first, modifier = Modifier.size(48.dp).testTag("${tag}_minus")) {
-            Icon(Icons.Rounded.Remove, contentDescription = "Kurangi $label")
+            Icon(Icons.Outlined.Remove, contentDescription = "Kurangi $label")
         }
         Text(display?.invoke(value) ?: "$value$unit", style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center, modifier = Modifier.widthIn(min = 64.dp).semantics { contentDescription = "$label ${display?.invoke(value) ?: "$value $unit"}" })
         FilledTonalIconButton(onClick = { onChange((value + step).coerceIn(range)) }, enabled = value < range.last, modifier = Modifier.size(48.dp).testTag("${tag}_plus")) {
-            Icon(Icons.Rounded.Add, contentDescription = "Tambah $label")
+            Icon(Icons.Outlined.Add, contentDescription = "Tambah $label")
         }
     }
 }

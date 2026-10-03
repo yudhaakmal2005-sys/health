@@ -18,8 +18,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Send
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.automirrored.outlined.Send
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -252,8 +252,8 @@ fun CoachScreen(onBack: () -> Unit, onOpenAcademy: (String) -> Unit = {}, onEmer
         Box(Modifier.padding(horizontal = 20.dp)) {
             ScreenHeader("Tanya SEHATI", if (s.aiReady) "Asisten AI · jawaban umum, bukan diagnosis" else "Pustaka offline · bukan diagnosis", onBack = onBack) {
                 StatusPill(if (s.aiReady) "AI" else "Offline", if (s.aiReady) PrimaryDark else TextSecondary, if (s.aiReady) PrimaryLight else SurfaceMuted,
-                    if (s.aiReady) Icons.Rounded.AutoAwesome else Icons.Rounded.CloudOff, Modifier.testTag("coach_mode_pill"))
-                IconButton(vm::reset, Modifier.size(48.dp)) { Icon(Icons.Rounded.RestartAlt, "Mulai percakapan baru", tint = TextMuted) }
+                    if (s.aiReady) Icons.Outlined.AutoAwesome else Icons.Outlined.CloudOff, Modifier.testTag("coach_mode_pill"))
+                IconButton(vm::reset, Modifier.size(48.dp)) { Icon(Icons.Outlined.RestartAlt, "Mulai percakapan baru", tint = TextMuted) }
             }
         }
         LazyColumn(Modifier.weight(1f).padding(horizontal = 20.dp), state = listState, verticalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(vertical = 8.dp)) {
@@ -270,8 +270,8 @@ fun CoachScreen(onBack: () -> Unit, onOpenAcademy: (String) -> Unit = {}, onEmer
             OutlinedTextField(input, { input = it.take(1000) }, Modifier.weight(1f).testTag("coach_input"), placeholder = { Text("Tanyakan tentang jantung…") }, shape = RoundedCornerShape(16.dp),
                 maxLines = 4, keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send), keyboardActions = KeyboardActions(onSend = { submit() }),
                 colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, unfocusedBorderColor = BorderColor, focusedContainerColor = CardWhite, unfocusedContainerColor = CardWhite))
-            if (s.busy) FilledTonalIconButton(vm::stop, Modifier.size(52.dp).testTag("coach_stop_button")) { Icon(Icons.Rounded.Stop, "Hentikan jawaban") }
-            else FilledIconButton(::submit, Modifier.size(52.dp).testTag("coach_send_button"), enabled = input.isNotBlank()) { Icon(Icons.AutoMirrored.Rounded.Send, "Kirim") }
+            if (s.busy) FilledTonalIconButton(vm::stop, Modifier.size(52.dp).testTag("coach_stop_button")) { Icon(Icons.Outlined.Stop, "Hentikan jawaban") }
+            else FilledIconButton(::submit, Modifier.size(52.dp).testTag("coach_send_button"), enabled = input.isNotBlank()) { Icon(Icons.AutoMirrored.Outlined.Send, "Kirim") }
         }
         Text("Jangan menulis nama, NIK, atau nomor HP. Untuk keadaan darurat hubungi 119/112.", style = MaterialTheme.typography.labelSmall, color = TextMuted,
             modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 8.dp))
@@ -285,7 +285,7 @@ private fun AiConsentDialog(onAnswer: (Boolean, Boolean) -> Unit) {
     var share by remember { mutableStateOf(false) }
     AlertDialog(
         onDismissRequest = { onAnswer(false, false) }, containerColor = CardWhite, modifier = Modifier.testTag("ai_consent_dialog"),
-        icon = { Icon(Icons.Rounded.AutoAwesome, null, tint = Primary) },
+        icon = { Icon(Icons.Outlined.AutoAwesome, null, tint = Primary) },
         title = { Text("Gunakan asisten AI?") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -309,8 +309,8 @@ private fun MessageBubble(m: ChatMessage, onOpenAcademy: (String) -> Unit, onEme
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             EmergencyBanner()
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                PrimaryButton("Telepon 119", { ctx.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:119"))) }, Modifier.weight(1f), icon = Icons.Rounded.Call, tag = "coach_call_119")
-                SecondaryButton("Panduan darurat", onEmergency, Modifier.weight(1f), icon = Icons.Rounded.MedicalServices, tag = "coach_open_emergency")
+                PrimaryButton("Telepon 119", { ctx.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:119"))) }, Modifier.weight(1f), icon = Icons.Outlined.Call, tag = "coach_call_119")
+                SecondaryButton("Panduan darurat", onEmergency, Modifier.weight(1f), icon = Icons.Outlined.MedicalServices, tag = "coach_open_emergency")
             }
             if (m.text.isNotBlank() && m.text != RedFlag.EMERGENCY_MESSAGE) BubbleSurface(m)
         }
@@ -318,14 +318,14 @@ private fun MessageBubble(m: ChatMessage, onOpenAcademy: (String) -> Unit, onEme
     }
     Column(Modifier.fillMaxWidth(), horizontalAlignment = if (m.fromUser) Alignment.End else Alignment.Start, verticalArrangement = Arrangement.spacedBy(6.dp)) {
         if (!m.fromUser) Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(if (m.source == AnswerSource.AI) Icons.Rounded.AutoAwesome else Icons.Rounded.MenuBook, null, tint = PrimaryDark, modifier = Modifier.size(14.dp))
+            Icon(if (m.source == AnswerSource.AI) Icons.Outlined.AutoAwesome else Icons.Outlined.MenuBook, null, tint = PrimaryDark, modifier = Modifier.size(14.dp))
             Spacer(Modifier.width(4.dp))
             Text(if (m.source == AnswerSource.AI) "SEHATI AI" else "SEHATI", style = MaterialTheme.typography.labelSmall, color = PrimaryDark)
         }
         BubbleSurface(m)
         m.note?.let { Text(it, style = MaterialTheme.typography.labelSmall, color = TextMuted) }
         m.moduleId?.let { id -> Academy.byId(id)?.let { mod ->
-            AssistChip({ onOpenAcademy(id) }, { Text("Pelajari: ${mod.title}") }, Modifier.heightIn(min = 48.dp).testTag("coach_module_$id"), leadingIcon = { Icon(Icons.Rounded.School, null, Modifier.size(18.dp)) })
+            AssistChip({ onOpenAcademy(id) }, { Text("Pelajari: ${mod.title}") }, Modifier.heightIn(min = 48.dp).testTag("coach_module_$id"), leadingIcon = { Icon(Icons.Outlined.School, null, Modifier.size(18.dp)) })
         } }
         m.related.forEach { q -> SuggestionChip({ onAsk(q) }, { Text(q) }, Modifier.heightIn(min = 44.dp)) }
     }

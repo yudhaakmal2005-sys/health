@@ -2,7 +2,8 @@ package id.sehati.app.ui.settings
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -81,7 +82,7 @@ class ServerSettingsViewModel @Inject constructor(
 fun ServerSettingsCard(modifier: Modifier = Modifier, vm: ServerSettingsViewModel = hiltViewModel()) {
     val s by vm.state.collectAsStateWithLifecycle()
     SehatiCard(modifier.testTag("server_settings_card")) {
-        Row { IconBadge(Icons.Rounded.Dns, PrimaryDark, PrimaryLight, 40); Spacer(Modifier.width(12.dp))
+        Row { IconBadge(Icons.Outlined.Dns, PrimaryDark, PrimaryLight, 40); Spacer(Modifier.width(12.dp))
             Column {
                 Text("Server SEHATI", style = MaterialTheme.typography.titleSmall, color = TextPrimary)
                 Text(if (s.linked) "Akun tertaut ke server" else "Opsional: untuk berbagi data dengan kader & Puskesmas", style = MaterialTheme.typography.bodySmall, color = TextMuted)
@@ -89,10 +90,10 @@ fun ServerSettingsCard(modifier: Modifier = Modifier, vm: ServerSettingsViewMode
         }
         SehatiTextField(s.url, vm::onUrl, "Alamat server (dari Puskesmas/kader)", keyboardType = KeyboardType.Uri, tag = "server_url_field", supporting = "Contoh: https://sehati.desaku.id")
         s.message?.let { m ->
-            InfoNote(m, icon = if (s.ok == true) Icons.Rounded.CheckCircle else Icons.Rounded.Info,
+            InfoNote(m, icon = if (s.ok == true) Icons.Rounded.CheckCircle else Icons.Outlined.Info,
                 color = if (s.ok == false) RiskRedText else if (s.ok == true) RiskGreenText else PrimaryDark,
                 bg = if (s.ok == false) RiskRedBg else if (s.ok == true) RiskGreenBg else PrimaryLight)
         }
-        SecondaryButton("Simpan & uji koneksi", vm::saveAndTest, icon = Icons.Rounded.WifiTethering, enabled = !s.testing, tag = "server_test_button")
+        SecondaryButton("Simpan & uji koneksi", vm::saveAndTest, icon = Icons.Outlined.WifiTethering, enabled = !s.testing, tag = "server_test_button")
     }
 }

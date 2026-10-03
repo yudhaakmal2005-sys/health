@@ -3,7 +3,8 @@ package id.sehati.app.ui.onboarding
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
@@ -84,7 +85,7 @@ private fun ColumnScope.BodyStep(f: AssessmentForm, vm: AssessmentViewModel) {
     SehatiTextField(f.weightKg, { v -> vm.update { copy(weightKg = v.filter { it.isDigit() || it == '.' || it == ',' }.take(5)) } }, "Berat badan", keyboardType = KeyboardType.Decimal, suffix = "kg", tag = "assess_weight_field")
     SehatiTextField(f.waistCm, { v -> vm.update { copy(waistCm = v.filter { it.isDigit() || it == '.' || it == ',' }.take(5)) } }, "Lingkar perut (opsional)", keyboardType = KeyboardType.Decimal, suffix = "cm", tag = "assess_waist_field",
         supporting = "Ukur sejajar pusar, saat napas biasa.")
-    vm.bmiText(f)?.let { InfoNote(it, icon = Icons.Rounded.Calculate) }
+    vm.bmiText(f)?.let { InfoNote(it, icon = Icons.Outlined.Calculate) }
 }
 
 @Composable
@@ -107,7 +108,7 @@ private fun ColumnScope.SmokingStep(f: AssessmentForm, vm: AssessmentViewModel) 
         FieldLabel("Jenis produk")
         ChoiceChips(PRODUCTS, f.product, { p -> vm.update { copy(product = p) } }, { it }, tagPrefix = "product")
         NumberStepper("Batang per hari", f.cigarettes, { v -> vm.update { copy(cigarettes = v) } }, 1..60, tag = "assess_cigs")
-        InfoNote("Mengurangi dan berhenti merokok membantu menurunkan risiko penyakit kardiovaskular. Kami akan membantumu bertahap.", icon = Icons.Rounded.Favorite)
+        InfoNote("Mengurangi dan berhenti merokok membantu menurunkan risiko penyakit kardiovaskular. Kami akan membantumu bertahap.", icon = Icons.Outlined.Favorite)
     }
 }
 
@@ -185,11 +186,11 @@ private fun ColumnScope.PlanStep(vm: AssessmentViewModel) {
     plan.forEachIndexed { i, p ->
         SehatiCard(Modifier.staggerIn(i)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconBadge(Icons.Rounded.Flag, PrimaryDark, PrimaryLight, 36)
+                IconBadge(Icons.Outlined.Flag, PrimaryDark, PrimaryLight, 36)
                 Spacer(Modifier.width(10.dp))
                 Text(p.title, style = MaterialTheme.typography.bodyLarge, color = TextPrimary)
             }
         }
     }
-    InfoNote("Rencana ini saran gaya hidup umum, bukan resep medis. Tanyakan tenaga kesehatan untuk hal yang menyangkut pengobatan.", icon = Icons.Rounded.Shield)
+    InfoNote("Rencana ini saran gaya hidup umum, bukan resep medis. Tanyakan tenaga kesehatan untuk hal yang menyangkut pengobatan.", icon = Icons.Outlined.Shield)
 }

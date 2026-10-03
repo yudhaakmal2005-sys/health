@@ -3,7 +3,8 @@ package id.sehati.app.ui.citizen
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -90,7 +91,7 @@ fun MedicationScreen(onBack: () -> Unit, onOpenReminders: () -> Unit, vm: Medica
         ScreenHeader("Obat saya", "Pengingat minum obat sesuai resep", onBack = onBack)
         if (s.loading) { SkeletonBlock(120.dp); return@ScreenColumn }
         if (s.meds.none { it.active }) {
-            EmptyState(Icons.Rounded.Medication, "Belum ada obat", "Tambahkan obat yang diresepkan dokter (misalnya obat tekanan darah) agar SEHATI mengingatkan jam minumnya.",
+            EmptyState(Icons.Outlined.Medication, "Belum ada obat", "Tambahkan obat yang diresepkan dokter (misalnya obat tekanan darah) agar SEHATI mengingatkan jam minumnya.",
                 action = "Tambah obat", onAction = { adding = true })
         } else {
             SehatiCard(Modifier.staggerIn(0).testTag("med_today_card")) {
@@ -116,7 +117,7 @@ fun MedicationScreen(onBack: () -> Unit, onOpenReminders: () -> Unit, vm: Medica
                                     textDecoration = if (d.taken) TextDecoration.LineThrough else null)
                                 if (d.medication.instructions.isNotBlank()) Text(d.medication.instructions, style = MaterialTheme.typography.bodySmall, color = TextMuted)
                             }
-                            Icon(if (d.taken) Icons.Rounded.CheckCircle else Icons.Rounded.RadioButtonUnchecked, if (d.taken) "Sudah diminum" else "Belum diminum",
+                            Icon(if (d.taken) Icons.Rounded.CheckCircle else Icons.Outlined.RadioButtonUnchecked, if (d.taken) "Sudah diminum" else "Belum diminum",
                                 tint = if (d.taken) Wellness else TextMuted)
                         }
                     }
@@ -137,7 +138,7 @@ fun MedicationScreen(onBack: () -> Unit, onOpenReminders: () -> Unit, vm: Medica
             s.meds.forEach { m ->
                 SehatiCard(onClick = { editing = m }, modifier = Modifier.testTag("med_${m.id}"), container = if (m.active) CardWhite else SurfaceMuted) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        IconBadge(Icons.Rounded.Medication, PrimaryDark, PrimaryLight, 40)
+                        IconBadge(Icons.Outlined.Medication, PrimaryDark, PrimaryLight, 40)
                         Spacer(Modifier.width(12.dp))
                         Column(Modifier.weight(1f)) {
                             Text(m.name, style = MaterialTheme.typography.titleSmall, color = TextPrimary)
@@ -148,8 +149,8 @@ fun MedicationScreen(onBack: () -> Unit, onOpenReminders: () -> Unit, vm: Medica
                 }
             }
         }
-        SecondaryButton("Atur pengingat", onOpenReminders, icon = Icons.Rounded.NotificationsActive, tag = "open_reminders")
-        InfoNote("SEHATI hanya mengingatkan. Jangan menambah, mengurangi, atau menghentikan obat tanpa arahan dokter atau apoteker.", icon = Icons.Rounded.Info)
+        SecondaryButton("Atur pengingat", onOpenReminders, icon = Icons.Outlined.NotificationsActive, tag = "open_reminders")
+        InfoNote("SEHATI hanya mengingatkan. Jangan menambah, mengurangi, atau menghentikan obat tanpa arahan dokter atau apoteker.", icon = Icons.Outlined.Info)
     }
 
     if (adding || editing != null) MedicationDialog(editing, err, onDismiss = { adding = false; editing = null; vm.clearError() }) { name, ins, times ->
@@ -173,10 +174,10 @@ private fun MedicationDialog(m: MedicationEntity?, error: String?, onDismiss: ()
                 SehatiTextField(ins, { ins = it.take(120) }, "Aturan pakai", tag = "med_instructions", supporting = "Contoh: 1 tablet sesudah makan pagi")
                 FieldLabel("Jam minum")
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    times.forEach { t -> InputChip(true, { times = times - t }, { Text(t) }, trailingIcon = { Icon(Icons.Rounded.Close, "Hapus $t", Modifier.size(16.dp)) }) }
-                    AssistChip({ picking = true }, { Text("Tambah jam") }, leadingIcon = { Icon(Icons.Rounded.Add, null, Modifier.size(18.dp)) }, modifier = Modifier.testTag("med_add_time"))
+                    times.forEach { t -> InputChip(true, { times = times - t }, { Text(t) }, trailingIcon = { Icon(Icons.Outlined.Close, "Hapus $t", Modifier.size(16.dp)) }) }
+                    AssistChip({ picking = true }, { Text("Tambah jam") }, leadingIcon = { Icon(Icons.Outlined.Add, null, Modifier.size(18.dp)) }, modifier = Modifier.testTag("med_add_time"))
                 }
-                error?.let { InfoNote(it, color = RiskRedText, bg = RiskRedBg, icon = Icons.Rounded.ErrorOutline) }
+                error?.let { InfoNote(it, color = RiskRedText, bg = RiskRedBg, icon = Icons.Outlined.ErrorOutline) }
             }
         },
         confirmButton = { TextButton({ onSave(name, ins, times) }, Modifier.heightIn(min = 48.dp).testTag("med_save")) { Text("Simpan") } },

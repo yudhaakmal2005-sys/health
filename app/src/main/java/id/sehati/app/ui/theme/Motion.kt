@@ -30,7 +30,7 @@ fun <T> motionTween(duration: Int = Motion.Medium, delay: Int = 0): FiniteAnimat
 
 @Composable
 fun <T> motionSpring(): FiniteAnimationSpec<T> =
-    if (LocalReduceMotion.current) tween(0) else spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMediumLow)
+    if (LocalReduceMotion.current) tween(0) else spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMedium)
 
 @Composable
 fun ProvideReduceMotion(content: @Composable () -> Unit) {

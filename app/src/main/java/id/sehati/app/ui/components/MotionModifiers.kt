@@ -26,22 +26,20 @@ import androidx.compose.runtime.State
 import androidx.compose.ui.platform.LocalDensity
 
 /** Masuk bertahap (fade + naik) untuk daftar/kartu. */
-fun Modifier.staggerIn(index: Int, stepMs: Int = 55): Modifier = composed {
+fun Modifier.staggerIn(index: Int, stepMs: Int = 40): Modifier = composed {
     val reduce = LocalReduceMotion.current
     val progress = remember { Animatable(if (reduce) 1f else 0f) }
-    val px = with(LocalDensity.current) { 28.dp.toPx() }
+    val px = with(LocalDensity.current) { 12.dp.toPx() }
     LaunchedEffect(Unit) {
         if (!reduce) {
             kotlinx.coroutines.delay((index.coerceAtMost(10)) * stepMs.toLong())
-            progress.animateTo(1f, androidx.compose.animation.core.spring(dampingRatio = 0.72f, stiffness = 220f))
+            progress.animateTo(1f, androidx.compose.animation.core.tween(420, easing = androidx.compose.animation.core.CubicBezierEasing(0.2f, 0f, 0f, 1f)))
         }
     }
     graphicsLayer {
         val p = progress.value
         alpha = p.coerceIn(0f, 1f)
         translationY = (1f - p) * px
-        val sc = 0.94f + 0.06f * p
-        scaleX = sc; scaleY = sc
     }
 }
 
@@ -58,7 +56,7 @@ fun heartbeatScale(): State<Float> {
     val reduce = LocalReduceMotion.current
     val t = rememberInfiniteTransition(label = "heartbeat")
     return t.animateFloat(
-        initialValue = 1f, targetValue = if (reduce) 1f else 1.14f,
+        initialValue = 1f, targetValue = if (reduce) 1f else 1.06f,
         animationSpec = infiniteRepeatable(tween(650), RepeatMode.Reverse), label = "hb",
     )
 }
@@ -95,7 +93,7 @@ fun Modifier.popOnChange(key: Any?): Modifier = composed {
     val first = remember { booleanArrayOf(true) }
     LaunchedEffect(key) {
         if (first[0]) { first[0] = false; return@LaunchedEffect }
-        if (!reduce) { s.snapTo(0.6f); s.animateTo(1f, androidx.compose.animation.core.spring(dampingRatio = 0.35f, stiffness = 400f)) }
+        if (!reduce) { s.snapTo(0.92f); s.animateTo(1f, androidx.compose.animation.core.spring(dampingRatio = 0.8f, stiffness = 500f)) }
     }
     graphicsLayer { scaleX = s.value; scaleY = s.value }
 }

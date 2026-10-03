@@ -2,7 +2,7 @@ package id.sehati.app.ui.kader
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -27,8 +27,8 @@ fun FollowUpTab(vm: KaderViewModel) {
     ScreenColumn(Modifier.testTag("kader_followup_screen")) {
         Text("FOLLOW-UP", style = MaterialTheme.typography.labelLarge, color = PrimaryDark)
         Text("Needs Monitoring · Needs Recheck · Needs Health Worker Review", style = MaterialTheme.typography.bodySmall, color = TextMuted)
-        error?.let { InfoNote(it, icon = Icons.Rounded.ErrorOutline, color = RiskRedText, bg = RiskRedBg) }
-        if (s.followUps.isEmpty()) EmptyState(Icons.Rounded.EventAvailable, "Tidak ada tindak lanjut terbuka", "Hasil skrining yang perlu dipantau akan muncul di sini.")
+        error?.let { InfoNote(it, icon = Icons.Outlined.ErrorOutline, color = RiskRedText, bg = RiskRedBg) }
+        if (s.followUps.isEmpty()) EmptyState(Icons.Outlined.EventAvailable, "Tidak ada tindak lanjut terbuka", "Hasil skrining yang perlu dipantau akan muncul di sini.")
         s.followUps.forEachIndexed { i, r ->
             var verified by remember(r.follow.id) { mutableStateOf(false) }
             val f = r.follow
@@ -51,10 +51,10 @@ fun FollowUpTab(vm: KaderViewModel) {
                     Checkbox(verified, { verified = it }, Modifier.testTag("verify_${f.userId}"))
                     Text("Hasil telah diverifikasi kader/tenaga kesehatan", style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
                 }
-                SecondaryButton("Ajukan evaluasi Puskesmas", { vm.requestReferral(f.id, verified, f.reason) }, icon = Icons.Rounded.LocalHospital, tag = "referral_${f.userId}")
+                SecondaryButton("Ajukan evaluasi Puskesmas", { vm.requestReferral(f.id, verified, f.reason) }, icon = Icons.Outlined.LocalHospital, tag = "referral_${f.userId}")
             }
         }
-        InfoNote("SEHATI hanya membantu administrasi dan komunikasi tindak lanjut. Tidak ada surat diagnosis yang diterbitkan otomatis.", icon = Icons.Rounded.Shield)
+        InfoNote("SEHATI hanya membantu administrasi dan komunikasi tindak lanjut. Tidak ada surat diagnosis yang diterbitkan otomatis.", icon = Icons.Outlined.Shield)
     }
 }
 
@@ -65,8 +65,8 @@ fun HomeVisitTab(vm: KaderViewModel) {
     ScreenColumn(Modifier.testTag("kader_homevisit_screen")) {
         Text("ANTREAN KUNJUNGAN RUMAH", style = MaterialTheme.typography.labelLarge, color = PrimaryDark)
         Text("Tiba → Verifikasi → Asesmen → Edukasi → Catat → Tindakan → Tutup", style = MaterialTheme.typography.bodySmall, color = TextMuted)
-        error?.let { InfoNote(it, icon = Icons.Rounded.ErrorOutline, color = RiskRedText, bg = RiskRedBg) }
-        if (s.queue.isEmpty()) EmptyState(Icons.Rounded.Home, "Antrean kosong", "Jadwalkan kunjungan rumah dari tab Follow-Up.")
+        error?.let { InfoNote(it, icon = Icons.Outlined.ErrorOutline, color = RiskRedText, bg = RiskRedBg) }
+        if (s.queue.isEmpty()) EmptyState(Icons.Outlined.Home, "Antrean kosong", "Jadwalkan kunjungan rumah dari tab Follow-Up.")
         s.queue.forEachIndexed { i, q -> HomeVisitCard(q, vm, Modifier.staggerIn(i)) }
     }
 }
@@ -87,10 +87,10 @@ private fun HomeVisitCard(q: QueueItem, vm: KaderViewModel, modifier: Modifier) 
         KeyValueRow("Jadwal", TimeUtils.date(h.scheduledAt))
         StatusPill(status.label, PrimaryDark, PrimaryLight)
         when (status) {
-            HomeVisitStatus.PLANNED -> PrimaryButton("Tiba di lokasi", { vm.arrive(h.id) }, icon = Icons.Rounded.Place, tag = "arrive_${h.userId}")
+            HomeVisitStatus.PLANNED -> PrimaryButton("Tiba di lokasi", { vm.arrive(h.id) }, icon = Icons.Outlined.Place, tag = "arrive_${h.userId}")
             HomeVisitStatus.ARRIVED -> {
                 Text("Verifikasi identitas warga sebelum melanjutkan.", style = MaterialTheme.typography.bodyMedium)
-                PrimaryButton("Identitas terverifikasi", { vm.verify(h.id, true) }, icon = Icons.Rounded.VerifiedUser, tag = "verify_home_${h.userId}")
+                PrimaryButton("Identitas terverifikasi", { vm.verify(h.id, true) }, icon = Icons.Outlined.VerifiedUser, tag = "verify_home_${h.userId}")
             }
             HomeVisitStatus.IN_PROGRESS -> {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -107,7 +107,7 @@ private fun HomeVisitCard(q: QueueItem, vm: KaderViewModel, modifier: Modifier) 
                     Checkbox(resolved, { resolved = it }, Modifier.testTag("home_resolved_${h.userId}"))
                     Text("Tindak lanjut dianggap selesai", style = MaterialTheme.typography.bodyMedium)
                 }
-                PrimaryButton("Tutup kunjungan", { vm.closeHome(h.id, assessment, education, action, resolved) }, icon = Icons.Rounded.TaskAlt, tag = "close_home_${h.userId}")
+                PrimaryButton("Tutup kunjungan", { vm.closeHome(h.id, assessment, education, action, resolved) }, icon = Icons.Outlined.TaskAlt, tag = "close_home_${h.userId}")
             }
             HomeVisitStatus.CLOSED -> Unit
         }
@@ -128,10 +128,10 @@ fun SyncTab(vm: KaderViewModel) {
             KeyValueRow("Gagal (akan dicoba lagi)", s.sync.failed.toString(), valueColor = if (s.sync.failed > 0) RiskRedText else TextPrimary)
             KeyValueRow("Terkirim", s.sync.done.toString())
             KeyValueRow("Terakhir", s.sync.lastSyncAt?.let { TimeUtils.dateTime(it) } ?: "-")
-            msg?.let { InfoNote(it, icon = Icons.Rounded.Sync) }
-            PrimaryButton("Sinkronkan sekarang", vm::syncNow, loading = busy, icon = Icons.Rounded.Sync, tag = "kader_sync_button")
+            msg?.let { InfoNote(it, icon = Icons.Outlined.Sync) }
+            PrimaryButton("Sinkronkan sekarang", vm::syncNow, loading = busy, icon = Icons.Outlined.Sync, tag = "kader_sync_button")
         }
-        InfoNote("Aplikasi tetap bekerja tanpa internet. Semua data tersimpan di perangkat lebih dulu, lalu dikirim saat tersedia; kiriman ulang tidak membuat data ganda.", icon = Icons.Rounded.CloudOff)
+        InfoNote("Aplikasi tetap bekerja tanpa internet. Semua data tersimpan di perangkat lebih dulu, lalu dikirim saat tersedia; kiriman ulang tidak membuat data ganda.", icon = Icons.Outlined.CloudOff)
         SectionTitle("Aktivitas terbaru")
         recent.forEach { q ->
             SehatiCard(contentPadding = 12) {
