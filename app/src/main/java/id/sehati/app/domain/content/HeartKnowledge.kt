@@ -46,6 +46,11 @@ object HeartKnowledge {
         return symptomWords.count { q.contains(it) } >= 1 && (q.contains("sekarang") || q.contains("mendadak") || q.contains("sedang") || q.contains("barusan") || q.contains("keringat") || q.contains("pingsan") || q.contains("menjalar") || q.contains("nyeri dada") || q.contains("dada sakit"))
     }
 
+    private val personal = Regex("\\b(saya|aku|sedang|sekarang|barusan|mendadak|ayah|ibu|bapak|suami|istri|kakek|nenek)\\b")
+
+    /** Pertanyaan edukasi umum ("apa tanda...") berbeda dari laporan gejala yang sedang dialami. */
+    fun isGeneralQuestion(text: String): Boolean = !personal.containsMatchIn(text.lowercase())
+
     fun answer(question: String): FaqAnswer {
         val q = question.lowercase().trim()
         if (q.isBlank()) return FaqAnswer(null, faq.take(5))

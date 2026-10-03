@@ -88,6 +88,10 @@ class ContentTest {
         assertTrue(HeartKnowledge.isEmergencyText("saya nyeri dada sekarang dan keringat dingin"))
         assertFalse(HeartKnowledge.isEmergencyText("bagaimana cara olahraga"))
     }
+    @Test fun generalQuestionVsPersonalSymptom() {
+        assertTrue(HeartKnowledge.isGeneralQuestion("Apa tanda bahaya serangan jantung?"))
+        assertFalse(HeartKnowledge.isGeneralQuestion("saya nyeri dada sekarang"))
+    }
     @Test fun allModuleLinksResolve() {
         HeartKnowledge.faq.mapNotNull { it.moduleId }.forEach { assertNotNull(Academy.byId(it), it) }
         ChallengeCatalog.all.mapNotNull { it.moduleId }.forEach { assertNotNull(Academy.byId(it), it) }

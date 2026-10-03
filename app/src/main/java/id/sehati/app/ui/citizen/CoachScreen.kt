@@ -76,10 +76,11 @@ class CoachViewModel @Inject constructor(
         _thinking.value = true
         viewModelScope.launch {
             val faq = HeartKnowledge.answer(q)
-            val emergency = RedFlag.detect(q) || HeartKnowledge.isEmergencyText(q)
+            val general = faq.entry != null && HeartKnowledge.isGeneralQuestion(q)
+            val emergency = !general && (RedFlag.detect(q) || HeartKnowledge.isEmergencyText(q))
             val msg = when {
                 emergency -> ChatMessage(RedFlag.EMERGENCY_MESSAGE, false, emergency = true)
-                faq.entry != null -> ChatMessage("${faq.entry.answer}\n\n${HeartKnowledge.DISCLAIMER}", false, faq.entry.emergency, faq.entry.moduleId, faq.related.map { it.question })
+                faq.entry != null -> ChatMessage("${faq.entry.answer}\n\n${HeartKnowledge.DISCLAIMER}", false, false, faq.entry.moduleId, faq.related.map { it.question })
                 else -> HealthCoach.reply(q, context()).let { ChatMessage(it.text, false, it.emergency) }
             }
             if (!msg.emergency) delay(350)
