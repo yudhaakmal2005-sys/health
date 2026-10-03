@@ -78,3 +78,22 @@ class MedicationRepositoryTest {
         assertFailsWith<IllegalArgumentException> { env.meds.save(u.sehatiId, "X", "", listOf("99:00")) }
     }
 }
+
+/** Data pull asli dari server SEHATI (seed demo) harus dapat diterapkan seluruhnya oleh aplikasi. */
+@RunWith(AndroidJUnit4::class)
+@Config(sdk = [34])
+class ServerFixtureCompatTest {
+    private lateinit var env: TestEnv
+    @Before fun setUp() { env = TestEnv() }
+    @After fun tearDown() = env.close()
+
+    @Test fun everyServerTypeDecodes() = blocking {
+        val raw = javaClass.classLoader!!.getResource("pull_fixture.json")!!.readText()
+        val res = env.json.decodeFromString(id.sehati.app.data.remote.PullResponse.serializer(), raw)
+        val r = SyncApplier(env.db, env.json).apply(res.items)
+        assertEquals(res.items.size, r.applied, "skipped ${r.skipped} item(s)")
+        val checks = env.health.checks("HM-000001")
+        assertTrue(checks.isNotEmpty() && checks.first().bloodPressure != null)
+        assertNotNull(env.db.healthDao().profile("HM-000001"))
+    }
+}
