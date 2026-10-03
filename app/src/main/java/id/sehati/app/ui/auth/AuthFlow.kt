@@ -8,6 +8,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
@@ -55,21 +56,28 @@ fun AuthFlow(onAssessmentNeeded: () -> Unit) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun WelcomeScreen(onStart: () -> Unit, onLogin: () -> Unit) {
-    val pulse by heartbeatScale()
-    ScreenColumn(Modifier.statusBarsPadding().navigationBarsPadding().testTag("welcome_screen"), scroll = true) {
-        Spacer(Modifier.height(36.dp))
-        Box(Modifier.align(Alignment.CenterHorizontally).scale(pulse)) { IconBadge(Icons.Rounded.Favorite, Color.White, Primary, 96) }
-        Text("SEHATI", style = MaterialTheme.typography.displaySmall, color = PrimaryDark, modifier = Modifier.align(Alignment.CenterHorizontally))
-        Text("Kenali kesehatanmu.\nJaga dari sekarang.", style = MaterialTheme.typography.headlineMedium, color = TextPrimary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().staggerIn(1))
-        Text("Teman pemantauan kesehatan pribadi sekaligus penghubung ke Posyandu dan Puskesmas di desamu.", style = MaterialTheme.typography.bodyLarge, color = TextSecondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().staggerIn(2))
-        Spacer(Modifier.height(12.dp))
-        Column(Modifier.staggerIn(3), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            PrimaryButton("Mulai", onStart, icon = Icons.Rounded.ArrowForward, tag = "welcome_start_button")
-            SecondaryButton("Sudah punya akun? Masuk", onLogin, tag = "welcome_login_button")
+    Box(Modifier.fillMaxSize().background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(PrimarySoft, Background, Background)))) {
+        ScreenColumn(Modifier.statusBarsPadding().navigationBarsPadding().testTag("welcome_screen"), scroll = true) {
+            Spacer(Modifier.height(28.dp))
+            HeartLogo(118.dp, modifier = Modifier.align(Alignment.CenterHorizontally).staggerIn(0))
+            Text("SEHATI", style = MaterialTheme.typography.displaySmall, color = PrimaryDark, modifier = Modifier.align(Alignment.CenterHorizontally).staggerIn(1))
+            Text("Kenali kesehatanmu.\nJaga jantungmu dari sekarang.", style = MaterialTheme.typography.headlineMedium, color = TextPrimary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().staggerIn(2))
+            Text("Teman pemantauan kesehatan pribadi sekaligus penghubung ke Posyandu dan Puskesmas di desamu.", style = MaterialTheme.typography.bodyLarge, color = TextSecondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().staggerIn(3))
+            FlowRow(Modifier.fillMaxWidth().staggerIn(4), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf(Icons.Rounded.FavoriteBorder to "Jantung sehat", Icons.Rounded.WifiOff to "Tanpa internet", Icons.Rounded.Lock to "Data aman").forEach { (ic, t) ->
+                    StatusPill(t, PrimaryDark, PrimaryLight, ic)
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            Column(Modifier.staggerIn(5), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                PrimaryButton("Mulai", onStart, icon = Icons.Rounded.ArrowForward, tag = "welcome_start_button")
+                SecondaryButton("Sudah punya akun? Masuk", onLogin, tag = "welcome_login_button")
+            }
+            InfoNote("SEHATI bukan alat diagnosis dan tidak menggantikan layanan Puskesmas atau tenaga kesehatan.", Modifier.staggerIn(6))
         }
-        InfoNote("SEHATI bukan alat diagnosis dan tidak menggantikan layanan Puskesmas atau tenaga kesehatan.", Modifier.staggerIn(4))
     }
 }
 

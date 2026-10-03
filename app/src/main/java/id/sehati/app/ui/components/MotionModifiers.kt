@@ -92,9 +92,9 @@ fun Modifier.floating(amplitudeDp: Float = 6f, periodMs: Int = 2600, phase: Floa
 fun Modifier.popOnChange(key: Any?): Modifier = composed {
     val reduce = LocalReduceMotion.current
     val s = remember { Animatable(1f) }
-    var first by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(true) }
+    val first = remember { booleanArrayOf(true) }
     LaunchedEffect(key) {
-        if (first) { first = false; return@LaunchedEffect }
+        if (first[0]) { first[0] = false; return@LaunchedEffect }
         if (!reduce) { s.snapTo(0.6f); s.animateTo(1f, androidx.compose.animation.core.spring(dampingRatio = 0.35f, stiffness = 400f)) }
     }
     graphicsLayer { scaleX = s.value; scaleY = s.value }
