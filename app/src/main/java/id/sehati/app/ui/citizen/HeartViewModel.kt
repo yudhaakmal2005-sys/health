@@ -50,17 +50,17 @@ class HeartViewModel @Inject constructor(
     private val today: LocalDate get() = TimeUtils.toLocalDate(clock.now())
 
     private data class A(val profile: HealthProfileEntity?, val settings: AppSettings, val habit: HabitLogEntity?, val smoking: SmokingRecordEntity?, val sleep: List<SleepRecordEntity>)
-    private data class B(val food: List<FoodEntryEntity>, val checks: List<HealthCheck>, val habits: List<HabitLogEntity>, val challenges: List<ChallengeEntity>, val edu: List<EducationProgressEntity>, val activity: List<ActivitySessionEntity>)
+    private data class B(val food: List<FoodEntryEntity>, val checks: List<HealthCheck>, val habits: List<HabitLogEntity>, val challenges: List<ChallengeEntity>, val edu: List<EducationProgressEntity>)
 
     val state: StateFlow<HeartUiState> = current.user.filterNotNull().flatMapLatest { u ->
         val id = u.sehatiId
         val iso = today.toString()
         val a = combine(health.observeProfile(id), settings.settings, daily.observeHabit(id, iso), daily.observeSmoking(id, iso), daily.observeSleep(id, iso), ::A)
-        val b = combine(daily.observeFood(id, iso), health.observeChecks(id), daily.observeRecentHabits(id, 30), daily.observeChallenges(id), daily.observeEducation(id), daily.observeRecentActivity(id, 300), ::B)
-        combine(a, b) { x, y -> x to y }.mapLatest { (x, y) -> build(id, x, y) }
+        val b = combine(daily.observeFood(id, iso), health.observeChecks(id), daily.observeRecentHabits(id, 30), daily.observeChallenges(id), daily.observeEducation(id), ::B)
+        combine(a, b, daily.observeRecentActivity(id, 300)) { x, y, act -> build(id, x, y, act) }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), HeartUiState())
 
-    private suspend fun build(id: String, a: A, b: B): HeartUiState {
+    private suspend fun build(id: String, a: A, b: B, activity: List<ActivitySessionEntity>): HeartUiState {
         val day = today
         val s = a.settings
         val report = health.heartRisk(id, day)
@@ -85,7 +85,7 @@ class HeartViewModel @Inject constructor(
         val available = ChallengeCatalog.all.filter { it.id !in startedActive }
         val answeredDays = Challenges.decode(b.challenges.firstOrNull { it.challengeId == "fact" }?.checkIns.orEmpty())
         val weekStart = day.minusDays(6)
-        val weekSegments = b.activity.filter { !TimeUtils.toLocalDate(it.startAt).isBefore(weekStart) }
+        val weekSegments = activity.filter { !TimeUtils.toLocalDate(it.startAt).isBefore(weekStart) }
             .map { MovementSegment(MovementKind.parse(it.kind), it.startAt, it.endAt, it.distanceMeters) }
         val weekActiveMin = ActivityAggregator.summarize(weekSegments).activeMinutes
         val progress = Gamification.compute(
