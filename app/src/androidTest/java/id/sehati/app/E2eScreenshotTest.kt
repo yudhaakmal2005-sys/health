@@ -115,9 +115,7 @@ class E2eScreenshotTest {
         rule.click("qa_breath"); rule.waitTag("breathing_screen"); shot("latihan_napas")
         rule.click("back_button"); rule.waitTag("home_greeting_name")
         rule.click("qa_meds"); rule.waitTag("medication_screen"); shot("obat_saya")
-        rule.click("open_reminders"); rule.waitTag("reminder_settings_screen"); shot("pengingat")
-        repeat(2) { rule.runOnUiThread { rule.activity.onBackPressedDispatcher.onBackPressed() }; rule.waitForIdle() }
-        rule.waitTag("home_greeting_name")
+        rule.click("back_button"); rule.waitTag("home_greeting_name")
         rule.click("back_button"); rule.waitTag("home_greeting_name")
         rule.click("nav_move"); rule.waitTag("move_screen"); shot("aktivitas")
         rule.click("nav_food"); rule.waitTag("food_screen"); shot("makanan")
@@ -125,6 +123,8 @@ class E2eScreenshotTest {
         rule.click("show_qr_button"); rule.waitTag("qr_screen"); shot("qr")
         rule.click("back_button")
         rule.click("nav_profile"); rule.waitTag("profile_screen"); shot("profil")
+        rule.click("profile_reminders_button"); rule.waitTag("reminder_settings_screen"); shot("pengingat")
+        rule.click("back_button"); rule.waitTag("profile_screen")
         rule.click("logout_button"); rule.click("logout_dialog_confirm")
 
         rule.click("welcome_login_button"); rule.click("demo_login_kader")
