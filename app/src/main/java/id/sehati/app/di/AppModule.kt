@@ -39,7 +39,7 @@ object AppModule {
         System.loadLibrary("sqlcipher")
         fun open(): SehatiDatabase {
             val factory = SupportOpenHelperFactory(DatabaseKeyProvider(store).passphrase())
-            val db = Room.databaseBuilder(c, SehatiDatabase::class.java, SehatiDatabase.NAME).openHelperFactory(factory).build()
+            val db = Room.databaseBuilder(c, SehatiDatabase::class.java, SehatiDatabase.NAME).openHelperFactory(factory).addMigrations(SehatiDatabase.MIGRATION_1_2).build()
             db.openHelper.writableDatabase // memaksa pembukaan agar kunci yang salah terdeteksi sekarang, bukan saat layar dibuka
             return db
         }
@@ -56,6 +56,10 @@ object AppModule {
     @Provides @Singleton fun session(store: SecureStore, clock: Clock) = SessionManager(store, clock)
 
     @Provides @Singleton fun syncRecorder(db: SehatiDatabase, clock: Clock, json: Json) = SyncRecorder(db.systemDao(), clock, json)
+
+    @Provides @Singleton
+    fun thresholds(db: SehatiDatabase, settings: SettingsStore, health: HealthRepository, s: SessionManager, audit: AuditLogger, json: Json) =
+        id.sehati.app.data.repository.ThresholdService(db, settings, health, s, audit, json)
 
     @Provides @Singleton fun audit(db: SehatiDatabase, s: SessionManager, clock: Clock) = AuditLogger(db.systemDao(), s, clock)
 

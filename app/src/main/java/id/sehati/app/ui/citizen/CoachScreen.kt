@@ -29,6 +29,9 @@ import id.sehati.app.data.prefs.SettingsStore
 import id.sehati.app.data.repository.DailyRepository
 import id.sehati.app.data.repository.HealthRepository
 import id.sehati.app.data.repository.PosyanduRepository
+import id.sehati.app.domain.content.Academy
+import id.sehati.app.domain.content.HeartKnowledge
+import id.sehati.app.domain.rules.RedFlag
 import id.sehati.app.domain.rules.CoachContext
 import id.sehati.app.domain.rules.HealthCoach
 import id.sehati.app.ui.app.CurrentUser
@@ -39,14 +42,14 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class ChatMessage(val text: String, val fromUser: Boolean, val emergency: Boolean = false)
+data class ChatMessage(val text: String, val fromUser: Boolean, val emergency: Boolean = false, val moduleId: String? = null, val related: List<String> = emptyList())
 
 @HiltViewModel
 class CoachViewModel @Inject constructor(
     private val current: CurrentUser, private val daily: DailyRepository, private val health: HealthRepository,
     private val posyandu: PosyanduRepository, private val settings: SettingsStore, private val clock: Clock,
 ) : ViewModel() {
-    private val _messages = MutableStateFlow(listOf(ChatMessage("Halo! Aku pelatih SEHATI. Tanyakan tentang aktivitas, makanan, tidur, atau kebiasaan sehat.\n\n${HealthCoach.DISCLAIMER}", false)))
+    private val _messages = MutableStateFlow(listOf(ChatMessage("Halo! Aku SEHATI. Tanyakan tentang jantung koroner, tanda bahaya, garam, rokok, olahraga, atau kebiasaan sehat.\n\n${HeartKnowledge.DISCLAIMER}", false)))
     val messages: StateFlow<List<ChatMessage>> = _messages.asStateFlow()
     private val _thinking = MutableStateFlow(false)
     val thinking: StateFlow<Boolean> = _thinking.asStateFlow()
@@ -72,41 +75,51 @@ class CoachViewModel @Inject constructor(
         _messages.update { it + ChatMessage(q, true) }
         _thinking.value = true
         viewModelScope.launch {
-            val r = HealthCoach.reply(q, context())
-            if (!r.emergency) delay(450)
-            _messages.update { it + ChatMessage(r.text, false, r.emergency) }
+            val faq = HeartKnowledge.answer(q)
+            val emergency = RedFlag.detect(q) || HeartKnowledge.isEmergencyText(q)
+            val msg = when {
+                emergency -> ChatMessage(RedFlag.EMERGENCY_MESSAGE, false, emergency = true)
+                faq.entry != null -> ChatMessage("${faq.entry.answer}\n\n${HeartKnowledge.DISCLAIMER}", false, faq.entry.emergency, faq.entry.moduleId, faq.related.map { it.question })
+                else -> HealthCoach.reply(q, context()).let { ChatMessage(it.text, false, it.emergency) }
+            }
+            if (!msg.emergency) delay(350)
+            _messages.update { it + msg }
             _thinking.value = false
         }
     }
 }
 
 @Composable
-fun CoachScreen(onBack: () -> Unit, vm: CoachViewModel = hiltViewModel()) {
+fun CoachScreen(onBack: () -> Unit, onOpenAcademy: (String) -> Unit = {}, vm: CoachViewModel = hiltViewModel()) {
     val msgs by vm.messages.collectAsStateWithLifecycle()
     val thinking by vm.thinking.collectAsStateWithLifecycle()
     var input by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
     LaunchedEffect(msgs.size, thinking) { listState.animateScrollToItem((msgs.size).coerceAtLeast(0)) }
     Column(Modifier.fillMaxSize().imePadding().testTag("coach_screen")) {
-        Box(Modifier.padding(horizontal = 20.dp)) { ScreenHeader("Pelatih SEHATI", "Saran gaya hidup umum · bukan diagnosis", onBack = onBack) }
+        Box(Modifier.padding(horizontal = 20.dp)) { ScreenHeader("Tanya SEHATI", "Jawaban singkat seputar jantung · bukan diagnosis", onBack = onBack) }
         LazyColumn(Modifier.weight(1f).padding(horizontal = 20.dp), state = listState, verticalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(vertical = 8.dp)) {
             items(msgs) { m ->
                 if (m.emergency) EmergencyBanner()
-                else Row(Modifier.fillMaxWidth(), horizontalArrangement = if (m.fromUser) Arrangement.End else Arrangement.Start) {
+                else Column(Modifier.fillMaxWidth(), horizontalAlignment = if (m.fromUser) Alignment.End else Alignment.Start, verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Surface(shape = RoundedCornerShape(18.dp), color = if (m.fromUser) Primary else CardWhite, border = if (m.fromUser) null else androidx.compose.foundation.BorderStroke(1.dp, BorderColor), modifier = Modifier.widthIn(max = 320.dp)) {
                         Text(m.text, Modifier.padding(14.dp), style = MaterialTheme.typography.bodyMedium, color = if (m.fromUser) androidx.compose.ui.graphics.Color.White else TextPrimary)
                     }
+                    m.moduleId?.let { id -> Academy.byId(id)?.let { mod ->
+                        AssistChip({ onOpenAcademy(id) }, { Text("Pelajari: ${mod.title}") }, Modifier.heightIn(min = 48.dp).testTag("coach_module_$id"))
+                    } }
+                    m.related.forEach { q -> SuggestionChip({ vm.send(q) }, { Text(q) }, Modifier.heightIn(min = 48.dp)) }
                 }
             }
             if (thinking) item { Text("Pelatih sedang mengetik…", style = MaterialTheme.typography.bodySmall, color = TextMuted, modifier = Modifier.shimmer()) }
         }
-        Row(Modifier.padding(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf("Tips aktivitas", "Kurangi garam", "Cara berhenti merokok").forEach { c ->
+        androidx.compose.foundation.lazy.LazyRow(Modifier.padding(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            items(HeartKnowledge.suggestedQuestions) { c ->
                 AssistChip({ vm.send(c) }, { Text(c) }, Modifier.heightIn(min = 48.dp).testTag("coach_chip_$c"))
             }
         }
         Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedTextField(input, { input = it }, Modifier.weight(1f).testTag("coach_input"), placeholder = { Text("Tulis pertanyaan…") }, shape = RoundedCornerShape(16.dp), singleLine = true,
+            OutlinedTextField(input, { input = it }, Modifier.weight(1f).testTag("coach_input"), placeholder = { Text("Tanyakan tentang jantung…") }, shape = RoundedCornerShape(16.dp), singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send), keyboardActions = KeyboardActions(onSend = { vm.send(input); input = "" }))
             FilledIconButton({ vm.send(input); input = "" }, Modifier.size(52.dp).testTag("coach_send_button")) { Icon(Icons.Rounded.Send, "Kirim") }
         }

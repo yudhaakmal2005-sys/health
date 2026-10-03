@@ -249,6 +249,7 @@ fun SettingsTab(vm: AdminViewModel) {
             KeyValueRow("GDS di atas normal", "≥ ${t.gdsElevated.toInt()} mg/dL"); KeyValueRow("GDS tinggi", "≥ ${t.gdsHigh.toInt()} mg/dL")
             KeyValueRow("Kolesterol total tinggi", "≥ ${t.cholHigh.toInt()} mg/dL"); KeyValueRow("IMT obesitas I", "≥ ${t.bmiObese1}")
         }
+        ThresholdEditor(vm)
         rules.forEach { r ->
             SehatiCard(contentPadding = 14) {
                 Text(r.rule, style = MaterialTheme.typography.titleSmall)
@@ -281,4 +282,48 @@ private fun AddCadreDialog(vm: AdminViewModel, onDismiss: () -> Unit, onCreated:
         confirmButton = { TextButton({ vm.addCadre(name, rw.ifBlank { "01" }, pw) { onCreated(it) } }, Modifier.heightIn(min = 48.dp).testTag("cadre_save_button")) { Text("Simpan") } },
         dismissButton = { TextButton(onDismiss, Modifier.heightIn(min = 48.dp)) { Text("Batal") } },
     )
+}
+
+/** Penyesuaian ambang aturan (mis. mengikuti pedoman Puskesmas). Divalidasi, dicatat di audit, lalu semua profil dihitung ulang. */
+@Composable
+private fun ThresholdEditor(vm: AdminViewModel) {
+    val version by vm.thresholdVersion.collectAsStateWithLifecycle()
+    val msg by vm.thresholdMessage.collectAsStateWithLifecycle()
+    val cur = ClinicalConfig.current
+    var sys by remember(version) { mutableStateOf(cur.bpHighSys.toString()) }
+    var dia by remember(version) { mutableStateOf(cur.bpHighDia.toString()) }
+    var gds by remember(version) { mutableStateOf(cur.gdsElevated.toInt().toString()) }
+    var chol by remember(version) { mutableStateOf(cur.cholBorderline.toInt().toString()) }
+    var bmi by remember(version) { mutableStateOf(cur.bmiObese1.toString()) }
+    var active by remember(version) { mutableStateOf(cur.activeMinutesPerWeekGoal.toString()) }
+    var confirmReset by remember { mutableStateOf(false) }
+    val num = androidx.compose.ui.text.input.KeyboardType.Number
+    SehatiCard(Modifier.testTag("threshold_editor")) {
+        Text("Sesuaikan ambang aturan", style = MaterialTheme.typography.titleSmall)
+        Text(if (ClinicalConfig.isCustom) "Saat ini memakai ambang kustom." else "Saat ini memakai ambang bawaan aplikasi.", style = MaterialTheme.typography.bodySmall, color = if (ClinicalConfig.isCustom) RiskOrangeText else TextMuted)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SehatiTextField(sys, { sys = it.filter(Char::isDigit).take(3) }, "TD tinggi sistolik", Modifier.weight(1f), keyboardType = num, tag = "th_sys")
+            SehatiTextField(dia, { dia = it.filter(Char::isDigit).take(3) }, "TD tinggi diastolik", Modifier.weight(1f), keyboardType = num, tag = "th_dia")
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SehatiTextField(gds, { gds = it.filter(Char::isDigit).take(3) }, "GDS di atas normal", Modifier.weight(1f), keyboardType = num, tag = "th_gds")
+            SehatiTextField(chol, { chol = it.filter(Char::isDigit).take(3) }, "Kolesterol batas atas", Modifier.weight(1f), keyboardType = num, tag = "th_chol")
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SehatiTextField(bmi, { bmi = it.filter { c -> c.isDigit() || c == '.' }.take(4) }, "IMT obesitas I", Modifier.weight(1f), keyboardType = androidx.compose.ui.text.input.KeyboardType.Decimal, tag = "th_bmi")
+            SehatiTextField(active, { active = it.filter(Char::isDigit).take(3) }, "Menit aktif/minggu", Modifier.weight(1f), keyboardType = num, tag = "th_active")
+        }
+        msg?.let { InfoNote(it, Modifier.testTag("threshold_message")) }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            PrimaryButton("Simpan", {
+                vm.saveThresholds(cur.copy(
+                    bpHighSys = sys.toIntOrNull() ?: 0, bpHighDia = dia.toIntOrNull() ?: 0, gdsElevated = gds.toFloatOrNull() ?: 0f,
+                    cholBorderline = chol.toFloatOrNull() ?: 0f, bmiObese1 = bmi.toFloatOrNull() ?: 0f, activeMinutesPerWeekGoal = active.toIntOrNull() ?: 0,
+                ))
+            }, Modifier.weight(1f), tag = "th_save")
+            SecondaryButton("Kembalikan bawaan", { confirmReset = true }, Modifier.weight(1f), tag = "th_reset")
+        }
+        Text("Perubahan memengaruhi penilaian semua warga dan dicatat di audit log. Hanya sesuaikan bila ada pedoman resmi dari Puskesmas atau Dinas Kesehatan.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
+    }
+    if (confirmReset) ConfirmDialog("Kembalikan ambang bawaan?", "Semua profil akan dihitung ulang dengan ambang bawaan aplikasi.", "Kembalikan", { confirmReset = false; vm.resetThresholds() }, { confirmReset = false }, tag = "th_reset_dialog")
 }

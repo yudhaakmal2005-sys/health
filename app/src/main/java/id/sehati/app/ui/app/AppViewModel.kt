@@ -28,6 +28,8 @@ class CurrentUser @Inject constructor(private val session: SessionManager, priva
     val role: Role? get() = session.session.value?.role
 }
 
+data class WelcomeInfo(val name: String, val label: String)
+
 sealed interface RootState {
     data object Preparing : RootState
     data object LoggedOut : RootState
@@ -65,7 +67,27 @@ class AppViewModel @Inject constructor(
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, RootState.Preparing)
 
+    /** Sambutan singkat saat pengguna masuk ke aplikasi utama (login, atau setelah asesmen selesai). */
+    private val _welcome = MutableStateFlow<WelcomeInfo?>(null)
+    val welcome: StateFlow<WelcomeInfo?> = _welcome.asStateFlow()
+    fun dismissWelcome() { _welcome.value = null }
+
     init {
+        viewModelScope.launch {
+            var previous: RootState = RootState.Preparing
+            root.collect { r ->
+                val main = r == RootState.Citizen || r == RootState.Kader || r == RootState.Admin
+                val fromMain = previous == RootState.Citizen || previous == RootState.Kader || previous == RootState.Admin
+                if (main && !fromMain) {
+                    val u = user.value
+                    val name = u?.fullName?.substringBefore(' ') ?: when (r) { RootState.Kader -> "Kader"; else -> "Admin" }
+                    val label = when (r) { RootState.Kader -> "Kader Posyandu"; RootState.Admin -> "Admin Puskesmas"; else -> "Mari jaga kesehatan jantung bersama" }
+                    _welcome.value = WelcomeInfo(name, label)
+                }
+                if (!main) _welcome.value = null
+                previous = r
+            }
+        }
         // Warga yang belum menuntaskan asesmen masuk alur: asesmen → profil → rencana (tidak boleh terpotong)
         viewModelScope.launch { user.collect { u -> if (u != null && u.role == Role.WARGA.name && !u.assessmentDone) inOnboardingFlow.value = true } }
         viewModelScope.launch {

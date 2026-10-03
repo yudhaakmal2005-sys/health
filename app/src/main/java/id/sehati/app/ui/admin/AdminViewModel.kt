@@ -42,6 +42,7 @@ class AdminViewModel @Inject constructor(
     private val posyandu: PosyanduRepository,
     private val syncController: SyncController,
     private val clock: Clock,
+    private val thresholds: ThresholdService,
 ) : ViewModel() {
     private val destination = MutableStateFlow("")
     init { viewModelScope.launch { destination.value = syncController.destinationLabel() } }
@@ -74,6 +75,25 @@ class AdminViewModel @Inject constructor(
         viewModelScope.launch { runCatching { posyandu.addCadre(name, rw.padStart(2, '0'), password) }.onSuccess { onDone(it.sehatiId) }.onFailure { _error.value = it.message } }
     }
     fun adjustStock(id: String, delta: Int) { viewModelScope.launch { runCatching { posyandu.adjustStock(id, delta) }.onFailure { _error.value = it.message } } }
+
+    private val _thresholdMsg = MutableStateFlow<String?>(null)
+    val thresholdMessage: StateFlow<String?> = _thresholdMsg.asStateFlow()
+    private val _thresholdVersion = MutableStateFlow(0)
+    val thresholdVersion: StateFlow<Int> = _thresholdVersion.asStateFlow()
+    fun saveThresholds(t: ClinicalThresholds) {
+        viewModelScope.launch {
+            val err = runCatching { thresholds.save(t) }.getOrElse { it.message }
+            _thresholdMsg.value = err ?: "Ambang disimpan. Semua profil dihitung ulang."
+            _thresholdVersion.value++
+        }
+    }
+    fun resetThresholds() {
+        viewModelScope.launch {
+            val err = runCatching { thresholds.reset() }.getOrElse { it.message }
+            _thresholdMsg.value = err ?: "Ambang dikembalikan ke bawaan aplikasi."
+            _thresholdVersion.value++
+        }
+    }
 
     fun reportText(): String? = state.value.stats?.let { ReportBuilder.text(it, TimeUtils.dateTime(clock.now()), "Desa Mirigambar") }
     fun reportCsv(): String? = state.value.stats?.let { ReportBuilder.csv(it) }

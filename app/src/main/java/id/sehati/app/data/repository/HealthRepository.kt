@@ -141,14 +141,14 @@ class HealthRepository(
 
     private suspend fun saveMeasurementInTx(m: NewMeasurement) = saveMeasurement(m)
 
-    /** Profil dihitung ulang dari asesmen + pemeriksaan terbaru; disimpan agar dapat dibaca konsisten oleh semua layar. */
-    suspend fun recomputeProfile(userId: String, today: LocalDate = LocalDate.now()): HealthProfile {
+    /** Snapshot data terbaru satu warga (asesmen + pemeriksaan) untuk mesin aturan. */
+    suspend fun buildSnapshot(userId: String, today: LocalDate = LocalDate.now()): HealthSnapshot {
         val user = users.get(userId)
         val a = dao.latestAssessment(userId)
         val checks = dao.checks(userId).map { it.toCheck() }
         val bps = checks.mapNotNull { it.bloodPressure }.take(5)
         val latestGlucose = checks.firstOrNull { it.glucose != null }
-        val snap = HealthSnapshot(
+        return HealthSnapshot(
             age = user?.let { AgeCalc.age(it.birthDate, today) } ?: 0,
             male = user?.sex == "MALE",
             heightCm = checks.firstNotNullOfOrNull { it.heightCm } ?: a?.heightCm ?: 0f,
@@ -165,7 +165,16 @@ class HealthRepository(
             vegetableDaysPerWeek = a?.vegetableDays ?: 7, fruitDaysPerWeek = a?.fruitDays ?: 7,
             saltyFoodFrequent = a?.saltyFrequent ?: false, sugaryFrequent = a?.sugaryFrequent ?: false, fattyFrequent = a?.fattyFrequent ?: false,
             sleepHours = a?.sleepHours ?: 7f, stressLevel = a?.stressLevel ?: 1, redFlagSymptom = a?.redFlagSymptom ?: false,
+            knownDyslipidemia = a?.knownDyslipidemia ?: false, assessed = a != null,
         )
+    }
+
+    /** Faktor risiko jantung koroner dari data terbaru (bukan diagnosis). */
+    suspend fun heartRisk(userId: String, today: LocalDate = LocalDate.now()): HeartRiskReport = HeartRisk.evaluate(buildSnapshot(userId, today))
+
+    /** Profil dihitung ulang dari asesmen + pemeriksaan terbaru; disimpan agar dapat dibaca konsisten oleh semua layar. */
+    suspend fun recomputeProfile(userId: String, today: LocalDate = LocalDate.now()): HealthProfile {
+        val snap = buildSnapshot(userId, today)
         val profile = RiskProfileEngine.evaluate(snap)
         val prev = dao.profile(userId)
         val now = clock.now()

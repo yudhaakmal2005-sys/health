@@ -1,6 +1,17 @@
 package id.sehati.app.ui.citizen
 
+import android.Manifest
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.platform.LocalContext
+import id.sehati.app.data.vision.FoodPhotoRecognizer
+import id.sehati.app.domain.rules.FoodSuggestion
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -105,6 +116,7 @@ private fun AddFoodSheet(meal: MealCategory, onAdd: (FoodItem, Float) -> Unit) {
         Text("Tambah ${meal.label.lowercase()}", style = MaterialTheme.typography.titleLarge)
         val p = picked
         if (p == null) {
+            PhotoScanRow(onPick = { picked = it; portions = 1f })
             SehatiTextField(query, { query = it }, "Cari makanan", tag = "food_search_field")
             ChoiceChips(listOf<String?>(null) + FoodCatalog.categories, category, { category = it }, { it ?: "Semua" }, tagPrefix = "foodcat")
             LazyColumn(Modifier.weight(1f, fill = false), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -131,5 +143,45 @@ private fun AddFoodSheet(meal: MealCategory, onAdd: (FoodItem, Float) -> Unit) {
             PrimaryButton("Tambahkan", { onAdd(p, portions) }, tag = "confirm_add_food_button")
             TextButton({ picked = null }, Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("Pilih makanan lain") }
         }
+    }
+}
+
+/** Pindai foto makanan: ambil foto atau pilih dari galeri, lalu pilih saran yang cocok. Foto diproses di perangkat saja. */
+@Composable
+private fun PhotoScanRow(onPick: (FoodItem) -> Unit) {
+    val ctx = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var busy by remember { mutableStateOf(false) }
+    var suggestions by remember { mutableStateOf<List<FoodSuggestion>?>(null) }
+
+    fun analyze(bmp: Bitmap?) {
+        if (bmp == null) return
+        busy = true
+        scope.launch { suggestions = FoodPhotoRecognizer.suggest(bmp); busy = false }
+    }
+    val camera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) { analyze(it) }
+    val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted -> if (granted) camera.launch(null) }
+    val gallery = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
+        uri?.let {
+            analyze(runCatching { ImageDecoder.decodeBitmap(ImageDecoder.createSource(ctx.contentResolver, it)) { d, _, _ -> d.allocator = ImageDecoder.ALLOCATOR_SOFTWARE; d.setTargetSampleSize(2) } }.getOrNull())
+        }
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SecondaryButton("Foto makanan", {
+                val granted = androidx.core.content.ContextCompat.checkSelfPermission(ctx, Manifest.permission.CAMERA) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                if (granted) camera.launch(null) else permission.launch(Manifest.permission.CAMERA)
+            }, Modifier.weight(1f), icon = Icons.Rounded.PhotoCamera, tag = "scan_food_camera")
+            SecondaryButton("Dari galeri", { gallery.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }, Modifier.weight(1f), icon = Icons.Rounded.Image, tag = "scan_food_gallery")
+        }
+        if (busy) Text("Mengenali makanan…", style = MaterialTheme.typography.bodySmall, color = TextMuted, modifier = Modifier.shimmer())
+        suggestions?.let { list ->
+            if (list.isEmpty()) InfoNote("Makanan belum dikenali. Coba foto lebih dekat atau cari manual di bawah.", icon = Icons.Rounded.SearchOff)
+            else {
+                Text("Mungkin ini makananmu (ketuk untuk memilih):", style = MaterialTheme.typography.labelLarge, color = TextSecondary)
+                list.forEach { sg -> AssistChip({ onPick(sg.item) }, { Text(sg.item.name) }, Modifier.heightIn(min = 48.dp).testTag("scan_suggestion_${sg.item.id}")) }
+            }
+        }
+        Text("Foto diproses di ponselmu, tidak disimpan dan tidak dikirim. Hasil hanya saran, silakan periksa.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
     }
 }

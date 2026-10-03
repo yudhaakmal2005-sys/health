@@ -23,6 +23,7 @@ interface UserDao {
     @Query("SELECT * FROM users WHERE sehatiId = :id") fun observe(id: String): Flow<UserEntity?>
     @Query("SELECT * FROM users WHERE sehatiId = :id") suspend fun get(id: String): UserEntity?
     @Query("SELECT * FROM users WHERE phone = :phone AND phone IS NOT NULL LIMIT 1") suspend fun getByPhone(phone: String): UserEntity?
+    @Query("SELECT sehatiId FROM users WHERE role = 'WARGA'") suspend fun citizenIds(): List<String>
     @Query("SELECT * FROM users WHERE role = 'WARGA' ORDER BY fullName") fun observeCitizens(): Flow<List<UserEntity>>
     @Query("SELECT * FROM users WHERE role = :role ORDER BY fullName") fun observeByRole(role: String): Flow<List<UserEntity>>
     @Query("SELECT COUNT(*) FROM users") suspend fun count(): Int
@@ -103,6 +104,10 @@ interface DailyDao {
     @Query("SELECT * FROM education_progress WHERE userId = :u") fun observeEducation(u: String): Flow<List<EducationProgressEntity>>
     @Query("SELECT * FROM education_progress WHERE id = :id") suspend fun education(id: String): EducationProgressEntity?
     @Upsert suspend fun upsertEducation(e: EducationProgressEntity)
+
+    @Query("SELECT * FROM challenges WHERE userId = :u") fun observeChallenges(u: String): Flow<List<ChallengeEntity>>
+    @Query("SELECT * FROM challenges WHERE id = :id") suspend fun challenge(id: String): ChallengeEntity?
+    @Upsert suspend fun upsertChallenge(c: ChallengeEntity)
 }
 
 @Dao

@@ -11,9 +11,9 @@ import androidx.room.RoomDatabase
         ActivitySessionEntity::class, SleepRecordEntity::class, FoodEntryEntity::class, HabitLogEntity::class,
         SmokingRecordEntity::class, EducationProgressEntity::class, PosyanduVisitEntity::class, FollowUpEntity::class,
         ReferralEntity::class, HomeVisitEntity::class, LogisticsItemEntity::class, SyncQueueEntity::class,
-        NotificationEntity::class, AuditLogEntity::class,
+        NotificationEntity::class, AuditLogEntity::class, ChallengeEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = false,
 )
 abstract class SehatiDatabase : RoomDatabase() {
@@ -23,5 +23,15 @@ abstract class SehatiDatabase : RoomDatabase() {
     abstract fun posyanduDao(): PosyanduDao
     abstract fun systemDao(): SystemDao
 
-    companion object { const val NAME = "sehati.db" }
+    companion object {
+        const val NAME = "sehati.db"
+
+        /** v1 → v2: tabel tantangan kebiasaan. */
+        val MIGRATION_1_2 = object : androidx.room.migration.Migration(1, 2) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `challenges` (`id` TEXT NOT NULL, `userId` TEXT NOT NULL, `challengeId` TEXT NOT NULL, `startDate` TEXT NOT NULL, `checkIns` TEXT NOT NULL, `completedAt` INTEGER, `updatedAt` INTEGER NOT NULL, `syncStatus` TEXT NOT NULL, `serverId` TEXT, `version` INTEGER NOT NULL, PRIMARY KEY(`id`))")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_challenges_userId` ON `challenges` (`userId`)")
+            }
+        }
+    }
 }

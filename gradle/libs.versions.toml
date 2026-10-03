@@ -17,6 +17,7 @@ datastore = "1.1.7"
 healthConnect = "1.1.0"
 camerax = "1.5.0"
 zxing = "3.5.4"
+mlkit-labeling = "17.0.9"
 coroutines = "1.10.2"
 retrofit = "3.0.0"
 okhttp = "5.1.0"
@@ -64,6 +65,7 @@ androidx-camera-core = { module = "androidx.camera:camera-core", version.ref = "
 androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camerax" }
 androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }
 androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "camerax" }
+mlkit-image-labeling = { module = "com.google.mlkit:image-labeling", version.ref = "mlkit-labeling" }
 zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }

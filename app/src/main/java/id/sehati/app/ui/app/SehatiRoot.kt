@@ -1,6 +1,8 @@
 package id.sehati.app.ui.app
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import id.sehati.app.ui.components.WelcomeOverlay
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -22,6 +24,7 @@ import id.sehati.app.ui.kader.KaderShell
 import id.sehati.app.ui.onboarding.AssessmentFlow
 import id.sehati.app.ui.theme.Background
 import id.sehati.app.ui.theme.Motion
+import id.sehati.app.ui.theme.motionTween
 
 /**
  * Akar aplikasi. Layar yang tampil ditentukan sesi terautentikasi + role (RBAC), bukan tombol di UI:
@@ -30,6 +33,7 @@ import id.sehati.app.ui.theme.Motion
 @Composable
 fun SehatiRoot(vm: AppViewModel = hiltViewModel()) {
     val root by vm.root.collectAsStateWithLifecycle()
+    val welcome by vm.welcome.collectAsStateWithLifecycle()
     Box(Modifier.fillMaxSize().background(Background)) {
         AnimatedContent(
             targetState = root,
@@ -47,6 +51,9 @@ fun SehatiRoot(vm: AppViewModel = hiltViewModel()) {
                 RootState.Kader -> KaderShell(onLogout = vm::logout)
                 RootState.Admin -> AdminShell(onLogout = vm::logout)
             }
+        }
+        AnimatedVisibility(welcome != null, enter = fadeIn(tween(Motion.Short)), exit = fadeOut(motionTween(Motion.Long))) {
+            welcome?.let { w -> WelcomeOverlay(w.name, w.label, onDone = vm::dismissWelcome) }
         }
     }
 }

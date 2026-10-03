@@ -4,11 +4,21 @@ import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import dagger.hilt.android.HiltAndroidApp
+import id.sehati.app.data.repository.ThresholdService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltAndroidApp
 class SehatiApp : Application(), Configuration.Provider {
     @Inject lateinit var workerFactory: HiltWorkerFactory
+    @Inject lateinit var thresholds: ThresholdService
+
+    override fun onCreate() {
+        super.onCreate()
+        CoroutineScope(Dispatchers.Default).launch { runCatching { thresholds.restore() } }
+    }
 
     override val workManagerConfiguration: Configuration
         get() = Configuration.Builder().setWorkerFactory(workerFactory).build()

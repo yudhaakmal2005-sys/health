@@ -484,3 +484,19 @@ data class AuditLogEntity(
     val detail: String,
     val at: Long,
 )
+
+/** Tantangan kebiasaan. challengeId "fact" adalah baris khusus: checkIns = tanggal fakta/mitos harian yang dijawab. */
+@Serializable
+@Entity(tableName = "challenges", indices = [Index("userId")])
+data class ChallengeEntity(
+    @PrimaryKey val id: String, // "$userId|$challengeId"
+    val userId: String,
+    val challengeId: String,
+    val startDate: String,
+    val checkIns: String,
+    val completedAt: Long?,
+    val updatedAt: Long,
+    val syncStatus: String = "LOCAL_ONLY",
+    val serverId: String? = null,
+    val version: Int = 1,
+)

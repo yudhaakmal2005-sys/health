@@ -32,6 +32,7 @@ import id.sehati.app.ui.theme.*
 fun HomeScreen(
     onOpenHealth: () -> Unit, onOpenMove: () -> Unit, onOpenFood: () -> Unit,
     onOpenAcademy: (String?) -> Unit, onOpenCoach: () -> Unit,
+    onOpenRisk: () -> Unit = {}, onOpenChallenges: () -> Unit = {},
     vm: HomeViewModel = hiltViewModel(),
 ) {
     val s by vm.state.collectAsStateWithLifecycle()
@@ -50,8 +51,10 @@ fun HomeScreen(
             InfoNote("Ada ${s.openFollowUps} tindak lanjut kesehatan. Hubungi kader Posyandu atau datang ke Puskesmas.", Modifier.staggerIn(2).testTag("home_followup_note"), icon = Icons.Rounded.EventAvailable, color = RiskOrangeText, bg = RiskOrangeBg)
         }
 
+        HeartHomeSection(onOpenRisk, onOpenChallenges)
+
         // Pertanyaan 2: "Apa yang perlu saya lakukan?"
-        SectionTitle("Target hari ini")
+        SectionTitle("Target aktivitas hari ini")
         SehatiCard(Modifier.staggerIn(3)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 ProgressRing(s.steps.toFloat() / s.targets.steps, size = 120.dp, modifier = Modifier.semantics { contentDescription = "Langkah ${s.steps} dari ${s.targets.steps}" }) {
@@ -122,14 +125,14 @@ fun HomeScreen(
             }
         }
 
-        SectionTitle("Pelatih SEHATI")
+        SectionTitle("Tanya SEHATI")
         SehatiCard(Modifier.staggerIn(8), onClick = onOpenCoach, container = PrimaryLight, border = Primary.copy(alpha = 0.25f)) {
             Row(verticalAlignment = Alignment.Top) {
                 IconBadge(Icons.Rounded.AutoAwesome, Color.White, Primary, 40)
                 Spacer(Modifier.width(12.dp))
                 Column {
                     Text(s.tip, style = MaterialTheme.typography.bodyLarge, color = TextPrimary, modifier = Modifier.testTag("home_coach_tip"))
-                    Text("Ketuk untuk bertanya · saran umum, bukan diagnosis", style = MaterialTheme.typography.bodySmall, color = PrimaryDark)
+                    Text("Ketuk untuk bertanya soal jantung · bukan diagnosis", style = MaterialTheme.typography.bodySmall, color = PrimaryDark)
                 }
             }
         }
@@ -150,15 +153,6 @@ fun HomeScreen(
             }
         }
 
-        SehatiCard(Modifier.staggerIn(12), container = SurfaceMuted) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Rounded.LocalFireDepartment, null, tint = RiskOrange)
-                Spacer(Modifier.width(8.dp))
-                Text("Healthy Streak ${s.progress.streakDays} hari · ${s.progress.learningPoints} poin belajar", style = MaterialTheme.typography.titleSmall, color = TextPrimary)
-            }
-            val earned = s.progress.badges.filter { it.earned }
-            Text(if (earned.isEmpty()) "Capai target langkah 3 hari berturut-turut untuk mendapat lencana pertama." else earned.joinToString(" · ") { it.title }, style = MaterialTheme.typography.bodySmall, color = TextMuted)
-        }
         Spacer(Modifier.height(8.dp))
     }
 }

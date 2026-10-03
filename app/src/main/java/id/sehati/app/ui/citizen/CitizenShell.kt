@@ -69,7 +69,7 @@ fun CitizenShell(onLogout: () -> Unit, onRetakeAssessment: () -> Unit) {
             popEnterTransition = { fadeIn(tween(Motion.Medium, 60)) },
             popExitTransition = { fadeOut(tween(Motion.Short)) + slideOutHorizontally(tween(Motion.Medium)) { it / 12 } },
         ) {
-            composable("home") { HomeScreen(onOpenHealth = { tab("health") }, onOpenMove = { tab("move") }, onOpenFood = { tab("food") }, onOpenAcademy = { id -> open(if (id == null) "academy" else "academy/$id") }, onOpenCoach = { open("coach") }) }
+            composable("home") { HomeScreen(onOpenHealth = { tab("health") }, onOpenMove = { tab("move") }, onOpenFood = { tab("food") }, onOpenAcademy = { id -> open(if (id == null) "academy" else "academy/$id") }, onOpenCoach = { open("coach") }, onOpenRisk = { open("heart") }, onOpenChallenges = { open("challenges") }) }
             composable("move") { MoveScreen() }
             composable("food") { FoodScreen() }
             composable("health") { HealthScreen(onShowQr = { open("qr") }, onOpenAcademy = { id -> open(if (id == null) "academy" else "academy/$id") }, onRetakeAssessment = onRetakeAssessment) }
@@ -79,7 +79,9 @@ fun CitizenShell(onLogout: () -> Unit, onRetakeAssessment: () -> Unit) {
             composable("academy/{id}", arguments = listOf(navArgument("id") { type = NavType.StringType })) { e ->
                 AcademyDetailScreen(e.arguments?.getString("id").orEmpty(), onBack = { nav.popBackStack() })
             }
-            composable("coach") { CoachScreen(onBack = { nav.popBackStack() }) }
+            composable("heart") { HeartRiskScreen(onBack = { nav.popBackStack() }, onOpenAcademy = { open("academy/$it") }) }
+            composable("challenges") { ChallengesScreen(onBack = { nav.popBackStack() }, onOpenAcademy = { open("academy/$it") }) }
+            composable("coach") { CoachScreen(onBack = { nav.popBackStack() }, onOpenAcademy = { open("academy/$it") }) }
             composable("notifications") { NotificationsScreen(onBack = { nav.popBackStack() }) }
         }
     }

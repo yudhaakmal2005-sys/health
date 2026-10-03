@@ -40,6 +40,8 @@ object TestAppModule {
     @Provides @Singleton fun citizens(db: SehatiDatabase, sync: SyncRecorder, audit: AuditLogger, clock: Clock) = CitizenRepository(db, sync, audit, clock)
     @Provides @Singleton fun daily(db: SehatiDatabase, sync: SyncRecorder, clock: Clock) = DailyRepository(db, sync, clock)
     @Provides @Singleton fun posyandu(db: SehatiDatabase, h: HealthRepository, sync: SyncRecorder, s: SessionManager, audit: AuditLogger, clock: Clock) = PosyanduRepository(db, h, sync, s, audit, clock)
+    @Provides @Singleton fun thresholds(db: SehatiDatabase, settings: SettingsStore, h: HealthRepository, s: SessionManager, audit: AuditLogger, json: Json) =
+        id.sehati.app.data.repository.ThresholdService(db, settings, h, s, audit, json)
     @Provides @Singleton fun syncEngine(db: SehatiDatabase, clock: Clock): SyncEngine {
         val loopback = LoopbackSyncTransport()
         return SyncEngine(db, { loopback }, { "device-e2e" }, clock)

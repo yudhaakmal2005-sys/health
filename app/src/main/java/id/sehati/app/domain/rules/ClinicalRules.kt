@@ -58,7 +58,7 @@ data class ClinicalThresholds(
 
 /** Konfigurasi aktif yang dipakai semua aturan. Admin dapat mengubahnya; nilai dimuat saat aplikasi dibuka. */
 object ClinicalConfig {
-    @Volatile var current: ClinicalThresholds = ClinicalConfig.current
+    @Volatile var current: ClinicalThresholds = ClinicalThresholds()
     val isCustom: Boolean get() = current != ClinicalThresholds()
     val rulesetVersion: String get() = if (isCustom) "${ClinicalThresholds.VERSION}+custom" else ClinicalThresholds.VERSION
 }

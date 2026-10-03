@@ -43,7 +43,7 @@ class SettingsStore(private val context: Context) {
         val nWater = booleanPreferencesKey("n_water"); val nEdu = booleanPreferencesKey("n_edu")
         val nPos = booleanPreferencesKey("n_pos"); val nFollow = booleanPreferencesKey("n_follow")
         val demoSim = booleanPreferencesKey("demo_sim"); val hcSync = longPreferencesKey("hc_sync")
-        val seeded = booleanPreferencesKey("demo_seeded"); val device = stringPreferencesKey("device_id")
+        val thresholds = stringPreferencesKey("clinical_thresholds"); val seeded = booleanPreferencesKey("demo_seeded"); val device = stringPreferencesKey("device_id")
     }
 
     val settings: Flow<AppSettings> = context.dataStore.data.map { p ->
@@ -66,6 +66,9 @@ class SettingsStore(private val context: Context) {
     }
 
     suspend fun current(): AppSettings = settings.first()
+
+    suspend fun thresholdsJson(): String? = context.dataStore.data.first()[K.thresholds]
+    suspend fun setThresholdsJson(v: String?) = context.dataStore.edit { if (v == null) it.remove(K.thresholds) else it[K.thresholds] = v }.let { }
 
     suspend fun setTargets(t: DailyTargets) = context.dataStore.edit {
         it[K.steps] = t.steps; it[K.water] = t.waterGlasses; it[K.sleep] = (t.sleepHours * 10).toInt()

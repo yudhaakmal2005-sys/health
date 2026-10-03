@@ -6,7 +6,7 @@ object RedFlag {
     const val EMERGENCY_TITLE = "PERHATIAN"
     const val EMERGENCY_MESSAGE =
         "Nyeri/tekanan dada, sesak berat, pingsan, atau gejala akut lainnya memerlukan pertolongan medis segera. " +
-            "Jangan menunggu respons aplikasi."
+            "Segera hubungi 119 atau 112, atau ke IGD terdekat. Jangan menunggu respons aplikasi."
 
     private val triggers = listOf(
         "nyeri dada", "sakit dada", "dada tertekan", "dada ditekan", "dada terasa berat", "dada panas",

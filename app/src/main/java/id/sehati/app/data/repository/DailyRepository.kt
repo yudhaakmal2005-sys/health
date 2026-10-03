@@ -1,5 +1,6 @@
 package id.sehati.app.data.repository
 
+import id.sehati.app.domain.rules.*
 import androidx.room.withTransaction
 import id.sehati.app.core.util.Clock
 import id.sehati.app.core.util.Ids
@@ -150,5 +151,54 @@ class DailyRepository(
             updatedAt = now, version = (cur?.version ?: 0) + 1, syncStatus = "LOCAL_ONLY",
         )
         db.withTransaction { dao.upsertEducation(next); sync.record("education", id, userId, next.version, EducationProgressEntity.serializer(), next) }
+    }
+
+    // --- Tantangan kebiasaan ---
+    fun observeChallenges(userId: String) = dao.observeChallenges(userId)
+
+    suspend fun startChallenge(userId: String, challengeId: String, today: java.time.LocalDate) {
+        requireNotNull(ChallengeCatalog.byId(challengeId)) { "Tantangan tidak dikenal" }
+        val id = "$userId|$challengeId"
+        val cur = dao.challenge(id)
+        val now = clock.now()
+        val next = ChallengeEntity(id, userId, challengeId, today.toString(), "", null, now, version = (cur?.version ?: 0) + 1)
+        db.withTransaction { dao.upsertChallenge(next); sync.record("challenge", id, userId, next.version, ChallengeEntity.serializer(), next) }
+    }
+
+    /** Check-in manual hari ini; tantangan selesai bila target tercapai di dalam jendela waktunya. */
+    suspend fun checkIn(userId: String, challengeId: String, today: java.time.LocalDate, autoDays: Set<java.time.LocalDate> = emptySet()) {
+        val def = requireNotNull(ChallengeCatalog.byId(challengeId))
+        val id = "$userId|$challengeId"
+        val cur = dao.challenge(id) ?: return
+        val days = Challenges.decode(cur.checkIns) + today
+        val now = clock.now()
+        val progress = Challenges.evaluate(def, java.time.LocalDate.parse(cur.startDate), days + autoDays, today)
+        val next = cur.copy(
+            checkIns = Challenges.encode(days), updatedAt = now, version = cur.version + 1, syncStatus = "LOCAL_ONLY",
+            completedAt = cur.completedAt ?: if (progress.status == ChallengeStatus.COMPLETED) now else null,
+        )
+        db.withTransaction { dao.upsertChallenge(next); sync.record("challenge", id, userId, next.version, ChallengeEntity.serializer(), next) }
+    }
+
+    /** Menyimpan penyelesaian tantangan otomatis (langkah/air) tanpa check-in manual. */
+    suspend fun markCompletedIfDone(userId: String, challengeId: String, autoDays: Set<java.time.LocalDate>, today: java.time.LocalDate) {
+        val def = ChallengeCatalog.byId(challengeId) ?: return
+        val cur = dao.challenge("$userId|$challengeId") ?: return
+        if (cur.completedAt != null) return
+        val p = Challenges.evaluate(def, java.time.LocalDate.parse(cur.startDate), Challenges.decode(cur.checkIns) + autoDays, today)
+        if (p.status != ChallengeStatus.COMPLETED) return
+        val next = cur.copy(completedAt = clock.now(), updatedAt = clock.now(), version = cur.version + 1, syncStatus = "LOCAL_ONLY")
+        db.withTransaction { dao.upsertChallenge(next); sync.record("challenge", next.id, userId, next.version, ChallengeEntity.serializer(), next) }
+    }
+
+    suspend fun answerFact(userId: String, day: java.time.LocalDate) {
+        val id = "$userId|fact"
+        val cur = dao.challenge(id)
+        val now = clock.now()
+        val days = Challenges.decode(cur?.checkIns.orEmpty()) + day
+        val next = (cur ?: ChallengeEntity(id, userId, "fact", day.toString(), "", null, now)).copy(
+            checkIns = Challenges.encode(days), updatedAt = now, version = (cur?.version ?: 0) + 1, syncStatus = "LOCAL_ONLY",
+        )
+        db.withTransaction { dao.upsertChallenge(next); sync.record("challenge", id, userId, next.version, ChallengeEntity.serializer(), next) }
     }
 }
