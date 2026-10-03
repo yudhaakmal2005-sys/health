@@ -126,7 +126,7 @@ fun HomeScreen(
         }
 
         SectionTitle("Tanya SEHATI")
-        SehatiCard(Modifier.staggerIn(8), onClick = onOpenCoach, container = PrimaryLight, border = Primary.copy(alpha = 0.25f)) {
+        SehatiCard(Modifier.staggerIn(8).testTag("home_coach_card"), onClick = onOpenCoach, container = PrimaryLight, border = Primary.copy(alpha = 0.25f)) {
             Row(verticalAlignment = Alignment.Top) {
                 IconBadge(Icons.Rounded.AutoAwesome, Color.White, Primary, 40)
                 Spacer(Modifier.width(12.dp))

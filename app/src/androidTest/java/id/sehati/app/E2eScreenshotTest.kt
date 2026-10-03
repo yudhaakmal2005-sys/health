@@ -107,7 +107,7 @@ class E2eScreenshotTest {
         runCatching { rule.onNodeWithTag("daily_fact_card").performScrollTo() }; shot("beranda_tantangan_fakta")
         rule.click("open_challenges"); rule.waitTag("challenges_screen"); shot("tantangan_lencana")
         rule.click("back_button"); rule.waitTag("home_greeting_name")
-        rule.click("home_coach_tip"); rule.waitTag("coach_screen"); rule.click("coach_chip_Apa tanda bahaya serangan jantung?"); shot("tanya_sehati")
+        rule.click("home_coach_card"); rule.waitTag("coach_screen"); rule.click("coach_chip_Apa tanda bahaya serangan jantung?"); shot("tanya_sehati")
         rule.click("back_button"); rule.waitTag("home_greeting_name")
         rule.click("nav_move"); rule.waitTag("move_screen"); shot("aktivitas")
         rule.click("nav_food"); rule.waitTag("food_screen"); shot("makanan")
