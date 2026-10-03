@@ -22,7 +22,10 @@ jobs:
       - name: Build and test
         run: |
           set +e
-          timeout 18m ./gradlew --no-daemon --console=plain --continue testDebugUnitTest assembleDebug assembleStaging assembleRelease > build.log 2>&1
+          # Push biasa: cukup APK debug + unit test (lebih cepat). Staging/release hanya untuk main atau jalan manual.
+          EXTRA=""
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "${{ github.ref }}" = "refs/heads/main" ]; then EXTRA="assembleStaging assembleRelease"; fi
+          timeout 18m ./gradlew --console=plain --continue --build-cache assembleDebug testDebugUnitTest $EXTRA > build.log 2>&1
           echo $? > build.code
           exit 0
       - uses: actions/upload-artifact@v4
