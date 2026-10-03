@@ -116,7 +116,8 @@ class E2eScreenshotTest {
         rule.click("back_button"); rule.waitTag("home_greeting_name")
         rule.click("qa_meds"); rule.waitTag("medication_screen"); shot("obat_saya")
         rule.click("open_reminders"); rule.waitTag("reminder_settings_screen"); shot("pengingat")
-        rule.click("back_button"); rule.click("back_button"); rule.waitTag("home_greeting_name")
+        repeat(2) { rule.runOnUiThread { rule.activity.onBackPressedDispatcher.onBackPressed() }; rule.waitForIdle() }
+        rule.waitTag("home_greeting_name")
         rule.click("back_button"); rule.waitTag("home_greeting_name")
         rule.click("nav_move"); rule.waitTag("move_screen"); shot("aktivitas")
         rule.click("nav_food"); rule.waitTag("food_screen"); shot("makanan")
