@@ -20,7 +20,7 @@ private data class Piece(val x: Float, val delay: Float, val speed: Float, val d
 @Composable
 fun Confetti(trigger: Any?, modifier: Modifier = Modifier, durationMs: Int = 1800) {
     if (LocalReduceMotion.current || trigger == null) return
-    val colors = listOf(Primary, Wellness, RiskYellow, RiskRed, Color(0xFF6366F1), Color(0xFF0EA5A4))
+    val colors = listOf(Primary, Wellness, RiskYellow, RiskRed, Calm, Sunset, Coral)
     val pieces = remember(trigger) {
         val r = Random(trigger.hashCode())
         List(70) { Piece(r.nextFloat(), r.nextFloat() * 0.35f, 0.7f + r.nextFloat() * 0.6f, (r.nextFloat() - 0.5f) * 0.25f, r.nextFloat() * 720f, colors[r.nextInt(colors.size)], 6f + r.nextFloat() * 6f, 10f + r.nextFloat() * 8f) }

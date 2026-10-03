@@ -69,7 +69,7 @@ fun HomeHero(
     val date = remember { LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, d MMMM", Locale("id"))) }
     Surface(shape = RoundedCornerShape(28.dp), color = Color.Transparent, modifier = modifier.fillMaxWidth()) {
         Column(
-            Modifier.background(Brush.linearGradient(listOf(PrimaryDark, Primary, Color(0xFF0EA5A4)))).padding(18.dp),
+            Modifier.background(heroBrush()).padding(18.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             Row(verticalAlignment = Alignment.Top) {

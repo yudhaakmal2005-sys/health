@@ -101,7 +101,7 @@ fun WelcomeOverlay(name: String, roleLabel: String, onDone: () -> Unit) {
     LaunchedEffect(Unit) { appear.animateTo(1f, tween(600, 150, Motion.Emphasized)) }
     Box(
         Modifier.fillMaxSize().testTag("welcome_overlay")
-            .background(Brush.verticalGradient(listOf(PrimaryDark, Primary, Color(0xFF0EA5A4))))
+            .background(Brush.verticalGradient(HeroGradient))
             .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { done() },
         contentAlignment = Alignment.Center,
     ) {

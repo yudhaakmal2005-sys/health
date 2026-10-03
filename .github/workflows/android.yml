@@ -11,6 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android/sdk/ndk /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL || true
+          df -h / | tail -1
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: 21 }
@@ -43,7 +47,7 @@ jobs:
           code=$(cat build.code)
           echo "=== GRADLE EXIT CODE: $code ==="
           echo "--- last build.log lines ---"; tail -n 12 build.log
-          grep "^e: " build.log | sort -u | head -25; grep -E "What went wrong|Could not " -A1 build.log | head -8
+          grep "^e: " build.log | sort -u | head -25; grep -E "Caused by|No space left|OutOfMemory|Java heap" build.log | sort -u | head -10; grep -E "What went wrong|Could not " -A1 build.log | head -8
           python3 - <<'PY'
           import glob, xml.etree.ElementTree as ET
           t=f=0

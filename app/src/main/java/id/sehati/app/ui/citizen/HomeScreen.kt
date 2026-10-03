@@ -75,7 +75,7 @@ fun HomeScreen(
 
         Row(Modifier.fillMaxWidth().staggerIn(4), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             MetricTile(Icons.Rounded.WaterDrop, "Air", "${s.water} / ${s.targets.waterGlasses}", "gelas", Primary, PrimaryLight, s.water.toFloat() / s.targets.waterGlasses, Modifier.weight(1f), tag = "home_water_tile")
-            MetricTile(Icons.Rounded.Bedtime, "Tidur", if (s.sleepMinutes > 0) TimeUtils.durationLabel(s.sleepMinutes) else "–", "target ${s.targets.sleepHours.toInt()} jam", Color(0xFF6366F1), Color(0xFFE0E7FF), (s.sleepMinutes / 60f) / s.targets.sleepHours, Modifier.weight(1f), tag = "home_sleep_tile")
+            MetricTile(Icons.Rounded.Bedtime, "Tidur", if (s.sleepMinutes > 0) TimeUtils.durationLabel(s.sleepMinutes) else "–", "target ${s.targets.sleepHours.toInt()} jam", Calm, CalmLight, (s.sleepMinutes / 60f) / s.targets.sleepHours, Modifier.weight(1f), tag = "home_sleep_tile")
         }
         Row(Modifier.fillMaxWidth().staggerIn(5), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             MetricTile(Icons.Rounded.Restaurant, "Makanan", if (s.foodCount == 0) "–" else "${s.foodQuality}/100", if (s.foodCount == 0) "belum ada catatan" else "${NumberFmt.thousands(s.kcal)} kkal", Wellness, WellnessLight, if (s.foodCount == 0) null else s.foodQuality / 100f, Modifier.weight(1f), onClick = onOpenFood, tag = "home_food_tile")
