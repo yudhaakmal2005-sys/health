@@ -56,6 +56,8 @@ fun HeartHomeSection(
     Column(verticalArrangement = Arrangement.spacedBy(14.dp), modifier = Modifier.testTag("heart_section")) {
         SectionTitle("Jantung sehat hari ini")
         val done = s.pillars.count { it.done }
+        val celebrate = if (done == 5) java.time.LocalDate.now().toString() else null
+        Box {
         SehatiCard(Modifier.staggerIn(2).testTag("heart_pillars_card")) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 ProgressRing(done / 5f, size = 84.dp, stroke = 9.dp, color = RiskRed, track = RiskRedBg) {
@@ -77,6 +79,8 @@ fun HeartHomeSection(
                     }
                 }
             }
+        }
+        Confetti(celebrate, Modifier.matchParentSize())
         }
 
         s.report?.let { r ->
@@ -151,7 +155,10 @@ private fun FactCard(s: HeartUiState, onAnswer: () -> Unit) {
 
 @Composable
 internal fun ChallengeCard(p: ChallengeProgress, onCheckIn: (String) -> Unit, modifier: Modifier = Modifier) {
-    SehatiCard(modifier.testTag("challenge_${p.def.id}")) {
+    var burst by remember { mutableStateOf<Long?>(null) }
+    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+    Box(modifier) {
+    SehatiCard(Modifier.testTag("challenge_${p.def.id}")) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconBadge(challengeIcon(p.def.iconKey), WellnessDark, WellnessLight, 44)
             Spacer(Modifier.width(12.dp))
@@ -168,9 +175,14 @@ internal fun ChallengeCard(p: ChallengeProgress, onCheckIn: (String) -> Unit, mo
                 Text("Sisa ${p.daysLeft} hari", style = MaterialTheme.typography.bodySmall, color = TextMuted, modifier = Modifier.weight(1f))
                 if (p.def.auto != AutoRule.NONE) Text("Otomatis dari catatanmu", style = MaterialTheme.typography.labelMedium, color = PrimaryDark)
                 else if (p.checkedToday) StatusPill("Hari ini tercatat", RiskGreenText, RiskGreenBg, Icons.Rounded.CheckCircle)
-                else PrimaryButton("Saya berhasil hari ini", { onCheckIn(p.def.id) }, Modifier.widthIn(min = 180.dp), tag = "checkin_${p.def.id}")
+                else PrimaryButton("Saya berhasil hari ini", {
+                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                    burst = System.currentTimeMillis(); onCheckIn(p.def.id)
+                }, Modifier.widthIn(min = 180.dp), tag = "checkin_${p.def.id}")
             }
         }
+    }
+    Confetti(burst, Modifier.matchParentSize())
     }
 }
 

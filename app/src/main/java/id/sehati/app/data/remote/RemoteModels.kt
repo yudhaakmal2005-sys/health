@@ -17,7 +17,7 @@ import kotlinx.serialization.json.JsonElement
 
 @Serializable data class PullItem(
     val seq: Long, val type: String, val entityId: String, val subjectId: String? = null,
-    val version: Int = 1, val deleted: Boolean = false, val payload: String = "",
+    val version: Int = 1, val deleted: Boolean = false, val payload: String? = null,
 )
 @Serializable data class PullResponse(val items: List<PullItem> = emptyList(), val nextCursor: Long = 0, val hasMore: Boolean = false)
 

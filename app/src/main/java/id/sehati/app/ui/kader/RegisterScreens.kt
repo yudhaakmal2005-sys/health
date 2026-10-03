@@ -76,6 +76,7 @@ fun CitizensTab(vm: KaderViewModel, onVisit: (String) -> Unit, startWithScanner:
     var query by remember { mutableStateOf("") }
     var scanning by remember { mutableStateOf(startWithScanner) }
     var registering by remember { mutableStateOf(false) }
+    var created by remember { mutableStateOf<id.sehati.app.data.local.UserEntity?>(null) }
 
     ScreenColumn(Modifier.testTag("kader_citizens_screen")) {
         Text("LANGKAH 1 · PENDAFTARAN", style = MaterialTheme.typography.labelLarge, color = PrimaryDark)
@@ -93,7 +94,31 @@ fun CitizensTab(vm: KaderViewModel, onVisit: (String) -> Unit, startWithScanner:
         if (query.isNotBlank() && results.isEmpty()) EmptyState(Icons.Rounded.PersonSearch, "Warga tidak ditemukan", "Periksa SEHATI ID, atau daftarkan warga baru.")
         TextButton({ registering = true }, Modifier.heightIn(min = 48.dp).testTag("register_new_citizen_button")) { Icon(Icons.Rounded.PersonAdd, null); Spacer(Modifier.width(8.dp)); Text("Daftarkan warga baru") }
     }
-    if (registering) NewCitizenDialog(vm, onDismiss = { registering = false; vm.resetNew() }, onCreated = { registering = false; query = it; vm.onQuery(it) })
+    if (registering) NewCitizenDialog(vm, onDismiss = { registering = false; vm.resetNew() }, onCreated = { u -> registering = false; query = u.sehatiId; vm.onQuery(u.sehatiId); created = u })
+    created?.let { u -> CitizenIdCardDialog(u) { created = null } }
+}
+
+/** Kartu SEHATI untuk warga baru: ID, QR, dan cara mengaktifkan akun di HP warga sendiri. */
+@Composable
+private fun CitizenIdCardDialog(u: id.sehati.app.data.local.UserEntity, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss, containerColor = CardWhite, modifier = Modifier.testTag("citizen_card_dialog"),
+        title = { Text("Kartu SEHATI warga") },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(u.fullName, style = MaterialTheme.typography.titleMedium, color = TextPrimary)
+                Text(u.sehatiId, style = MaterialTheme.typography.headlineMedium, color = PrimaryDark, modifier = Modifier.testTag("citizen_card_id"))
+                id.sehati.app.ui.components.QrImage(id.sehati.app.domain.rules.QrPayload.build(u.sehatiId, u.qrToken), size = 180.dp)
+                InfoNote(
+                    "Sampaikan ke warga: unduh SEHATI → Masuk → \"Sudah didaftarkan kader?\" → isi SEHATI ID dan tanggal lahir → buat kata sandi. " +
+                        "Hasil pemeriksaan di Posyandu akan muncul di HP warga." + if (!u.consentServerSync) " (Perlu persetujuan sinkronisasi server.)" else "",
+                    icon = Icons.Rounded.PhoneAndroid,
+                )
+                Text("Foto layar ini atau tulis SEHATI ID di buku KMS/kartu warga.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
+            }
+        },
+        confirmButton = { TextButton(onDismiss, Modifier.heightIn(min = 48.dp).testTag("citizen_card_close")) { Text("Selesai") } },
+    )
 }
 
 @Composable
@@ -115,7 +140,7 @@ private fun CitizenCard(c: CitizenSummary, vm: KaderViewModel, onVisit: (String)
 }
 
 @Composable
-private fun NewCitizenDialog(vm: KaderViewModel, onDismiss: () -> Unit, onCreated: (String) -> Unit) {
+private fun NewCitizenDialog(vm: KaderViewModel, onDismiss: () -> Unit, onCreated: (id.sehati.app.data.local.UserEntity) -> Unit) {
     val f by vm.newForm.collectAsStateWithLifecycle()
     AlertDialog(
         onDismissRequest = onDismiss, modifier = Modifier.testTag("new_citizen_dialog"), containerColor = CardWhite,
@@ -140,7 +165,7 @@ private fun NewCitizenDialog(vm: KaderViewModel, onDismiss: () -> Unit, onCreate
                 }
             }
         },
-        confirmButton = { TextButton({ vm.registerCitizen { onCreated(it.sehatiId) } }, enabled = !f.saving, modifier = Modifier.heightIn(min = 48.dp).testTag("new_save_button")) { Text("Simpan") } },
+        confirmButton = { TextButton({ vm.registerCitizen { onCreated(it) } }, enabled = !f.saving, modifier = Modifier.heightIn(min = 48.dp).testTag("new_save_button")) { Text("Simpan") } },
         dismissButton = { TextButton(onDismiss, Modifier.heightIn(min = 48.dp)) { Text("Batal") } },
     )
 }

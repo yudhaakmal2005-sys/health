@@ -43,7 +43,7 @@ class SyncApplier(private val db: SehatiDatabase, private val json: Json) {
             return true
         }
         if (local != null && local >= item.version) return false
-        val p = item.payload
+        val p = item.payload ?: return false
         when (item.type) {
             "user" -> users.upsert(decode(UserEntity.serializer(), p))
             "household" -> users.upsertHousehold(decode(HouseholdEntity.serializer(), p))
@@ -74,7 +74,7 @@ class SyncApplier(private val db: SehatiDatabase, private val json: Json) {
     }
 
     private suspend fun applyDetail(item: PullItem): Boolean {
-        val d = decode(DetailDto.serializer(), item.payload)
+        val d = decode(DetailDto.serializer(), item.payload ?: return false)
         if (health.check(d.measurementId) == null) return false
         d.anthropometry?.let { health.upsertAnthropometry(it) }
         d.bloodPressure?.let { health.upsertBloodPressure(it) }
