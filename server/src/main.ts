@@ -1,0 +1,55 @@
+import { existsSync } from 'node:fs';
+import { loadConfig } from './config.js';
+import { createPool } from './db/pool.js';
+import { runMigrations } from './db/migrate.js';
+import { buildApp } from './app.js';
+import { ensureAdmin } from './core/bootstrap.js';
+import { AnthropicAiClient, type AiClient } from './ai/client.js';
+import { OpenAiCompatClient } from './ai/openai-compat.js';
+import type { Deps } from './core/types.js';
+
+async function main(): Promise<void> {
+  // Hosting tanpa Docker (mis. cPanel): baca .env di folder aplikasi bila ada. Variabel yang sudah diset tidak ditimpa.
+  const envFile = process.env.ENV_FILE ?? '.env';
+  if (existsSync(envFile)) process.loadEnvFile(envFile);
+  const config = loadConfig();
+  const pool = createPool(config.databaseUrl);
+  const applied = await runMigrations(pool);
+  let ai: AiClient | null = null;
+  if (config.aiProvider === 'openai') {
+    if (config.aiApiKey) ai = new OpenAiCompatClient({ apiKey: config.aiApiKey, baseURL: config.aiBaseUrl ?? 'https://api.openai.com/v1', model: config.aiModel, maxTokens: config.aiMaxTokens });
+  } else if (config.anthropicApiKey) {
+    ai = new AnthropicAiClient({ apiKey: config.anthropicApiKey, model: config.aiModel, effort: config.aiEffort, maxTokens: config.aiMaxTokens });
+  }
+  const deps: Deps = { pool, config, ai, now: () => Date.now() };
+  const app = await buildApp(deps);
+  if (applied.length > 0) app.log.info({ applied }, 'migrations applied');
+  await ensureAdmin(pool, config, app.log);
+  if (!ai) app.log.warn('Kunci AI tidak diatur (ANTHROPIC_API_KEY atau AI_API_KEY): Tanya SEHATI AI nonaktif (503 AI_DISABLED).');
+
+  // Pemeliharaan berkala: sesi kedaluwarsa & receipt idempoten lama (> 180 hari) dihapus.
+  const maintenance = setInterval(() => {
+    const now = Date.now();
+    pool.query('DELETE FROM sessions WHERE expires_at < $1', [now])
+      .then(() => pool.query('DELETE FROM sync_receipts WHERE created_at < $1', [now - 180 * 86_400_000]))
+      .catch((err: unknown) => app.log.warn({ err }, 'maintenance failed'));
+  }, 6 * 3_600_000);
+  maintenance.unref();
+
+  const shutdown = async (signal: string) => {
+    app.log.info({ signal }, 'shutting down');
+    clearInterval(maintenance);
+    await app.close();
+    await pool.end();
+    process.exit(0);
+  };
+  process.on('SIGTERM', () => void shutdown('SIGTERM'));
+  process.on('SIGINT', () => void shutdown('SIGINT'));
+
+  await app.listen({ port: config.port, host: config.host });
+}
+
+main().catch((err: unknown) => {
+  console.error('Gagal menjalankan server:', err instanceof Error ? err.message : err);
+  process.exit(1);
+});

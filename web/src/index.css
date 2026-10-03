@@ -1,0 +1,260 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/plus-jakarta-sans/wght.css';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------- Token warna (sumber: tema aplikasi Android) ---------- */
+:root {
+  --bg: #fff8f6;
+  --surface: #ffffff;
+  --surface-2: #fbf1ef;
+  --surface-3: #f2e3e1;
+  --fg: #1c1917;
+  --fg-2: #44403c;
+  --muted: #78716c;
+  --line: #f2e3e1;
+  --line-strong: #e7cfcc;
+
+  --primary: #e11d48;
+  --primary-strong: #be123c;
+  --primary-soft: #ffe4e6;
+  --accent: #be123c; /* teks/tautan berwarna primer */
+  --on-primary: #ffffff;
+  --wellness: #10b981;
+  --wellness-soft: #ecfdf5;
+
+  --risk-green: #10b981;
+  --risk-green-bg: #ecfdf5;
+  --risk-green-fg: #047857;
+  --risk-yellow: #f59e0b;
+  --risk-yellow-bg: #fffbeb;
+  --risk-yellow-fg: #b45309;
+  --risk-orange: #ea580c;
+  --risk-orange-bg: #fff7ed;
+  --risk-orange-fg: #c2410c;
+  --risk-red: #b91c1c;
+  --risk-red-bg: #fef2f2;
+  --risk-red-fg: #b91c1c;
+
+  /* Skala sekuensial satu hue (biru) untuk peta panas */
+  --seq-1: #fff1f2;
+  --seq-2: #fecdd3;
+  --seq-3: #fda4af;
+  --seq-4: #fb7185;
+  --seq-5: #e11d48;
+  --seq-6: #881337;
+
+  --shadow-sm: 0 1px 2px rgb(15 23 42 / 0.05);
+  --shadow-md: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px -8px rgb(136 19 55 / 0.14);
+  --shadow-lg: 0 24px 48px -16px rgb(136 19 55 / 0.25);
+  --ring: #e11d48;
+  color-scheme: light;
+}
+
+.dark {
+  --bg: #140b0d;
+  --surface: #1c1114;
+  --surface-2: #26171b;
+  --surface-3: #331f24;
+  --fg: #f7ecec;
+  --fg-2: #dfc9cb;
+  --muted: #b39a9d;
+  --line: #3a2328;
+  --line-strong: #4d2f35;
+
+  --primary: #fb7185;
+  --primary-strong: #e11d48;
+  --primary-soft: rgb(251 113 133 / 0.14);
+  --accent: #fda4af;
+  --on-primary: #ffffff;
+  --wellness: #34d399;
+  --wellness-soft: rgb(16 185 129 / 0.14);
+
+  --risk-green: #34d399;
+  --risk-green-bg: rgb(16 185 129 / 0.14);
+  --risk-green-fg: #6ee7b7;
+  --risk-yellow: #fbbf24;
+  --risk-yellow-bg: rgb(245 158 11 / 0.14);
+  --risk-yellow-fg: #fcd34d;
+  --risk-orange: #fb923c;
+  --risk-orange-bg: rgb(234 88 12 / 0.16);
+  --risk-orange-fg: #fdba74;
+  --risk-red: #f87171;
+  --risk-red-bg: rgb(220 38 38 / 0.16);
+  --risk-red-fg: #fca5a5;
+
+  --seq-1: #3b1720;
+  --seq-2: #5c1a2b;
+  --seq-3: #881337;
+  --seq-4: #be123c;
+  --seq-5: #fb7185;
+  --seq-6: #fecdd3;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-md: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -8px rgb(0 0 0 / 0.5);
+  --shadow-lg: 0 24px 48px -16px rgb(0 0 0 / 0.6);
+  --ring: #fb7185;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-fg: var(--fg);
+  --color-fg-2: var(--fg-2);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-primary: var(--primary);
+  --color-primary-strong: var(--primary-strong);
+  --color-primary-soft: var(--primary-soft);
+  --color-accent: var(--accent);
+  --color-on-primary: var(--on-primary);
+  --color-wellness: var(--wellness);
+  --color-wellness-soft: var(--wellness-soft);
+  --color-green: var(--risk-green);
+  --color-green-bg: var(--risk-green-bg);
+  --color-green-fg: var(--risk-green-fg);
+  --color-yellow: var(--risk-yellow);
+  --color-yellow-bg: var(--risk-yellow-bg);
+  --color-yellow-fg: var(--risk-yellow-fg);
+  --color-orange: var(--risk-orange);
+  --color-orange-bg: var(--risk-orange-bg);
+  --color-orange-fg: var(--risk-orange-fg);
+  --color-red: var(--risk-red);
+  --color-red-bg: var(--risk-red-bg);
+  --color-red-fg: var(--risk-red-fg);
+
+  --shadow-card: var(--shadow-md);
+  --shadow-soft: var(--shadow-sm);
+  --shadow-pop: var(--shadow-lg);
+
+  --animate-fade-up: fade-up 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-fade-in: fade-in 0.3s ease-out both;
+  --animate-pop-in: pop-in 0.22s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-slide-in: slide-in 0.28s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes shimmer {
+  from { background-position: -400px 0; }
+  to { background-position: 400px 0; }
+}
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.12); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.08); }
+  70% { transform: scale(1); }
+}
+@keyframes ring-spin {
+  to { transform: rotate(360deg); }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100dvh;
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--primary) 25%, transparent);
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  button, [role='button'], select, summary {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+  input[type='date'], input[type='time'] {
+    color-scheme: inherit;
+  }
+  .dark input[type='date'], .dark input[type='time'] {
+    color-scheme: dark;
+  }
+}
+
+@layer components {
+  .skeleton {
+    background: linear-gradient(90deg, var(--surface-2) 0%, var(--surface-3) 50%, var(--surface-2) 100%);
+    background-size: 800px 100%;
+    animation: shimmer 1.4s linear infinite;
+    border-radius: 8px;
+  }
+  /* Pola arsir untuk sel yang disembunyikan (< 5) */
+  .hatch {
+    background-color: var(--surface-2);
+    background-image: repeating-linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--muted) 20%, transparent) 0 1.5px,
+      transparent 1.5px 7px
+    );
+  }
+  .heartbeat {
+    transform-origin: 50% 55%;
+    animation: heartbeat 2.4s ease-in-out infinite;
+  }
+  .ring-spin {
+    transform-origin: 50% 50%;
+    animation: ring-spin 18s linear infinite;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- Cetak ---------- */
+@media print {
+  :root, .dark {
+    --bg: #fff; --surface: #fff; --surface-2: #f8fafc; --fg: #000; --fg-2: #1e293b; --muted: #475569; --line: #cbd5e1;
+  }
+  body { background: #fff !important; }
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+  .print-break { break-before: page; }
+  .print-avoid { break-inside: avoid; }
+  main { padding: 0 !important; margin: 0 !important; }
+  @page { margin: 16mm 14mm; }
+}
+.print-only { display: none; }

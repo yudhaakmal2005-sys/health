@@ -1,0 +1,66 @@
+name: Android CI
+on:
+  push:
+    branches: ["claude/**", main]
+  workflow_dispatch:
+concurrency:
+  group: android-ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android/sdk/ndk /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL || true
+          df -h / | tail -1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21 }
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Build and test
+        run: |
+          set +e
+          # Push biasa: cukup APK debug + unit test (lebih cepat). Staging/release hanya untuk main atau jalan manual.
+          EXTRA=""
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "${{ github.ref }}" = "refs/heads/main" ]; then EXTRA="assembleStaging assembleRelease"; fi
+          timeout 18m ./gradlew --console=plain --continue --build-cache assembleDebug testDebugUnitTest $EXTRA > build.log 2>&1
+          echo $? > build.code
+          exit 0
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports
+          path: |
+            app/build/reports/tests
+            build.log
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sehati-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sehati-staging-apk
+          path: app/build/outputs/apk/staging/*.apk
+          if-no-files-found: warn
+      - name: Summary
+        run: |
+          code=$(cat build.code)
+          echo "=== GRADLE EXIT CODE: $code ==="
+          echo "--- last build.log lines ---"; tail -n 12 build.log
+          grep "^e: " build.log | sort -u | head -25; grep -E "Caused by|No space left|OutOfMemory|Java heap" build.log | sort -u | head -10; grep -E "What went wrong|Could not " -A1 build.log | head -8
+          python3 - <<'PY'
+          import glob, xml.etree.ElementTree as ET
+          t=f=0
+          for p in glob.glob('app/build/test-results/**/*.xml', recursive=True):
+              r=ET.parse(p).getroot()
+              for c in r.iter('testcase'):
+                  t+=1
+                  for k in c.findall('failure')+c.findall('error'):
+                      f+=1; print('TEST FAIL', c.get('classname'), c.get('name'), (k.get('message') or '')[:160])
+                      for ln in [l for l in (k.text or '').splitlines() if 'Caused by' in l or 'at id.sehati' in l][:6]: print('    ', ln.strip()[:200])
+          print('TESTS', t, 'FAILED', f)
+          PY
+          [ "$code" = "0" ]

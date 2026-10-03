@@ -1,0 +1,35 @@
+{
+  "name": "sehati-server",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Backend SEHATI (API v1): sinkronisasi, dashboard Puskesmas, Tanya SEHATI AI",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "bash scripts/test-db.sh",
+    "test:only": "node --import tsx --test --test-concurrency=1 --test-reporter=spec 'test/**/*.test.ts'",
+    "migrate": "tsx src/cli/migrate.ts",
+    "seed:demo": "tsx src/cli/seed-demo.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.131.0",
+    "@fastify/cors": "^11.3.0",
+    "@fastify/helmet": "^13.1.1",
+    "@fastify/rate-limit": "^11.2.0",
+    "fastify": "^5.12.5",
+    "pg": "^8.23.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "@types/pg": "^8.23.1",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9"
+  }
+}

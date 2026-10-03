@@ -1,0 +1,78 @@
+{
+ "items": [
+  {
+   "seq": 1,
+   "type": "cadre",
+   "entityId": "KD-000001",
+   "subjectId": null,
+   "version": 1,
+   "deleted": false,
+   "payload": "{\"active\":true,\"version\":1,\"sehatiId\":\"KD-000001\",\"serverId\":null,\"updatedAt\":1790999128726,\"assignedRw\":\"01-02\",\"facilityId\":\"fac-melati\",\"syncStatus\":\"SYNCED\"}"
+  },
+  {
+   "seq": 4,
+   "type": "user",
+   "entityId": "HM-000001",
+   "subjectId": "HM-000001",
+   "version": 1,
+   "deleted": false,
+   "payload": "{\"rt\":\"04\",\"rw\":\"01\",\"sex\":\"FEMALE\",\"role\":\"WARGA\",\"goals\":\"\",\"phone\":null,\"isDemo\":true,\"qrToken\":\"d47df93c0cee4dd3920915a056ebbe64\",\"version\":1,\"village\":\"Desa Mirigambar\",\"fullName\":\"Warga Demo 001\",\"sehatiId\":\"HM-000001\",\"serverId\":null,\"birthDate\":\"1974-03-11\",\"consentAt\":1778989528705,\"createdAt\":1778989528705,\"updatedAt\":1778989528705,\"hasAccount\":true,\"syncStatus\":\"SYNCED\",\"householdId\":\"hh-demo-HM-000001\",\"consentLocal\":true,\"registeredBy\":\"KD-000001\",\"assessmentDone\":true,\"onboardingDone\":true,\"consentServerSync\":true,\"consentHealthConnect\":false}"
+  },
+  {
+   "seq": 5,
+   "type": "household",
+   "entityId": "hh-demo-HM-000001",
+   "subjectId": "HM-000001",
+   "version": 1,
+   "deleted": false,
+   "payload": "{\"id\":\"hh-demo-HM-000001\",\"rt\":\"03\",\"rw\":\"01\",\"version\":1,\"headName\":\"KK Demo 001\",\"serverId\":null,\"createdAt\":1778989528705,\"updatedAt\":1778989528705,\"syncStatus\":\"SYNCED\"}"
+  },
+  {
+   "seq": 7,
+   "type": "assessment",
+   "entityId": "as-demo-HM-000001",
+   "subjectId": "HM-000001",
+   "version": 1,
+   "deleted": false,
+   "payload": "{\"id\":\"as-demo-HM-000001\",\"userId\":\"HM-000001\",\"takenAt\":1779075928705,\"version\":1,\"waistCm\":85,\"heightCm\":158,\"serverId\":null,\"weightKg\":72,\"createdAt\":1779075928705,\"fruitDays\":0,\"updatedAt\":1779075928705,\"activeDays\":6,\"sleepHours\":5,\"syncStatus\":\"SYNCED\",\"stressLevel\":1,\"familyCardio\":false,\"sleepQuality\":\"FAIR\",\"activeMinutes\":44,\"fattyFrequent\":true,\"knownDiabetes\":false,\"saltyFrequent\":false,\"smokingStatus\":\"NEVER\",\"vegetableDays\":6,\"familyDiabetes\":false,\"redFlagSymptom\":false,\"sedentaryHours\":7,\"smokingProduct\":\"\",\"sugaryFrequent\":false,\"otherConditions\":\"\",\"cigarettesPerDay\":0,\"activityIntensity\":\"MODERATE\",\"knownDyslipidemia\":true,\"knownHeartDisease\":false,\"knownHypertension\":true,\"familyHypertension\":false,\"knownKidneyDisease\":false}"
+  },
+  {
+   "seq": 8,
+   "type": "measurement",
+   "entityId": "m-demo-HM-000001-0",
+   "subjectId": "HM-000001",
+   "version": 1,
+   "deleted": false,
+   "payload": "{\"id\":\"m-demo-HM-000001-0\",\"notes\":\"\",\"source\":\"POSYANDU\",\"userId\":\"HM-000001\",\"version\":1,\"visitId\":null,\"serverId\":null,\"createdAt\":1789875928705,\"updatedAt\":1789875928705,\"facilityId\":null,\"measuredAt\":1789875928705,\"operatorId\":\"KD-000001\",\"syncStatus\":\"SYNCED\",\"verification\":\"VERIFIED\"}"
+  },
+  {
+   "seq": 9,
+   "type": "measurement_detail",
+   "entityId": "m-demo-HM-000001-0",
+   "subjectId": "HM-000001",
+   "version": 1,
+   "deleted": false,
+   "payload": "{\"lipid\":{\"id\":\"li-m-demo-HM-000001-0\",\"userId\":\"HM-000001\",\"measurementId\":\"m-demo-HM-000001-0\",\"totalCholesterol\":173},\"glucose\":null,\"anthropometry\":{\"id\":\"an-m-demo-HM-000001-0\",\"bmi\":19.2,\"userId\":\"HM-000001\",\"waistCm\":80,\"heightCm\":166,\"weightKg\":53,\"measurementId\":\"m-demo-HM-000001-0\"},\"bloodPressure\":{\"id\":\"bp-m-demo-HM-000001-0\",\"userId\":\"HM-000001\",\"systolic\":157,\"diastolic\":98,\"heartRate\":89,\"measurementId\":\"m-demo-HM-000001-0\"},\"measurementId\":\"m-demo-HM-000001-0\"}"
+  },
+  {
+   "seq": 10,
+   "type": "profile",
+   "entityId": "HM-000001",
+   "subjectId": "HM-000001",
+   "version": 1,
+   "deleted": false,
+   "payload": "{\"level\":\"HIGHER_MONITORING\",\"userId\":\"HM-000001\",\"version\":1,\"planJson\":\"[]\",\"serverId\":null,\"computedAt\":1790999128705,\"syncStatus\":\"SYNCED\",\"findingsJson\":\"[]\",\"rulesetVersion\":\"sehati-rules-1.0\"}"
+  },
+  {
+   "seq": 11,
+   "type": "followup",
+   "entityId": "fu-demo-HM-000001",
+   "subjectId": "HM-000001",
+   "version": 1,
+   "deleted": false,
+   "payload": "{\"id\":\"fu-demo-HM-000001\",\"type\":\"REPEAT_MEASUREMENT\",\"dueAt\":1792035928705,\"notes\":\"\",\"reason\":\"Tekanan darah 157/98 perlu diukur ulang\",\"status\":\"OPEN\",\"userId\":\"HM-000001\",\"version\":1,\"visitId\":null,\"closedAt\":null,\"priority\":2,\"serverId\":null,\"createdAt\":1789271128705,\"createdBy\":\"KD-000001\",\"updatedAt\":1789271128705,\"reasonCode\":\"bp_elevated\",\"syncStatus\":\"SYNCED\",\"assignedCadreId\":\"KD-000001\"}"
+  }
+ ],
+ "nextCursor": 11,
+ "hasMore": false
+}
