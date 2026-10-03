@@ -33,6 +33,7 @@ fun HomeScreen(
     onOpenHealth: () -> Unit, onOpenMove: () -> Unit, onOpenFood: () -> Unit,
     onOpenAcademy: (String?) -> Unit, onOpenCoach: () -> Unit,
     onOpenRisk: () -> Unit = {}, onOpenChallenges: () -> Unit = {},
+    onEmergency: () -> Unit = {}, onOpenMeds: () -> Unit = {}, onBreath: () -> Unit = {}, onReminders: () -> Unit = {},
     vm: HomeViewModel = hiltViewModel(),
 ) {
     val s by vm.state.collectAsStateWithLifecycle()
@@ -42,10 +43,8 @@ fun HomeScreen(
     }
     ScreenColumn(Modifier.testTag("home_screen")) {
         // Pertanyaan 1: "Bagaimana kondisi saya hari ini?"
-        Column(Modifier.staggerIn(0)) {
-            Text(s.greeting + ",", style = MaterialTheme.typography.bodyLarge, color = TextMuted)
-            Text(s.user!!.fullName.substringBefore(' '), style = MaterialTheme.typography.headlineLarge, color = TextPrimary, modifier = Modifier.testTag("home_greeting_name"))
-        }
+        HomeHero(s.greeting, s.user!!.fullName.substringBefore(' '), onEmergency, onOpenCoach, onOpenMeds, onBreath, onReminders, Modifier.staggerIn(0))
+        UpcomingCards(onOpenMeds)
         RiskCard(s.level, Modifier.staggerIn(1), onClick = onOpenHealth, compact = true)
         if (s.openFollowUps > 0) {
             InfoNote("Ada ${s.openFollowUps} tindak lanjut kesehatan. Hubungi kader Posyandu atau datang ke Puskesmas.", Modifier.staggerIn(2).testTag("home_followup_note"), icon = Icons.Rounded.EventAvailable, color = RiskOrangeText, bg = RiskOrangeBg)

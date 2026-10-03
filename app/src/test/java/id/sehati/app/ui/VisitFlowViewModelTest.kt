@@ -41,7 +41,7 @@ class VisitFlowViewModelTest {
         val ctx = ApplicationProvider.getApplicationContext<Context>()
         WorkManagerTestInitHelper.initializeTestWorkManager(ctx, Configuration.Builder().build())
         env = TestEnv(LoopbackSyncTransport())
-        vm = VisitViewModel(env.posyandu, env.citizens, env.health, SyncController(env.db, env.engine, SettingsStore(ctx)), WorkScheduler(ctx))
+        vm = VisitViewModel(env.posyandu, env.citizens, env.health, SyncController(env.db, env.engine, SettingsStore(ctx), env.remote), WorkScheduler(ctx))
     }
     @After fun tearDown() { Dispatchers.resetMain(); env.close() }
 

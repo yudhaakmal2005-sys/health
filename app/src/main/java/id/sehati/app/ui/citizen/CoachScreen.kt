@@ -1,22 +1,40 @@
 package id.sehati.app.ui.citizen
 
-import androidx.compose.foundation.background
+import android.content.Intent
+import android.net.Uri
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.AutoAwesome
-import androidx.compose.material.icons.rounded.Send
+import androidx.compose.material.icons.automirrored.rounded.Send
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -26,36 +44,186 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import id.sehati.app.core.util.Clock
 import id.sehati.app.core.util.TimeUtils
 import id.sehati.app.data.prefs.SettingsStore
+import id.sehati.app.data.remote.ChatContext
+import id.sehati.app.data.remote.ChatEvent
+import id.sehati.app.data.remote.ChatRequest
+import id.sehati.app.data.remote.ChatTurn
+import id.sehati.app.data.remote.ServerClient
 import id.sehati.app.data.repository.DailyRepository
 import id.sehati.app.data.repository.HealthRepository
 import id.sehati.app.data.repository.PosyanduRepository
 import id.sehati.app.domain.content.Academy
 import id.sehati.app.domain.content.HeartKnowledge
-import id.sehati.app.domain.rules.RedFlag
+import id.sehati.app.domain.rules.AgeCalc
 import id.sehati.app.domain.rules.CoachContext
+import id.sehati.app.domain.rules.FactorStatus
 import id.sehati.app.domain.rules.HealthCoach
+import id.sehati.app.domain.rules.RedFlag
 import id.sehati.app.ui.app.CurrentUser
 import id.sehati.app.ui.components.*
 import id.sehati.app.ui.theme.*
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class ChatMessage(val text: String, val fromUser: Boolean, val emergency: Boolean = false, val moduleId: String? = null, val related: List<String> = emptyList())
+enum class AnswerSource { AI, OFFLINE }
 
+data class ChatMessage(
+    val id: Long,
+    val text: String,
+    val fromUser: Boolean,
+    val emergency: Boolean = false,
+    val moduleId: String? = null,
+    val related: List<String> = emptyList(),
+    val source: AnswerSource = AnswerSource.OFFLINE,
+    val streaming: Boolean = false,
+    val note: String? = null,
+)
+
+data class AskUiState(
+    val messages: List<ChatMessage> = emptyList(),
+    val busy: Boolean = false,
+    val aiReady: Boolean = false,
+    val needsConsent: Boolean = false,
+    val shareContext: Boolean = false,
+)
+
+/**
+ * Tanya SEHATI: jawaban AI lewat server SEHATI (kunci AI hanya di server), dengan pemeriksaan gejala darurat
+ * di perangkat lebih dulu, dan jawaban offline dari basis pengetahuan bila server/AI tidak tersedia.
+ */
 @HiltViewModel
 class CoachViewModel @Inject constructor(
     private val current: CurrentUser, private val daily: DailyRepository, private val health: HealthRepository,
-    private val posyandu: PosyanduRepository, private val settings: SettingsStore, private val clock: Clock,
+    private val posyandu: PosyanduRepository, private val settings: SettingsStore, private val server: ServerClient,
+    private val clock: Clock,
 ) : ViewModel() {
-    private val _messages = MutableStateFlow(listOf(ChatMessage("Halo! Aku SEHATI. Tanyakan tentang jantung koroner, tanda bahaya, garam, rokok, olahraga, atau kebiasaan sehat.\n\n${HeartKnowledge.DISCLAIMER}", false)))
-    val messages: StateFlow<List<ChatMessage>> = _messages.asStateFlow()
-    private val _thinking = MutableStateFlow(false)
-    val thinking: StateFlow<Boolean> = _thinking.asStateFlow()
+    private var seq = 0L
+    private val welcome = ChatMessage(seq++, "Halo! Aku **SEHATI**. Tanyakan apa saja seputar jantung koroner, tekanan darah, garam, rokok, olahraga, atau kebiasaan sehat.\n\n_${HeartKnowledge.DISCLAIMER}_", false)
+    private val _s = MutableStateFlow(AskUiState(messages = listOf(welcome)))
+    val state: StateFlow<AskUiState> = _s.asStateFlow()
+    private var job: Job? = null
+    private var pendingQuestion: String? = null
 
-    /** Konteks terbatas: profil, pengukuran terbaru, aktivitas, tidur, kebiasaan, target hari ini. Diproses di perangkat. */
-    private suspend fun context(): CoachContext {
+    init { viewModelScope.launch { refreshAvailability() } }
+
+    private suspend fun refreshAvailability() {
+        val s = settings.current()
+        _s.update { it.copy(aiReady = server.isConfigured() && server.token() != null && s.aiConsent, shareContext = s.aiShareContext) }
+    }
+
+    fun send(text: String) {
+        val q = text.trim().take(1000)
+        if (q.isEmpty() || _s.value.busy) return
+        viewModelScope.launch {
+            val st = settings.current()
+            val aiPossible = server.isConfigured() && server.token() != null
+            if (aiPossible && !st.aiConsent && pendingQuestion == null) {
+                pendingQuestion = q
+                _s.update { it.copy(needsConsent = true) }
+                return@launch
+            }
+            ask(q)
+        }
+    }
+
+    fun answerConsent(useAi: Boolean, shareContext: Boolean) {
+        val q = pendingQuestion
+        pendingQuestion = null
+        _s.update { it.copy(needsConsent = false) }
+        viewModelScope.launch {
+            settings.setAiConsent(useAi, shareContext && useAi)
+            refreshAvailability()
+            if (q != null) ask(q, forceOffline = !useAi)
+        }
+    }
+
+    fun setShareContext(v: Boolean) { viewModelScope.launch { settings.setAiConsent(settings.current().aiConsent, v); refreshAvailability() } }
+
+    private fun ask(q: String, forceOffline: Boolean = false) {
+        _s.update { it.copy(messages = it.messages + ChatMessage(seq++, q, true), busy = true) }
+        val faq = HeartKnowledge.answer(q)
+        val general = faq.entry != null && HeartKnowledge.isGeneralQuestion(q)
+        // Darurat diperiksa di perangkat dulu: jangan menunggu jaringan.
+        if (!general && (RedFlag.detect(q) || HeartKnowledge.isEmergencyText(q))) {
+            _s.update { it.copy(messages = it.messages + ChatMessage(seq++, RedFlag.EMERGENCY_MESSAGE, false, emergency = true), busy = false) }
+            return
+        }
+        job = viewModelScope.launch {
+            val st = settings.current()
+            val useAi = !forceOffline && st.aiConsent && server.isConfigured() && server.token() != null
+            if (useAi) streamAi(q, st.aiShareContext) else answerOffline(q, note = null)
+        }
+    }
+
+    private suspend fun streamAi(q: String, share: Boolean) {
+        val id = seq++
+        _s.update { it.copy(messages = it.messages + ChatMessage(id, "", false, source = AnswerSource.AI, streaming = true)) }
+        val history = _s.value.messages.filter { !it.emergency && it.id != welcome.id && it.id != id && it.text.isNotBlank() }
+            .takeLast(12).map { ChatTurn(if (it.fromUser) "user" else "assistant", it.text.take(1000)) }
+        val req = ChatRequest(history, if (share) context() else null)
+        var failure: ChatEvent.Failure? = null
+        server.chat(req).collect { e ->
+            when (e) {
+                is ChatEvent.Meta -> if (e.emergency) update(id) { it.copy(emergency = true) }
+                is ChatEvent.Delta -> update(id) { it.copy(text = it.text + e.text) }
+                is ChatEvent.Done -> update(id) { it.copy(streaming = false) }
+                is ChatEvent.Failure -> failure = e
+            }
+        }
+        val f = failure
+        val msg = _s.value.messages.firstOrNull { it.id == id }
+        if (f != null && (msg == null || msg.text.isBlank())) {
+            _s.update { s -> s.copy(messages = s.messages.filterNot { it.id == id }) }
+            answerOffline(q, note = offlineNote(f))
+        } else {
+            update(id) { it.copy(streaming = false, note = f?.let { "Jawaban terputus: ${it.message}" }) }
+            _s.update { it.copy(busy = false) }
+        }
+        if (f?.code == "NO_TOKEN" || f?.code == "HTTP_401") refreshAvailability()
+    }
+
+    private fun offlineNote(f: ChatEvent.Failure) = when (f.code) {
+        "AI_DISABLED" -> "AI belum diaktifkan di server. Jawaban dari pustaka offline SEHATI."
+        "AI_DAILY_LIMIT" -> "Batas pertanyaan AI hari ini tercapai. Jawaban dari pustaka offline."
+        "OFFLINE" -> "Sedang offline. Jawaban dari pustaka offline SEHATI."
+        else -> "AI tidak tersedia (${f.message.ifBlank { f.code }}). Jawaban dari pustaka offline."
+    }
+
+    private suspend fun answerOffline(q: String, note: String?) {
+        val faq = HeartKnowledge.answer(q)
+        delay(250)
+        val msg = if (faq.entry != null) {
+            ChatMessage(seq++, faq.entry.answer, false, moduleId = faq.entry.moduleId, related = faq.related.map { it.question }, note = note)
+        } else {
+            val r = HealthCoach.reply(q, coachContext())
+            ChatMessage(seq++, r.text, false, emergency = r.emergency, related = HeartKnowledge.suggestedQuestions.take(3), note = note)
+        }
+        _s.update { it.copy(messages = it.messages + msg, busy = false) }
+    }
+
+    fun stop() {
+        job?.cancel()
+        _s.update { s -> s.copy(busy = false, messages = s.messages.map { if (it.streaming) it.copy(streaming = false, note = "Dihentikan.") else it }) }
+    }
+
+    fun reset() { stop(); _s.update { it.copy(messages = listOf(welcome)) } }
+
+    private fun update(id: Long, f: (ChatMessage) -> ChatMessage) = _s.update { s -> s.copy(messages = s.messages.map { if (it.id == id) f(it) else it }) }
+
+    /** Konteks tanpa identitas: kelompok usia, jenis kelamin, faktor risiko yang ada, langkah hari ini. */
+    private suspend fun context(): ChatContext? {
+        val u = current.user.first() ?: return null
+        val age = AgeCalc.age(u.birthDate)
+        val band = if (age <= 0) null else "${age / 10 * 10}-${age / 10 * 10 + 9}"
+        val factors = runCatching { health.heartRisk(u.sehatiId).factors.filter { it.status == FactorStatus.PRESENT }.map { it.id } }.getOrDefault(emptyList())
+        val steps = daily.observeHabit(u.sehatiId, TimeUtils.dateIso(clock.now())).first()?.steps
+        return ChatContext(band, u.sex, factors, steps)
+    }
+
+    private suspend fun coachContext(): CoachContext {
         val u = current.user.first()!!
         val iso = TimeUtils.dateIso(clock.now())
         val s = settings.current()
@@ -68,61 +236,152 @@ class CoachViewModel @Inject constructor(
         return CoachContext(u.fullName.substringBefore(' '), h?.steps ?: 0, s.targets.steps, h?.waterGlasses ?: 0, s.targets.waterGlasses,
             sleep.maxOfOrNull { it.minutes }?.div(60f), sm?.cigarettes ?: 0, checks.firstOrNull()?.bloodPressure, level.label, fus.any { it.status == "OPEN" })
     }
+}
 
-    fun send(text: String) {
-        val q = text.trim()
-        if (q.isEmpty() || _thinking.value) return
-        _messages.update { it + ChatMessage(q, true) }
-        _thinking.value = true
-        viewModelScope.launch {
-            val faq = HeartKnowledge.answer(q)
-            val general = faq.entry != null && HeartKnowledge.isGeneralQuestion(q)
-            val emergency = !general && (RedFlag.detect(q) || HeartKnowledge.isEmergencyText(q))
-            val msg = when {
-                emergency -> ChatMessage(RedFlag.EMERGENCY_MESSAGE, false, emergency = true)
-                faq.entry != null -> ChatMessage("${faq.entry.answer}\n\n${HeartKnowledge.DISCLAIMER}", false, false, faq.entry.moduleId, faq.related.map { it.question })
-                else -> HealthCoach.reply(q, context()).let { ChatMessage(it.text, false, it.emergency) }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CoachScreen(onBack: () -> Unit, onOpenAcademy: (String) -> Unit = {}, onEmergency: () -> Unit = {}, vm: CoachViewModel = hiltViewModel()) {
+    val s by vm.state.collectAsStateWithLifecycle()
+    var input by rememberSaveable { mutableStateOf("") }
+    val listState = rememberLazyListState()
+    val last = s.messages.lastOrNull()
+    LaunchedEffect(s.messages.size, last?.text?.length) { if (s.messages.isNotEmpty()) listState.animateScrollToItem(s.messages.size - 1) }
+    fun submit() { vm.send(input); input = "" }
+
+    Column(Modifier.fillMaxSize().imePadding().testTag("coach_screen")) {
+        Box(Modifier.padding(horizontal = 20.dp)) {
+            ScreenHeader("Tanya SEHATI", if (s.aiReady) "Asisten AI · jawaban umum, bukan diagnosis" else "Pustaka offline · bukan diagnosis", onBack = onBack) {
+                StatusPill(if (s.aiReady) "AI" else "Offline", if (s.aiReady) PrimaryDark else TextSecondary, if (s.aiReady) PrimaryLight else SurfaceMuted,
+                    if (s.aiReady) Icons.Rounded.AutoAwesome else Icons.Rounded.CloudOff, Modifier.testTag("coach_mode_pill"))
+                IconButton(vm::reset, Modifier.size(48.dp)) { Icon(Icons.Rounded.RestartAlt, "Mulai percakapan baru", tint = TextMuted) }
             }
-            if (!msg.emergency) delay(350)
-            _messages.update { it + msg }
-            _thinking.value = false
+        }
+        LazyColumn(Modifier.weight(1f).padding(horizontal = 20.dp), state = listState, verticalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(vertical = 8.dp)) {
+            items(s.messages, key = { it.id }) { m -> MessageBubble(m, onOpenAcademy, onEmergency, onAsk = vm::send) }
+        }
+        if (!s.busy) {
+            LazyRow(Modifier.padding(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(HeartKnowledge.suggestedQuestions) { c ->
+                    AssistChip({ vm.send(c) }, { Text(c) }, Modifier.heightIn(min = 48.dp).testTag("coach_chip_$c"))
+                }
+            }
+        }
+        Row(Modifier.padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedTextField(input, { input = it.take(1000) }, Modifier.weight(1f).testTag("coach_input"), placeholder = { Text("Tanyakan tentang jantung…") }, shape = RoundedCornerShape(16.dp),
+                maxLines = 4, keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send), keyboardActions = KeyboardActions(onSend = { submit() }),
+                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, unfocusedBorderColor = BorderColor, focusedContainerColor = CardWhite, unfocusedContainerColor = CardWhite))
+            if (s.busy) FilledTonalIconButton(vm::stop, Modifier.size(52.dp).testTag("coach_stop_button")) { Icon(Icons.Rounded.Stop, "Hentikan jawaban") }
+            else FilledIconButton(::submit, Modifier.size(52.dp).testTag("coach_send_button"), enabled = input.isNotBlank()) { Icon(Icons.AutoMirrored.Rounded.Send, "Kirim") }
+        }
+        Text("Jangan menulis nama, NIK, atau nomor HP. Untuk keadaan darurat hubungi 119/112.", style = MaterialTheme.typography.labelSmall, color = TextMuted,
+            modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 8.dp))
+    }
+
+    if (s.needsConsent) AiConsentDialog(onAnswer = vm::answerConsent)
+}
+
+@Composable
+private fun AiConsentDialog(onAnswer: (Boolean, Boolean) -> Unit) {
+    var share by remember { mutableStateOf(false) }
+    AlertDialog(
+        onDismissRequest = { onAnswer(false, false) }, containerColor = CardWhite, modifier = Modifier.testTag("ai_consent_dialog"),
+        icon = { Icon(Icons.Rounded.AutoAwesome, null, tint = Primary) },
+        title = { Text("Gunakan asisten AI?") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text("Pertanyaanmu dikirim lewat server SEHATI ke layanan AI untuk dijawab. Server tidak menyimpan isi percakapan. Jangan menulis identitas (nama, NIK, nomor HP).", style = MaterialTheme.typography.bodyMedium)
+                Text("Jawaban AI adalah edukasi umum, bukan diagnosis. Kamu bisa berhenti kapan saja dan tetap memakai pustaka offline.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(share, { share = it }, Modifier.testTag("ai_share_context"))
+                    Text("Sertakan ringkasan faktor risiko & kelompok usia (tanpa identitas) agar saran lebih sesuai.", style = MaterialTheme.typography.bodySmall)
+                }
+            }
+        },
+        confirmButton = { TextButton({ onAnswer(true, share) }, Modifier.heightIn(min = 48.dp).testTag("ai_consent_accept")) { Text("Gunakan AI") } },
+        dismissButton = { TextButton({ onAnswer(false, false) }, Modifier.heightIn(min = 48.dp).testTag("ai_consent_decline")) { Text("Tetap offline") } },
+    )
+}
+
+@Composable
+private fun MessageBubble(m: ChatMessage, onOpenAcademy: (String) -> Unit, onEmergency: () -> Unit, onAsk: (String) -> Unit) {
+    val ctx = LocalContext.current
+    if (m.emergency) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            EmergencyBanner()
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                PrimaryButton("Telepon 119", { ctx.startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:119"))) }, Modifier.weight(1f), icon = Icons.Rounded.Call, tag = "coach_call_119")
+                SecondaryButton("Panduan darurat", onEmergency, Modifier.weight(1f), icon = Icons.Rounded.MedicalServices, tag = "coach_open_emergency")
+            }
+            if (m.text.isNotBlank() && m.text != RedFlag.EMERGENCY_MESSAGE) BubbleSurface(m)
+        }
+        return
+    }
+    Column(Modifier.fillMaxWidth(), horizontalAlignment = if (m.fromUser) Alignment.End else Alignment.Start, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        if (!m.fromUser) Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(if (m.source == AnswerSource.AI) Icons.Rounded.AutoAwesome else Icons.Rounded.MenuBook, null, tint = PrimaryDark, modifier = Modifier.size(14.dp))
+            Spacer(Modifier.width(4.dp))
+            Text(if (m.source == AnswerSource.AI) "SEHATI AI" else "SEHATI", style = MaterialTheme.typography.labelSmall, color = PrimaryDark)
+        }
+        BubbleSurface(m)
+        m.note?.let { Text(it, style = MaterialTheme.typography.labelSmall, color = TextMuted) }
+        m.moduleId?.let { id -> Academy.byId(id)?.let { mod ->
+            AssistChip({ onOpenAcademy(id) }, { Text("Pelajari: ${mod.title}") }, Modifier.heightIn(min = 48.dp).testTag("coach_module_$id"), leadingIcon = { Icon(Icons.Rounded.School, null, Modifier.size(18.dp)) })
+        } }
+        m.related.forEach { q -> SuggestionChip({ onAsk(q) }, { Text(q) }, Modifier.heightIn(min = 44.dp)) }
+    }
+}
+
+@Composable
+private fun BubbleSurface(m: ChatMessage) {
+    Surface(shape = RoundedCornerShape(18.dp), color = if (m.fromUser) Primary else CardWhite,
+        border = if (m.fromUser) null else BorderStroke(1.dp, BorderColor), modifier = Modifier.widthIn(max = 330.dp).animateContentSize()) {
+        Column(Modifier.padding(14.dp)) {
+            if (m.text.isEmpty() && m.streaming) TypingDots()
+            else Text(
+                if (m.fromUser) AnnotatedString(m.text) else markdownLite(m.text + if (m.streaming) " ▍" else ""),
+                style = MaterialTheme.typography.bodyMedium, color = if (m.fromUser) Color.White else TextPrimary,
+            )
         }
     }
 }
 
 @Composable
-fun CoachScreen(onBack: () -> Unit, onOpenAcademy: (String) -> Unit = {}, vm: CoachViewModel = hiltViewModel()) {
-    val msgs by vm.messages.collectAsStateWithLifecycle()
-    val thinking by vm.thinking.collectAsStateWithLifecycle()
-    var input by remember { mutableStateOf("") }
-    val listState = rememberLazyListState()
-    LaunchedEffect(msgs.size, thinking) { listState.animateScrollToItem((msgs.size).coerceAtLeast(0)) }
-    Column(Modifier.fillMaxSize().imePadding().testTag("coach_screen")) {
-        Box(Modifier.padding(horizontal = 20.dp)) { ScreenHeader("Tanya SEHATI", "Jawaban singkat seputar jantung · bukan diagnosis", onBack = onBack) }
-        LazyColumn(Modifier.weight(1f).padding(horizontal = 20.dp), state = listState, verticalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(vertical = 8.dp)) {
-            items(msgs) { m ->
-                if (m.emergency) EmergencyBanner()
-                else Column(Modifier.fillMaxWidth(), horizontalAlignment = if (m.fromUser) Alignment.End else Alignment.Start, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Surface(shape = RoundedCornerShape(18.dp), color = if (m.fromUser) Primary else CardWhite, border = if (m.fromUser) null else androidx.compose.foundation.BorderStroke(1.dp, BorderColor), modifier = Modifier.widthIn(max = 320.dp)) {
-                        Text(m.text, Modifier.padding(14.dp), style = MaterialTheme.typography.bodyMedium, color = if (m.fromUser) androidx.compose.ui.graphics.Color.White else TextPrimary)
-                    }
-                    m.moduleId?.let { id -> Academy.byId(id)?.let { mod ->
-                        AssistChip({ onOpenAcademy(id) }, { Text("Pelajari: ${mod.title}") }, Modifier.heightIn(min = 48.dp).testTag("coach_module_$id"))
-                    } }
-                    m.related.forEach { q -> SuggestionChip({ vm.send(q) }, { Text(q) }, Modifier.heightIn(min = 48.dp)) }
-                }
-            }
-            if (thinking) item { Text("Pelatih sedang mengetik…", style = MaterialTheme.typography.bodySmall, color = TextMuted, modifier = Modifier.shimmer()) }
-        }
-        androidx.compose.foundation.lazy.LazyRow(Modifier.padding(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(HeartKnowledge.suggestedQuestions) { c ->
-                AssistChip({ vm.send(c) }, { Text(c) }, Modifier.heightIn(min = 48.dp).testTag("coach_chip_$c"))
-            }
-        }
-        Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedTextField(input, { input = it }, Modifier.weight(1f).testTag("coach_input"), placeholder = { Text("Tanyakan tentang jantung…") }, shape = RoundedCornerShape(16.dp), singleLine = true,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send), keyboardActions = KeyboardActions(onSend = { vm.send(input); input = "" }))
-            FilledIconButton({ vm.send(input); input = "" }, Modifier.size(52.dp).testTag("coach_send_button")) { Icon(Icons.Rounded.Send, "Kirim") }
+private fun TypingDots() {
+    val t = rememberInfiniteTransition(label = "typing")
+    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(vertical = 4.dp).testTag("coach_typing")) {
+        repeat(3) { i ->
+            val a by t.animateFloat(0.25f, 1f, infiniteRepeatable(tween(500, delayMillis = i * 150), RepeatMode.Reverse), label = "d$i")
+            Surface(Modifier.size(8.dp).alpha(a), shape = RoundedCornerShape(50), color = PrimaryDark) {}
         }
     }
+}
+
+/** Markdown ringan: **tebal**, _miring_, daftar "- " / "* " / "1. ". Cukup untuk jawaban singkat tanpa pustaka tambahan. */
+fun markdownLite(src: String): AnnotatedString = buildAnnotatedString {
+    val lines = src.replace("\r", "").split('\n')
+    lines.forEachIndexed { i, raw ->
+        var line = raw
+        val bullet = Regex("^\\s*[-*•]\\s+").find(line)
+        val numbered = Regex("^\\s*(\\d+)[.)]\\s+").find(line)
+        when {
+            bullet != null -> { append("•  "); line = line.substring(bullet.range.last + 1) }
+            numbered != null -> { append("${numbered.groupValues[1]}.  "); line = line.substring(numbered.range.last + 1) }
+            line.startsWith("#") -> { line = line.trimStart('#', ' '); withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { appendInline(line) }; if (i < lines.lastIndex) append('\n'); return@forEachIndexed }
+        }
+        appendInline(line)
+        if (i < lines.lastIndex) append('\n')
+    }
+}
+
+private fun AnnotatedString.Builder.appendInline(text: String) {
+    val re = Regex("\\*\\*(.+?)\\*\\*|_(.+?)_")
+    var last = 0
+    for (m in re.findAll(text)) {
+        append(text.substring(last, m.range.first))
+        val bold = m.groups[1]?.value
+        if (bold != null) withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(bold) }
+        else withStyle(SpanStyle(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic)) { append(m.groups[2]?.value.orEmpty()) }
+        last = m.range.last + 1
+    }
+    append(text.substring(last))
 }

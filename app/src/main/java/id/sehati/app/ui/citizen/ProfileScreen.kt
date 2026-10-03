@@ -24,7 +24,10 @@ import id.sehati.app.ui.components.*
 import id.sehati.app.ui.theme.*
 
 @Composable
-fun ProfileScreen(onShowQr: () -> Unit, onLogout: () -> Unit, onOpenNotifications: () -> Unit, vm: ProfileViewModel = hiltViewModel()) {
+fun ProfileScreen(
+    onShowQr: () -> Unit, onLogout: () -> Unit, onOpenNotifications: () -> Unit,
+    onOpenReminders: () -> Unit = {}, onOpenMeds: () -> Unit = {}, vm: ProfileViewModel = hiltViewModel(),
+) {
     val s by vm.state.collectAsStateWithLifecycle()
     var confirmDelete by remember { mutableStateOf(false) }
     var confirmLogout by remember { mutableStateOf(false) }
@@ -54,6 +57,13 @@ fun ProfileScreen(onShowQr: () -> Unit, onLogout: () -> Unit, onOpenNotification
             s.syncMessage?.let { InfoNote(it, icon = Icons.Rounded.Sync) }
             PrimaryButton("Sinkronkan sekarang", vm::syncNow, icon = Icons.Rounded.Sync, loading = s.syncing, tag = "profile_sync_button")
             if (!u.consentServerSync) InfoNote("Sinkronisasi ke server nonaktif. Data hanya di perangkat ini.", icon = Icons.Rounded.CloudOff, color = RiskYellowText, bg = RiskYellowBg)
+        }
+        id.sehati.app.ui.settings.ServerSettingsCard()
+
+        SectionTitle("Pengingat & obat")
+        SehatiCard(Modifier.testTag("reminder_entry_card")) {
+            SecondaryButton("Atur pengingat", onOpenReminders, icon = Icons.Rounded.NotificationsActive, tag = "profile_reminders_button")
+            SecondaryButton("Obat saya", onOpenMeds, icon = Icons.Rounded.Medication, tag = "profile_meds_button")
         }
 
         SectionTitle("Privasi & persetujuan")

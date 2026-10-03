@@ -14,6 +14,8 @@ import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
@@ -43,6 +45,14 @@ fun CitizenShell(onLogout: () -> Unit, onRetakeAssessment: () -> Unit) {
     val showBar = Tab.entries.any { it.route == route }
 
     fun open(r: String) = nav.navigate(r) { launchSingleTop = true }
+    val deepLink by id.sehati.app.ui.app.DeepLinks.route.collectAsStateWithLifecycle()
+    LaunchedEffect(deepLink, entry) {
+        val r = deepLink ?: return@LaunchedEffect
+        if (entry == null) return@LaunchedEffect
+        id.sehati.app.ui.app.DeepLinks.consume()
+        if (Tab.entries.any { it.route == r }) nav.navigate(r) { popUpTo(nav.graph.findStartDestination().id) { saveState = true }; launchSingleTop = true; restoreState = true }
+        else runCatching { nav.navigate(r) { launchSingleTop = true } }
+    }
     fun tab(r: String) = nav.navigate(r) { popUpTo(nav.graph.findStartDestination().id) { saveState = true }; launchSingleTop = true; restoreState = true }
 
     Scaffold(
@@ -69,11 +79,12 @@ fun CitizenShell(onLogout: () -> Unit, onRetakeAssessment: () -> Unit) {
             popEnterTransition = { fadeIn(tween(Motion.Medium, 60)) },
             popExitTransition = { fadeOut(tween(Motion.Short)) + slideOutHorizontally(tween(Motion.Medium)) { it / 12 } },
         ) {
-            composable("home") { HomeScreen(onOpenHealth = { tab("health") }, onOpenMove = { tab("move") }, onOpenFood = { tab("food") }, onOpenAcademy = { id -> open(if (id == null) "academy" else "academy/$id") }, onOpenCoach = { open("coach") }, onOpenRisk = { open("heart") }, onOpenChallenges = { open("challenges") }) }
+            composable("home") { HomeScreen(onOpenHealth = { tab("health") }, onOpenMove = { tab("move") }, onOpenFood = { tab("food") }, onOpenAcademy = { id -> open(if (id == null) "academy" else "academy/$id") }, onOpenCoach = { open("coach") }, onOpenRisk = { open("heart") }, onOpenChallenges = { open("challenges") },
+                onEmergency = { open("emergency") }, onOpenMeds = { open("medications") }, onBreath = { open("breathing") }, onReminders = { open("reminders") }) }
             composable("move") { MoveScreen() }
             composable("food") { FoodScreen() }
             composable("health") { HealthScreen(onShowQr = { open("qr") }, onOpenAcademy = { id -> open(if (id == null) "academy" else "academy/$id") }, onRetakeAssessment = onRetakeAssessment) }
-            composable("profile") { ProfileScreen(onShowQr = { open("qr") }, onLogout = onLogout, onOpenNotifications = { open("notifications") }) }
+            composable("profile") { ProfileScreen(onShowQr = { open("qr") }, onLogout = onLogout, onOpenNotifications = { open("notifications") }, onOpenReminders = { open("reminders") }, onOpenMeds = { open("medications") }) }
             composable("qr") { QrScreen(onBack = { nav.popBackStack() }) }
             composable("academy") { AcademyScreen(onBack = { nav.popBackStack() }, onOpen = { open("academy/$it") }) }
             composable("academy/{id}", arguments = listOf(navArgument("id") { type = NavType.StringType })) { e ->
@@ -81,7 +92,11 @@ fun CitizenShell(onLogout: () -> Unit, onRetakeAssessment: () -> Unit) {
             }
             composable("heart") { HeartRiskScreen(onBack = { nav.popBackStack() }, onOpenAcademy = { open("academy/$it") }) }
             composable("challenges") { ChallengesScreen(onBack = { nav.popBackStack() }, onOpenAcademy = { open("academy/$it") }) }
-            composable("coach") { CoachScreen(onBack = { nav.popBackStack() }, onOpenAcademy = { open("academy/$it") }) }
+            composable("coach") { CoachScreen(onBack = { nav.popBackStack() }, onOpenAcademy = { open("academy/$it") }, onEmergency = { open("emergency") }) }
+            composable("emergency") { EmergencyScreen(onBack = { nav.popBackStack() }) }
+            composable("breathing") { BreathingScreen(onBack = { nav.popBackStack() }) }
+            composable("medications") { MedicationScreen(onBack = { nav.popBackStack() }, onOpenReminders = { open("reminders") }) }
+            composable("reminders") { ReminderSettingsScreen(onBack = { nav.popBackStack() }, onOpenMedications = { open("medications") }) }
             composable("notifications") { NotificationsScreen(onBack = { nav.popBackStack() }) }
         }
     }

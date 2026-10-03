@@ -13,6 +13,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        id.sehati.app.ui.app.DeepLinks.open(intent?.getStringExtra(id.sehati.app.data.reminders.Notifier.EXTRA_ROUTE))
         setContent { SehatiTheme { SehatiRoot() } }
+    }
+
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        id.sehati.app.ui.app.DeepLinks.open(intent.getStringExtra(id.sehati.app.data.reminders.Notifier.EXTRA_ROUTE))
     }
 }

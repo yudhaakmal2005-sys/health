@@ -47,6 +47,7 @@ class AppViewModel @Inject constructor(
     private val settings: SettingsStore,
     private val scheduler: WorkScheduler,
     private val remote: id.sehati.app.data.remote.RemoteAccount,
+    private val reminders: id.sehati.app.data.reminders.ReminderScheduler,
     currentUser: CurrentUser,
 ) : ViewModel() {
 
@@ -98,6 +99,8 @@ class AppViewModel @Inject constructor(
             if (remote.isLinked) launch { runCatching { remote.refreshConfig(); scheduler.requestSync() } }
             scheduler.schedulePeriodicSync()
             scheduler.scheduleReminders()
+            // Jadwalkan ulang pengingat setiap kali pengguna masuk/keluar.
+            session.collect { s -> runCatching { if (s == null) reminders.cancelAll() else reminders.rescheduleAll() } }
         }
     }
 

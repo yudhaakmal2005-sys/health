@@ -35,6 +35,9 @@ class TestEnv(transport: SyncTransport? = null) {
     val auth = AuthRepository(db, session, recorder, audit, clock)
     val citizens = CitizenRepository(db, recorder, audit, clock)
     val daily = DailyRepository(db, recorder, clock)
+    val meds = MedicationRepository(db, recorder, clock)
+    val server = id.sehati.app.data.remote.ServerClient(id.sehati.app.data.prefs.SettingsStore(ApplicationProvider.getApplicationContext()), InMemorySecureStore(), json, defaultBaseUrl = "")
+    val remote = id.sehati.app.data.remote.RemoteAccount(server, db, id.sehati.app.data.prefs.SettingsStore(ApplicationProvider.getApplicationContext()), id.sehati.app.data.sync.SyncApplier(db, json), json, clock)
     val posyandu = PosyanduRepository(db, health, recorder, session, audit, clock)
     val engine = SyncEngine(db, { transport ?: error("no transport") }, { "device-test" }, clock)
 

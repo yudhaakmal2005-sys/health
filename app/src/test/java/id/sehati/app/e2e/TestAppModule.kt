@@ -38,6 +38,7 @@ object TestAppModule {
     @Provides @Singleton fun health(db: SehatiDatabase, sync: SyncRecorder, clock: Clock, json: Json) = HealthRepository(db, sync, clock, json)
     @Provides @Singleton fun auth(db: SehatiDatabase, s: SessionManager, sync: SyncRecorder, audit: AuditLogger, clock: Clock) = AuthRepository(db, s, sync, audit, clock)
     @Provides @Singleton fun citizens(db: SehatiDatabase, sync: SyncRecorder, audit: AuditLogger, clock: Clock) = CitizenRepository(db, sync, audit, clock)
+    @Provides @Singleton fun medications(db: SehatiDatabase, sync: SyncRecorder, clock: Clock) = MedicationRepository(db, sync, clock)
     @Provides @Singleton fun daily(db: SehatiDatabase, sync: SyncRecorder, clock: Clock) = DailyRepository(db, sync, clock)
     @Provides @Singleton fun posyandu(db: SehatiDatabase, h: HealthRepository, sync: SyncRecorder, s: SessionManager, audit: AuditLogger, clock: Clock) = PosyanduRepository(db, h, sync, s, audit, clock)
     @Provides @Singleton fun thresholds(db: SehatiDatabase, settings: SettingsStore, h: HealthRepository, s: SessionManager, audit: AuditLogger, json: Json) =

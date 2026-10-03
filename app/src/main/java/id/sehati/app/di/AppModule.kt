@@ -90,6 +90,8 @@ object AppModule {
     fun citizens(db: SehatiDatabase, sync: SyncRecorder, audit: AuditLogger, clock: Clock, remote: id.sehati.app.data.remote.RemoteAccount) =
         CitizenRepository(db, sync, audit, clock) { remote.takeReservedId(refillTo = 20) }
 
+    @Provides @Singleton fun medications(db: SehatiDatabase, sync: SyncRecorder, clock: Clock) = MedicationRepository(db, sync, clock)
+
     @Provides @Singleton
     fun daily(db: SehatiDatabase, sync: SyncRecorder, clock: Clock) = DailyRepository(db, sync, clock)
 

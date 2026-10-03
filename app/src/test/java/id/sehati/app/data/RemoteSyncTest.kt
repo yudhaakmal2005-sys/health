@@ -56,3 +56,25 @@ class RemoteSyncTest {
         assertNotNull(env.db.userDao().get("HM-000900"))
     }
 }
+
+@RunWith(AndroidJUnit4::class)
+@Config(sdk = [34])
+class MedicationRepositoryTest {
+    private lateinit var env: TestEnv
+    @Before fun setUp() { env = TestEnv() }
+    @After fun tearDown() = env.close()
+
+    @Test fun saveTakeAndUntake() = blocking {
+        val u = env.citizen()
+        val m = env.meds.save(u.sehatiId, "Amlodipin", "1 tablet pagi", listOf("19:00", "7.00"))
+        assertEquals("07:00,19:00", m.times)
+        val day = java.time.LocalDate.of(2026, 10, 5)
+        env.meds.setTaken(m.id, day, "07:00", true)
+        env.meds.setTaken(m.id, day, "07:00", true) // idempoten
+        assertEquals(1, env.meds.observeLogs(u.sehatiId, day).first().size)
+        env.meds.setTaken(m.id, day, "07:00", false)
+        assertEquals(0, env.meds.observeLogs(u.sehatiId, day).first().size)
+        assertFailsWith<IllegalArgumentException> { env.meds.save(u.sehatiId, "", "", listOf("07:00")) }
+        assertFailsWith<IllegalArgumentException> { env.meds.save(u.sehatiId, "X", "", listOf("99:00")) }
+    }
+}

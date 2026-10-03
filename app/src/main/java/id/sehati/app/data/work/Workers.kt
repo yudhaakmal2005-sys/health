@@ -100,13 +100,8 @@ class WorkScheduler(private val context: Context) {
         wm.enqueueUniquePeriodicWork("sync-periodic", ExistingPeriodicWorkPolicy.KEEP, req)
     }
 
+    /** Pengingat lama berbasis WorkManager diganti [id.sehati.app.data.reminders.ReminderScheduler]; bersihkan sisa jadwal lama. */
     fun scheduleReminders() {
-        fun periodic(kind: String, hours: Long) {
-            val req = PeriodicWorkRequestBuilder<ReminderWorker>(hours, TimeUnit.HOURS)
-                .setInputData(workDataOf(Reminders.KIND to kind)).setInitialDelay(hours, TimeUnit.HOURS).build()
-            wm.enqueueUniquePeriodicWork("reminder-$kind", ExistingPeriodicWorkPolicy.KEEP, req)
-        }
-        periodic("WATER", 4); periodic("ACTIVITY", 24); periodic("HEALTH_CHECK", 24 * 7)
-        periodic("EDUCATION", 24 * 2); periodic("POSYANDU", 24 * 7); periodic("FOLLOW_UP", 24)
+        listOf("WATER", "ACTIVITY", "HEALTH_CHECK", "EDUCATION", "POSYANDU", "FOLLOW_UP").forEach { wm.cancelUniqueWork("reminder-$it") }
     }
 }
