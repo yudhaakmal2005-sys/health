@@ -35,7 +35,7 @@ class ComponentsUiTest {
     @Test fun riskCardShowsLabelExplanationAndDisclaimer() {
         rule.setContent { SehatiTheme { RiskCard(RiskLevel.HIGHER_MONITORING) } }
         rule.onNodeWithTag("health_status_card").assertIsDisplayed()
-        rule.onNodeWithText("Higher Monitoring Need").assertIsDisplayed()
+        rule.onNodeWithText("Perlu Pemantauan Lebih").assertIsDisplayed()
         rule.onNodeWithText(RiskLevel.HIGHER_MONITORING.summary).assertIsDisplayed()
         rule.onNodeWithText(PROFILE_DISCLAIMER).assertIsDisplayed()
     }

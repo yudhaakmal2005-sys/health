@@ -116,7 +116,7 @@ fun HeartHomeSection(
             Icon(Icons.Rounded.LocalFireDepartment, null, tint = RiskOrange)
             Spacer(Modifier.width(8.dp))
             Text("Streak ${s.progress.streakDays} hari · ${s.progress.learningPoints} poin · ${s.progress.badges.count { it.earned }} lencana", style = MaterialTheme.typography.titleSmall, color = TextPrimary, modifier = Modifier.weight(1f))
-            TextButton(onOpenChallenges, Modifier.heightIn(min = 48.dp)) { Text("Lihat", color = PrimaryDark) }
+            TextButton(onOpenChallenges, Modifier.heightIn(min = 48.dp).testTag("open_challenges")) { Text("Lihat", color = PrimaryDark) }
         }
     }
 }

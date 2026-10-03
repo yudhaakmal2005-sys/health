@@ -74,7 +74,7 @@ class E2eScreenshotTest {
         waitTag("health_status_card"); shot("${prefix}_profil_sehati")
         click("submit_assessment_button"); shot("${prefix}_rencana")
         click("submit_assessment_button")
-        waitTag("home_screen"); waitGone("welcome_overlay")
+        waitTag("home_screen"); waitTag("home_greeting_name"); waitGone("welcome_overlay")
     }
 
     @Test fun test1_onboardingRegistration() {
@@ -102,6 +102,13 @@ class E2eScreenshotTest {
         rule.click("demo_login_warga")
         rule.assessment("demo")
         rule.waitTag("home_greeting_name"); shot("beranda")
+        rule.click("heart_risk_card"); rule.waitTag("heart_risk_screen"); shot("faktor_risiko_jantung")
+        rule.click("back_button"); rule.waitTag("home_greeting_name")
+        runCatching { rule.onNodeWithTag("daily_fact_card").performScrollTo() }; shot("beranda_tantangan_fakta")
+        rule.click("open_challenges"); rule.waitTag("challenges_screen"); shot("tantangan_lencana")
+        rule.click("back_button"); rule.waitTag("home_greeting_name")
+        rule.click("home_coach_tip"); rule.waitTag("coach_screen"); rule.click("coach_chip_Apa tanda bahaya serangan jantung?"); shot("tanya_sehati")
+        rule.click("back_button"); rule.waitTag("home_greeting_name")
         rule.click("nav_move"); rule.waitTag("move_screen"); shot("aktivitas")
         rule.click("nav_food"); rule.waitTag("food_screen"); shot("makanan")
         rule.click("nav_health"); rule.waitTag("health_screen"); shot("kesehatan")

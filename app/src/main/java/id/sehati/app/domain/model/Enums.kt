@@ -37,13 +37,13 @@ enum class VerificationStatus(val label: String) {
  * Profil SEHATI. Ini BUKAN diagnosis: hanya kategori pemantauan berbasis data yang diinput.
  */
 enum class RiskLevel(val rank: Int, val label: String, val summary: String) {
-    HEALTHY_HABIT(0, "Healthy Habit",
+    HEALTHY_HABIT(0, "Kebiasaan Sehat",
         "Tidak ditemukan indikator risiko yang perlu ditindaklanjuti secara khusus berdasarkan data yang tersedia."),
-    RISK_AWARENESS(1, "Risk Awareness",
+    RISK_AWARENESS(1, "Waspada Faktor Risiko",
         "Ada faktor gaya hidup atau indikator yang perlu diperbaiki dan dipantau."),
-    HIGHER_MONITORING(2, "Higher Monitoring Need",
+    HIGHER_MONITORING(2, "Perlu Pemantauan Lebih",
         "Terdapat beberapa indikator yang memerlukan pemantauan lebih teratur dan/atau evaluasi tenaga kesehatan."),
-    MEDICAL_FOLLOW_UP(3, "Medical Follow-Up",
+    MEDICAL_FOLLOW_UP(3, "Perlu Tindak Lanjut Medis",
         "Terdapat temuan yang perlu mendapatkan evaluasi tenaga kesehatan sesuai protokol pelayanan.");
     companion object { fun parse(v: String?): RiskLevel = entries.firstOrNull { it.name == v } ?: HEALTHY_HABIT }
 }
