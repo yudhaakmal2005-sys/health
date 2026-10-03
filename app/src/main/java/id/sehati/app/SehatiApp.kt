@@ -13,11 +13,11 @@ import javax.inject.Inject
 @HiltAndroidApp
 class SehatiApp : Application(), Configuration.Provider {
     @Inject lateinit var workerFactory: HiltWorkerFactory
-    @Inject lateinit var thresholds: ThresholdService
+    @Inject lateinit var thresholds: dagger.Lazy<ThresholdService>
 
     override fun onCreate() {
         super.onCreate()
-        CoroutineScope(Dispatchers.Default).launch { runCatching { thresholds.restore() } }
+        CoroutineScope(Dispatchers.Default).launch { runCatching { thresholds.get().restore() } }
     }
 
     override val workManagerConfiguration: Configuration
