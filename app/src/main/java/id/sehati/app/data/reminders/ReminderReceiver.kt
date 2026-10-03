@@ -39,14 +39,14 @@ class ReminderReceiver : BroadcastReceiver() {
             try {
                 when (intent.action) {
                     ACTION_FIRE -> fire(context, intent.getStringExtra(EXTRA_KEY).orEmpty())
-                    ACTION_WATER -> { uid()?.let { daily.addWater(it, today(), 1) }; done(context, intent, "Tercatat 1 gelas air 💧") }
+                    ACTION_WATER -> { uid()?.let { daily.addWater(it, today(), 1) }; done(context, intent, "Tercatat 1 gelas air") }
                     ACTION_MED_TAKEN -> {
                         val id = intent.getStringExtra(EXTRA_MED).orEmpty(); val t = intent.getStringExtra(EXTRA_TIME).orEmpty()
-                        meds.setTaken(id, LocalDate.now(), t, true); done(context, intent, "Obat tercatat sudah diminum ✓")
+                        meds.setTaken(id, LocalDate.now(), t, true); done(context, intent, "Obat tercatat sudah diminum")
                     }
                     ACTION_CHALLENGE -> {
                         val cid = intent.getStringExtra(EXTRA_CHALLENGE).orEmpty()
-                        uid()?.let { daily.checkIn(it, cid, LocalDate.now()) }; done(context, intent, "Hebat! Tantangan hari ini tercatat 🎉")
+                        uid()?.let { daily.checkIn(it, cid, LocalDate.now()) }; done(context, intent, "Tantangan hari ini tercatat")
                     }
                     Intent.ACTION_BOOT_COMPLETED, Intent.ACTION_TIMEZONE_CHANGED, Intent.ACTION_TIME_CHANGED, ACTION_RESCHEDULE -> scheduler.rescheduleAll()
                 }

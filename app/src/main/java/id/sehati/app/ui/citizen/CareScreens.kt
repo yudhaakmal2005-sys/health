@@ -10,10 +10,12 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -50,14 +52,17 @@ fun EmergencyScreen(onBack: () -> Unit) {
     val ctx = LocalContext.current
     ScreenColumn(Modifier.testTag("emergency_screen")) {
         ScreenHeader("Darurat", "Bertindak cepat menyelamatkan nyawa", onBack = onBack)
-        SehatiCard(container = RiskRedBg, border = RiskRed.copy(alpha = 0.4f)) {
-            Text("Nyeri dada, sesak berat, pingsan, atau wajah mencong mendadak?", style = MaterialTheme.typography.titleMedium, color = RiskRedText, fontWeight = FontWeight.Bold)
-            Text("Jangan menunggu. Hubungi ambulans atau segera ke IGD terdekat. Jangan mengemudi sendiri.", style = MaterialTheme.typography.bodyMedium, color = RiskRedText)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                PrimaryButton("Telepon 119", { dial(ctx, "119") }, Modifier.weight(1f), icon = Icons.Outlined.Call, tag = "call_119")
-                SecondaryButton("Telepon 112", { dial(ctx, "112") }, Modifier.weight(1f), icon = Icons.Outlined.Call, tag = "call_112")
+        SehatiCard(border = Primary.copy(alpha = 0.35f)) {
+            Row(verticalAlignment = Alignment.Top) {
+                Icon(Icons.Outlined.WarningAmber, null, tint = Primary, modifier = Modifier.size(22.dp).padding(top = 1.dp))
+                Spacer(Modifier.width(10.dp))
+                Text("Nyeri dada, sesak berat, pingsan, atau wajah mencong mendadak?", style = MaterialTheme.typography.titleMedium, color = TextPrimary, fontWeight = FontWeight.Bold)
             }
-            Text("119 = layanan ambulans/gawat darurat (PSC 119). 112 = nomor darurat umum.", style = MaterialTheme.typography.bodySmall, color = RiskRedText)
+            Text("Jangan menunggu. Hubungi ambulans atau segera ke IGD terdekat. Jangan mengemudi sendiri.", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+            Spacer(Modifier.height(4.dp))
+            PrimaryButton("Telepon 119", { dial(ctx, "119") }, icon = Icons.Outlined.Call, tag = "call_119")
+            PrimaryButton("Telepon 112", { dial(ctx, "112") }, icon = Icons.Outlined.Call, tag = "call_112")
+            Text("119 = layanan ambulans/gawat darurat (PSC 119). 112 = nomor darurat umum.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
         }
 
         SectionTitle("Tanda serangan jantung")
@@ -66,7 +71,7 @@ fun EmergencyScreen(onBack: () -> Unit) {
             "Nyeri menjalar ke lengan kiri, rahang, leher, atau punggung",
             "Sesak napas, keringat dingin, mual, atau lemas mendadak",
             "Pada perempuan & lansia gejala bisa tidak khas",
-        ), Icons.Outlined.Favorite, RiskRed)
+        ), Icons.Outlined.Favorite, TextMuted)
 
         SectionTitle("Langkah pertama")
         Steps(listOf(
@@ -77,7 +82,8 @@ fun EmergencyScreen(onBack: () -> Unit) {
         ))
 
         SectionTitle("Tanda stroke: SeGeRa ke RS")
-        SehatiCard {
+        SehatiCard(contentPadding = 0) {
+            Column(Modifier.padding(vertical = 4.dp)) {
             listOf(
                 "Se" to "Senyum tidak simetris (mencong)",
                 "Ge" to "Gerak separuh tubuh lemah tiba-tiba",
@@ -85,18 +91,20 @@ fun EmergencyScreen(onBack: () -> Unit) {
                 "Ke" to "Kebas/baal separuh tubuh",
                 "R" to "Rabun mendadak",
                 "S" to "Sakit kepala hebat mendadak",
-            ).forEach { (k, v) ->
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.heightIn(min = 36.dp)) {
-                    Box(Modifier.size(36.dp).background(PrimaryLight, CircleShape), contentAlignment = Alignment.Center) { Text(k, style = MaterialTheme.typography.labelLarge, color = PrimaryDark) }
-                    Spacer(Modifier.width(12.dp)); Text(v, style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
+            ).forEachIndexed { i, (k, v) ->
+                if (i > 0) HorizontalDivider(color = SurfaceMuted, modifier = Modifier.padding(horizontal = 14.dp))
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().heightIn(min = 44.dp).padding(horizontal = 14.dp, vertical = 4.dp)) {
+                    Text(k, style = MaterialTheme.typography.titleSmall, color = PrimaryDark, fontWeight = FontWeight.Bold, modifier = Modifier.width(36.dp))
+                    Spacer(Modifier.width(8.dp)); Text(v, style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
                 }
             }
-            Text("Waktu sangat menentukan: segera bawa ke rumah sakit.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
+            Text("Waktu sangat menentukan: segera bawa ke rumah sakit.", style = MaterialTheme.typography.bodySmall, color = TextMuted, modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp))
+            }
         }
 
         SectionTitle("Pijat jantung (RJP) tangan saja")
         CprCoach()
-        InfoNote("Panduan ini untuk orang dewasa dan bukan pengganti pelatihan. Ikuti instruksi petugas 119 di telepon.", icon = Icons.Outlined.Info)
+        InfoNote("Panduan ini untuk orang dewasa dan bukan pengganti pelatihan. Ikuti instruksi petugas 119 di telepon.", icon = Icons.Outlined.Info, color = TextSecondary, bg = SurfaceMuted)
         Spacer(Modifier.height(8.dp))
     }
 }
@@ -106,7 +114,7 @@ private fun Checklist(items: List<String>, icon: androidx.compose.ui.graphics.ve
     SehatiCard {
         items.forEach {
             Row(verticalAlignment = Alignment.Top, modifier = Modifier.padding(vertical = 2.dp)) {
-                Icon(icon, null, tint = tint, modifier = Modifier.size(18.dp).padding(top = 2.dp)); Spacer(Modifier.width(10.dp))
+                Box(Modifier.padding(top = 8.dp).size(5.dp).background(tint, CircleShape)); Spacer(Modifier.width(12.dp))
                 Text(it, style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
             }
         }
@@ -114,15 +122,18 @@ private fun Checklist(items: List<String>, icon: androidx.compose.ui.graphics.ve
 }
 
 @Composable
-private fun Steps(items: List<String>) {
-    SehatiCard {
+private fun Steps(items: List<String>, boxed: Boolean = true) {
+    val body: @Composable () -> Unit = {
         items.forEachIndexed { i, t ->
             Row(verticalAlignment = Alignment.Top, modifier = Modifier.padding(vertical = 3.dp)) {
-                Box(Modifier.size(26.dp).background(Primary, CircleShape), contentAlignment = Alignment.Center) { Text("${i + 1}", color = Color.White, style = MaterialTheme.typography.labelLarge) }
-                Spacer(Modifier.width(10.dp)); Text(t, style = MaterialTheme.typography.bodyMedium, color = TextPrimary, modifier = Modifier.padding(top = 3.dp))
+                Box(Modifier.size(24.dp).background(SurfaceMuted, CircleShape), contentAlignment = Alignment.Center) {
+                    Text("${i + 1}", color = TextPrimary, style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum"), fontWeight = FontWeight.SemiBold)
+                }
+                Spacer(Modifier.width(12.dp)); Text(t, style = MaterialTheme.typography.bodyMedium, color = TextPrimary, modifier = Modifier.padding(top = 2.dp))
             }
         }
     }
+    if (boxed) SehatiCard { body() } else Column(verticalArrangement = Arrangement.spacedBy(8.dp)) { body() }
 }
 
 /** Metronom 110 kali/menit dengan getar & bunyi, hitungan 30 tekanan per siklus. */
@@ -140,7 +151,7 @@ private fun CprCoach() {
             count = count % 30 + 1
             haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             tone?.startTone(ToneGenerator.TONE_PROP_BEEP, 60)
-            pulse.snapTo(1.18f); pulse.animateTo(1f, tween(380, easing = FastOutSlowInEasing))
+            pulse.snapTo(1.1f); pulse.animateTo(1f, tween(380, easing = FastOutSlowInEasing))
             delay(545L - 380L) // 110 kali/menit ≈ 545 ms per tekanan
         }
     }
@@ -150,16 +161,17 @@ private fun CprCoach() {
             "Letakkan tumit telapak tangan di tengah dada, tangan lain di atasnya, lengan lurus.",
             "Tekan kuat 5–6 cm, cepat 100–120 kali per menit, biarkan dada kembali penuh.",
             "Jangan berhenti sampai petugas datang atau orang mulai bernapas.",
-        ))
+        ), boxed = false)
         Box(Modifier.fillMaxWidth().padding(vertical = 8.dp), contentAlignment = Alignment.Center) {
             Box(
-                Modifier.size(150.dp).scale(if (running) pulse.value else 1f).background(if (running) RiskRed else RiskRedBg, CircleShape)
+                Modifier.size(150.dp).scale(if (running) pulse.value else 1f).background(if (running) Primary else CardWhite, CircleShape)
+                    .border(2.dp, Primary, CircleShape)
                     .semantics { contentDescription = if (running) "Metronom berjalan, tekanan ke $count dari 30" else "Metronom berhenti"; liveRegion = LiveRegionMode.Polite },
                 contentAlignment = Alignment.Center,
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(if (running) "$count" else "110", fontSize = 44.sp, fontWeight = FontWeight.Bold, color = if (running) Color.White else RiskRedText)
-                    Text(if (running) "dari 30" else "kali/menit", style = MaterialTheme.typography.labelMedium, color = if (running) Color.White else RiskRedText)
+                    Text(if (running) "$count" else "110", fontSize = 44.sp, fontWeight = FontWeight.Bold, color = if (running) Color.White else PrimaryDark, style = MaterialTheme.typography.displaySmall.copy(fontFeatureSettings = "tnum"))
+                    Text(if (running) "dari 30" else "kali/menit", style = MaterialTheme.typography.labelMedium, color = if (running) Color.White else TextMuted)
                 }
             }
         }
@@ -205,18 +217,19 @@ fun BreathingScreen(onBack: () -> Unit) {
         SehatiCard {
             Box(Modifier.fillMaxWidth().height(260.dp), contentAlignment = Alignment.Center) {
                 Canvas(Modifier.size(240.dp)) {
-                    drawCircle(WellnessLight, radius = this.size.minDimension / 2)
-                    drawCircle(Wellness.copy(alpha = 0.85f), radius = this.size.minDimension / 2 * size.value)
+                    drawCircle(SurfaceMuted, radius = this.size.minDimension / 2)
+                    drawCircle(Wellness.copy(alpha = 0.16f), radius = this.size.minDimension / 2 * size.value)
+                    drawCircle(Wellness.copy(alpha = 0.6f), radius = this.size.minDimension / 2 * size.value, style = androidx.compose.ui.graphics.drawscope.Stroke(2.dp.toPx()))
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) {
-                    Text(if (running) phase.label else if (finished) "Selesai, kerja bagus!" else "Siap?", style = MaterialTheme.typography.titleLarge, color = Color.White, fontWeight = FontWeight.Bold)
-                    if (running) Text("$secondsLeft", fontSize = 40.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(if (running) phase.label else if (finished) "Selesai, kerja bagus." else "Siap?", style = MaterialTheme.typography.titleLarge, color = TextPrimary, fontWeight = FontWeight.SemiBold)
+                    if (running) Text("$secondsLeft", fontSize = 40.sp, color = TextPrimary, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.displaySmall.copy(fontFeatureSettings = "tnum"))
                 }
             }
             Text(if (running || finished) "$cycles siklus" else "Pola 4-4-6: tarik 4 detik, tahan 4 detik, hembuskan 6 detik.", style = MaterialTheme.typography.bodyMedium, color = TextSecondary, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
             if (!running) ChoiceChips(listOf(1, 2, 5), minutes, { minutes = it }, { "$it menit" }, tagPrefix = "breath_min")
             PrimaryButton(if (running) "Berhenti" else "Mulai", { running = !running }, icon = if (running) Icons.Outlined.Stop else Icons.Outlined.SelfImprovement, tag = "breath_toggle")
         }
-        InfoNote("Latihan napas rutin membantu mengelola stres, salah satu faktor yang memengaruhi tekanan darah. Hentikan bila pusing.", icon = Icons.Outlined.Spa)
+        InfoNote("Latihan napas rutin membantu mengelola stres, salah satu faktor yang memengaruhi tekanan darah. Hentikan bila pusing.", icon = Icons.Outlined.Spa, color = TextSecondary, bg = SurfaceMuted)
     }
 }

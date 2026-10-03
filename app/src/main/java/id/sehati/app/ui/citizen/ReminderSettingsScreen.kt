@@ -63,16 +63,21 @@ fun ReminderSettingsScreen(onBack: () -> Unit, onOpenMedications: () -> Unit, vm
     ScreenColumn(Modifier.testTag("reminder_settings_screen")) {
         ScreenHeader("Pengingat", "Atur jam pengingat kebiasaan sehat", onBack = onBack)
         if (!allowed && Build.VERSION.SDK_INT >= 33) {
-            SehatiCard(container = RiskYellowBg, border = RiskYellow.copy(alpha = 0.4f)) {
-                Text("Notifikasi belum diizinkan", style = MaterialTheme.typography.titleSmall, color = RiskYellowText)
-                Text("Izinkan notifikasi agar SEHATI bisa mengingatkan minum obat, minum air, dan jadwal Posyandu.", style = MaterialTheme.typography.bodySmall, color = RiskYellowText)
+            SehatiCard {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Outlined.NotificationsNone, null, tint = RiskYellowText, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(10.dp))
+                    Text("Notifikasi belum diizinkan", style = MaterialTheme.typography.titleSmall, color = TextPrimary, modifier = Modifier.weight(1f))
+                    StatusPill("Nonaktif", RiskYellowText, RiskYellowBg)
+                }
+                Text("Izinkan notifikasi agar SEHATI bisa mengingatkan minum obat, minum air, dan jadwal Posyandu.", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                 PrimaryButton("Izinkan notifikasi", { launcher.launch(Manifest.permission.POST_NOTIFICATIONS) }, icon = Icons.Outlined.NotificationsActive, tag = "allow_notifications")
             }
         }
         if (p == null) { SkeletonBlock(200.dp); return@ScreenColumn }
 
         ReminderRow(Icons.Outlined.Medication, "Minum obat", "Sesuai jam di daftar Obat saya", p.medication, { v -> vm.update { it.copy(medication = v) } }, "rem_med") {
-            TextButton(onOpenMedications, Modifier.heightIn(min = 48.dp)) { Text("Atur obat") }
+            TextButton(onOpenMedications, Modifier.heightIn(min = 48.dp), contentPadding = PaddingValues(horizontal = 0.dp)) { Text("Atur obat", color = PrimaryDark) }
         }
         ReminderRow(Icons.Outlined.WaterDrop, "Minum air", "Tidak muncul bila target air tercapai", p.water, { v -> vm.update { it.copy(water = v) } }, "rem_water") {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -99,7 +104,7 @@ fun ReminderSettingsScreen(onBack: () -> Unit, onOpenMedications: () -> Unit, vm
         ReminderRow(Icons.Outlined.Bedtime, "Bersiap tidur", null, p.sleep, { v -> vm.update { it.copy(sleep = v) } }, "rem_sleep") {
             TimeButton(p.sleepTime) { pick = PickTarget.SLEEP }
         }
-        InfoNote("Pengingat dijadwalkan di perangkat ini dan tetap berjalan tanpa internet. Isi notifikasi tidak menampilkan hasil pemeriksaanmu.", icon = Icons.Outlined.Lock)
+        InfoNote("Pengingat dijadwalkan di perangkat ini dan tetap berjalan tanpa internet. Isi notifikasi tidak menampilkan hasil pemeriksaanmu.", icon = Icons.Outlined.Lock, color = TextSecondary, bg = SurfaceMuted)
     }
 
     pick?.let { target ->
@@ -122,7 +127,10 @@ fun ReminderSettingsScreen(onBack: () -> Unit, onOpenMedications: () -> Unit, vm
 
 @Composable
 private fun TimeButton(time: String, onClick: () -> Unit) {
-    OutlinedButton(onClick, Modifier.heightIn(min = 48.dp)) { Icon(Icons.Outlined.Schedule, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Pukul $time") }
+    OutlinedButton(onClick, Modifier.heightIn(min = 48.dp), shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Hairline),
+        colors = ButtonDefaults.outlinedButtonColors(containerColor = CardWhite, contentColor = TextPrimary)) {
+        Icon(Icons.Outlined.Schedule, null, Modifier.size(18.dp), tint = TextMuted); Spacer(Modifier.width(6.dp)); Text("Pukul $time", style = MaterialTheme.typography.labelLarge.copy(fontFeatureSettings = "tnum"))
+    }
 }
 
 @Composable
@@ -132,10 +140,10 @@ private fun ReminderRow(
 ) {
     SehatiCard(Modifier.testTag(tag)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconBadge(icon, if (checked) PrimaryDark else TextMuted, if (checked) PrimaryLight else SurfaceMuted, 40)
+            Icon(icon, null, tint = if (checked) TextSecondary else TextMuted, modifier = Modifier.size(20.dp))
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleSmall, color = TextPrimary)
+                Text(title, style = MaterialTheme.typography.titleSmall, color = if (checked) TextPrimary else TextSecondary)
                 subtitle?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = TextMuted) }
             }
             Switch(checked, onChange, Modifier.testTag("${tag}_switch"))

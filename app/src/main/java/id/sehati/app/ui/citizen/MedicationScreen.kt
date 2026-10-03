@@ -1,7 +1,8 @@
 package id.sehati.app.ui.citizen
 
-import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.rounded.CheckCircle
@@ -97,23 +98,23 @@ fun MedicationScreen(onBack: () -> Unit, onOpenReminders: () -> Unit, vm: Medica
             SehatiCard(Modifier.staggerIn(0).testTag("med_today_card")) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     val done = s.today.count { it.taken }
-                    ProgressRing(if (s.today.isEmpty()) 0f else done.toFloat() / s.today.size, size = 72.dp, stroke = 8.dp, color = Wellness, track = WellnessLight) {
-                        Text("$done/${s.today.size}", style = MaterialTheme.typography.titleMedium)
+                    ProgressRing(if (s.today.isEmpty()) 0f else done.toFloat() / s.today.size, size = 72.dp, stroke = 6.dp, color = Wellness, track = SurfaceMuted) {
+                        Text("$done/${s.today.size}", style = MaterialTheme.typography.titleMedium.copy(fontFeatureSettings = "tnum"), color = TextPrimary, fontWeight = FontWeight.Bold)
                     }
                     Spacer(Modifier.width(14.dp))
                     Column(Modifier.weight(1f)) {
                         Text("Jadwal hari ini", style = MaterialTheme.typography.titleMedium, color = TextPrimary)
-                        Text(s.adherence?.let { "Kepatuhan 7 hari: $it%" } ?: "Kepatuhan akan tampil setelah jadwal pertama", style = MaterialTheme.typography.bodySmall, color = TextMuted)
+                        Text(s.adherence?.let { "Kepatuhan 7 hari: $it%" } ?: "Kepatuhan akan tampil setelah jadwal pertama", style = MaterialTheme.typography.bodySmall.copy(fontFeatureSettings = "tnum"), color = TextMuted)
                     }
                 }
                 s.today.forEach { d ->
-                    val bg by animateColorAsState(if (d.taken) WellnessLight else SurfaceMuted, label = "dose")
-                    Surface(onClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); vm.toggle(d) }, color = bg, shape = MaterialTheme.shapes.large,
+                    Surface(onClick = { haptic.performHapticFeedback(HapticFeedbackType.LongPress); vm.toggle(d) }, color = CardWhite, shape = RoundedCornerShape(12.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Hairline),
                         modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag("dose_${d.medication.id}_${d.time}")) {
                         Row(Modifier.padding(horizontal = 14.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Text(d.time, style = MaterialTheme.typography.titleMedium, color = PrimaryDark, modifier = Modifier.width(58.dp))
+                            Text(d.time, style = MaterialTheme.typography.titleMedium.copy(fontFeatureSettings = "tnum"), color = if (d.taken) TextMuted else TextPrimary, fontWeight = FontWeight.SemiBold, modifier = Modifier.width(58.dp))
                             Column(Modifier.weight(1f)) {
-                                Text(d.medication.name, style = MaterialTheme.typography.bodyLarge, color = TextPrimary, fontWeight = FontWeight.Medium,
+                                Text(d.medication.name, style = MaterialTheme.typography.bodyLarge, color = if (d.taken) TextMuted else TextPrimary, fontWeight = FontWeight.Medium,
                                     textDecoration = if (d.taken) TextDecoration.LineThrough else null)
                                 if (d.medication.instructions.isNotBlank()) Text(d.medication.instructions, style = MaterialTheme.typography.bodySmall, color = TextMuted)
                             }
@@ -124,33 +125,36 @@ fun MedicationScreen(onBack: () -> Unit, onOpenReminders: () -> Unit, vm: Medica
                 }
             }
             SehatiCard(Modifier.staggerIn(1)) {
-                Text("7 hari terakhir", style = MaterialTheme.typography.titleSmall)
+                Text("7 hari terakhir", style = MaterialTheme.typography.titleSmall, color = TextPrimary)
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     s.week.forEach { (date, frac) ->
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            ProgressRing(frac ?: 0f, size = 34.dp, stroke = 5.dp, color = if ((frac ?: 0f) >= 1f) Wellness else RiskYellow, track = BorderColor)
+                            ProgressRing(frac ?: 0f, size = 32.dp, stroke = 4.dp, color = if ((frac ?: 0f) >= 1f) Wellness else TextSecondary, track = SurfaceMuted)
                             Text(date.dayOfWeek.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale("id")), style = MaterialTheme.typography.labelSmall, color = TextMuted)
                         }
                     }
                 }
             }
             SectionTitle("Daftar obat", action = "Tambah", onAction = { adding = true })
-            s.meds.forEach { m ->
-                SehatiCard(onClick = { editing = m }, modifier = Modifier.testTag("med_${m.id}"), container = if (m.active) CardWhite else SurfaceMuted) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        IconBadge(Icons.Outlined.Medication, PrimaryDark, PrimaryLight, 40)
-                        Spacer(Modifier.width(12.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text(m.name, style = MaterialTheme.typography.titleSmall, color = TextPrimary)
-                            Text(MedicationRepository.times(m).joinToString(" · ") + if (!m.active) " · dihentikan" else "", style = MaterialTheme.typography.bodySmall, color = TextMuted)
+            SehatiCard(contentPadding = 0) {
+                Column {
+                    s.meds.forEachIndexed { i, m ->
+                        if (i > 0) HorizontalDivider(color = SurfaceMuted, modifier = Modifier.padding(horizontal = 14.dp))
+                        Row(Modifier.fillMaxWidth().testTag("med_${m.id}").clickable { editing = m }.heightIn(min = 56.dp).padding(horizontal = 14.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Outlined.Medication, null, tint = if (m.active) TextSecondary else TextMuted, modifier = Modifier.size(20.dp))
+                            Spacer(Modifier.width(12.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(m.name, style = MaterialTheme.typography.titleSmall, color = if (m.active) TextPrimary else TextMuted)
+                                Text(MedicationRepository.times(m).joinToString(" · ") + if (!m.active) " · dihentikan" else "", style = MaterialTheme.typography.bodySmall.copy(fontFeatureSettings = "tnum"), color = TextMuted)
+                            }
+                            Switch(m.active, { vm.setActive(m.id, it) }, Modifier.testTag("med_active_${m.id}"))
                         }
-                        Switch(m.active, { vm.setActive(m.id, it) }, Modifier.testTag("med_active_${m.id}"))
                     }
                 }
             }
         }
         SecondaryButton("Atur pengingat", onOpenReminders, icon = Icons.Outlined.NotificationsActive, tag = "open_reminders")
-        InfoNote("SEHATI hanya mengingatkan. Jangan menambah, mengurangi, atau menghentikan obat tanpa arahan dokter atau apoteker.", icon = Icons.Outlined.Info)
+        InfoNote("SEHATI hanya mengingatkan. Jangan menambah, mengurangi, atau menghentikan obat tanpa arahan dokter atau apoteker.", icon = Icons.Outlined.Info, color = TextSecondary, bg = SurfaceMuted)
     }
 
     if (adding || editing != null) MedicationDialog(editing, err, onDismiss = { adding = false; editing = null; vm.clearError() }) { name, ins, times ->

@@ -251,7 +251,7 @@ fun CoachScreen(onBack: () -> Unit, onOpenAcademy: (String) -> Unit = {}, onEmer
     Column(Modifier.fillMaxSize().imePadding().testTag("coach_screen")) {
         Box(Modifier.padding(horizontal = 20.dp)) {
             ScreenHeader("Tanya SEHATI", if (s.aiReady) "Asisten AI · jawaban umum, bukan diagnosis" else "Pustaka offline · bukan diagnosis", onBack = onBack) {
-                StatusPill(if (s.aiReady) "AI" else "Offline", if (s.aiReady) PrimaryDark else TextSecondary, if (s.aiReady) PrimaryLight else SurfaceMuted,
+                StatusPill(if (s.aiReady) "AI" else "Offline", TextSecondary, SurfaceMuted,
                     if (s.aiReady) Icons.Outlined.AutoAwesome else Icons.Outlined.CloudOff, Modifier.testTag("coach_mode_pill"))
                 IconButton(vm::reset, Modifier.size(48.dp)) { Icon(Icons.Outlined.RestartAlt, "Mulai percakapan baru", tint = TextMuted) }
             }
@@ -262,16 +262,20 @@ fun CoachScreen(onBack: () -> Unit, onOpenAcademy: (String) -> Unit = {}, onEmer
         if (!s.busy) {
             LazyRow(Modifier.padding(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(HeartKnowledge.suggestedQuestions) { c ->
-                    AssistChip({ vm.send(c) }, { Text(c) }, Modifier.heightIn(min = 48.dp).testTag("coach_chip_$c"))
+                    AssistChip({ vm.send(c) }, { Text(c, color = TextSecondary) }, Modifier.heightIn(min = 48.dp).testTag("coach_chip_$c"),
+                        shape = RoundedCornerShape(10.dp), border = BorderStroke(1.dp, Hairline), colors = AssistChipDefaults.assistChipColors(containerColor = CardWhite))
                 }
             }
         }
-        Row(Modifier.padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedTextField(input, { input = it.take(1000) }, Modifier.weight(1f).testTag("coach_input"), placeholder = { Text("Tanyakan tentang jantung…") }, shape = RoundedCornerShape(16.dp),
+        HorizontalDivider(color = Hairline, modifier = Modifier.padding(top = 8.dp))
+        Row(Modifier.padding(start = 20.dp, end = 20.dp, top = 10.dp, bottom = 12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedTextField(input, { input = it.take(1000) }, Modifier.weight(1f).testTag("coach_input"), placeholder = { Text("Tanyakan tentang jantung…", color = TextMuted) }, shape = RoundedCornerShape(14.dp),
                 maxLines = 4, keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send), keyboardActions = KeyboardActions(onSend = { submit() }),
-                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Primary, unfocusedBorderColor = BorderColor, focusedContainerColor = CardWhite, unfocusedContainerColor = CardWhite))
-            if (s.busy) FilledTonalIconButton(vm::stop, Modifier.size(52.dp).testTag("coach_stop_button")) { Icon(Icons.Outlined.Stop, "Hentikan jawaban") }
-            else FilledIconButton(::submit, Modifier.size(52.dp).testTag("coach_send_button"), enabled = input.isNotBlank()) { Icon(Icons.AutoMirrored.Outlined.Send, "Kirim") }
+                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = TextSecondary, unfocusedBorderColor = Hairline, cursorColor = Primary, focusedContainerColor = CardWhite, unfocusedContainerColor = CardWhite))
+            if (s.busy) FilledTonalIconButton(vm::stop, Modifier.size(52.dp).testTag("coach_stop_button"), shape = RoundedCornerShape(14.dp),
+                colors = IconButtonDefaults.filledTonalIconButtonColors(containerColor = SurfaceMuted, contentColor = TextPrimary)) { Icon(Icons.Outlined.Stop, "Hentikan jawaban") }
+            else FilledIconButton(::submit, Modifier.size(52.dp).testTag("coach_send_button"), enabled = input.isNotBlank(), shape = RoundedCornerShape(14.dp),
+                colors = IconButtonDefaults.filledIconButtonColors(containerColor = Primary, contentColor = Color.White, disabledContainerColor = SurfaceMuted, disabledContentColor = TextMuted)) { Icon(Icons.AutoMirrored.Outlined.Send, "Kirim") }
         }
         Text("Jangan menulis nama, NIK, atau nomor HP. Untuk keadaan darurat hubungi 119/112.", style = MaterialTheme.typography.labelSmall, color = TextMuted,
             modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 8.dp))
@@ -318,24 +322,25 @@ private fun MessageBubble(m: ChatMessage, onOpenAcademy: (String) -> Unit, onEme
     }
     Column(Modifier.fillMaxWidth(), horizontalAlignment = if (m.fromUser) Alignment.End else Alignment.Start, verticalArrangement = Arrangement.spacedBy(6.dp)) {
         if (!m.fromUser) Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(if (m.source == AnswerSource.AI) Icons.Outlined.AutoAwesome else Icons.Outlined.MenuBook, null, tint = PrimaryDark, modifier = Modifier.size(14.dp))
+            Icon(if (m.source == AnswerSource.AI) Icons.Outlined.AutoAwesome else Icons.Outlined.MenuBook, null, tint = TextMuted, modifier = Modifier.size(14.dp))
             Spacer(Modifier.width(4.dp))
-            Text(if (m.source == AnswerSource.AI) "SEHATI AI" else "SEHATI", style = MaterialTheme.typography.labelSmall, color = PrimaryDark)
+            Text(if (m.source == AnswerSource.AI) "SEHATI AI" else "SEHATI", style = MaterialTheme.typography.labelSmall, color = TextMuted)
         }
         BubbleSurface(m)
         m.note?.let { Text(it, style = MaterialTheme.typography.labelSmall, color = TextMuted) }
         m.moduleId?.let { id -> Academy.byId(id)?.let { mod ->
-            AssistChip({ onOpenAcademy(id) }, { Text("Pelajari: ${mod.title}") }, Modifier.heightIn(min = 48.dp).testTag("coach_module_$id"), leadingIcon = { Icon(Icons.Outlined.School, null, Modifier.size(18.dp)) })
+            AssistChip({ onOpenAcademy(id) }, { Text("Pelajari: ${mod.title}", color = TextPrimary) }, Modifier.heightIn(min = 48.dp).testTag("coach_module_$id"), leadingIcon = { Icon(Icons.Outlined.School, null, Modifier.size(18.dp), tint = TextMuted) },
+                shape = RoundedCornerShape(10.dp), border = BorderStroke(1.dp, Hairline), colors = AssistChipDefaults.assistChipColors(containerColor = CardWhite))
         } }
-        m.related.forEach { q -> SuggestionChip({ onAsk(q) }, { Text(q) }, Modifier.heightIn(min = 44.dp)) }
+        m.related.forEach { q -> SuggestionChip({ onAsk(q) }, { Text(q, color = TextSecondary) }, Modifier.heightIn(min = 44.dp), shape = RoundedCornerShape(10.dp), border = BorderStroke(1.dp, Hairline)) }
     }
 }
 
 @Composable
 private fun BubbleSurface(m: ChatMessage) {
-    Surface(shape = RoundedCornerShape(18.dp), color = if (m.fromUser) Primary else CardWhite,
-        border = if (m.fromUser) null else BorderStroke(1.dp, BorderColor), modifier = Modifier.widthIn(max = 330.dp).animateContentSize()) {
-        Column(Modifier.padding(14.dp)) {
+    Surface(shape = RoundedCornerShape(14.dp), color = if (m.fromUser) Primary else CardWhite,
+        border = if (m.fromUser) null else BorderStroke(1.dp, Hairline), modifier = Modifier.widthIn(max = 330.dp).animateContentSize()) {
+        Column(Modifier.padding(horizontal = 14.dp, vertical = 11.dp)) {
             if (m.text.isEmpty() && m.streaming) TypingDots()
             else Text(
                 if (m.fromUser) AnnotatedString(m.text) else markdownLite(m.text + if (m.streaming) " ▍" else ""),
@@ -351,7 +356,7 @@ private fun TypingDots() {
     Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(vertical = 4.dp).testTag("coach_typing")) {
         repeat(3) { i ->
             val a by t.animateFloat(0.25f, 1f, infiniteRepeatable(tween(500, delayMillis = i * 150), RepeatMode.Reverse), label = "d$i")
-            Surface(Modifier.size(8.dp).alpha(a), shape = RoundedCornerShape(50), color = PrimaryDark) {}
+            Surface(Modifier.size(8.dp).alpha(a), shape = RoundedCornerShape(50), color = TextMuted) {}
         }
     }
 }

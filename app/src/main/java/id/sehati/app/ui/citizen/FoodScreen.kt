@@ -44,52 +44,66 @@ fun FoodScreen(vm: FoodViewModel = hiltViewModel()) {
         ScreenHeader("Makanan", "Heart Food · catatan makan hari ini")
         SehatiCard(Modifier.staggerIn(0)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                ProgressRing(if (s.kcalNeed == 0) 0f else s.totals.kcal.toFloat() / s.kcalNeed, size = 100.dp, stroke = 10.dp, color = Wellness, track = WellnessLight) {
-                    AnimatedNumber(s.totals.kcal, MaterialTheme.typography.titleLarge, format = { NumberFmt.thousands(it) })
+                ProgressRing(if (s.kcalNeed == 0) 0f else s.totals.kcal.toFloat() / s.kcalNeed, size = 100.dp, stroke = 8.dp, color = Wellness, track = SurfaceMuted) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        AnimatedNumber(s.totals.kcal, MaterialTheme.typography.titleLarge.copy(fontFeatureSettings = "tnum"), format = { NumberFmt.thousands(it) })
+                        Text("kkal", style = MaterialTheme.typography.labelSmall, color = TextMuted)
+                    }
                 }
                 Spacer(Modifier.width(16.dp))
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("kkal hari ini", style = MaterialTheme.typography.titleSmall, color = TextPrimary)
+                    Text("Energi hari ini", style = MaterialTheme.typography.titleSmall, color = TextPrimary)
                     if (s.kcalNeed > 0) Text("Perkiraan kebutuhan ±${NumberFmt.thousands(s.kcalNeed)} kkal", style = MaterialTheme.typography.bodySmall, color = TextMuted)
-                    Text("Kualitas makanan ${if (s.entries.isEmpty()) "–" else "${s.quality}/100"}", style = MaterialTheme.typography.bodyMedium, color = TextSecondary, modifier = Modifier.testTag("food_quality_label"))
+                    Text("Kualitas makanan ${if (s.entries.isEmpty()) "–" else "${s.quality}/100"}", style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"), color = TextSecondary, modifier = Modifier.testTag("food_quality_label"))
                 }
             }
-            BarRow("Karbohidrat", s.totals.carbs.roundToInt(), maxOf(s.totals.carbs.roundToInt(), 1), Primary, valueLabel = "${s.totals.carbs.roundToInt()} g")
-            BarRow("Protein", s.totals.protein.roundToInt(), maxOf(s.totals.protein.roundToInt(), 1), Wellness, valueLabel = "${s.totals.protein.roundToInt()} g")
-            BarRow("Lemak", s.totals.fat.roundToInt(), maxOf(s.totals.fat.roundToInt(), 1), RiskYellow, valueLabel = "${s.totals.fat.roundToInt()} g")
+            BarRow("Karbohidrat", s.totals.carbs.roundToInt(), maxOf(s.totals.carbs.roundToInt(), 1), TextSecondary, valueLabel = "${s.totals.carbs.roundToInt()} g")
+            BarRow("Protein", s.totals.protein.roundToInt(), maxOf(s.totals.protein.roundToInt(), 1), TextSecondary, valueLabel = "${s.totals.protein.roundToInt()} g")
+            BarRow("Lemak", s.totals.fat.roundToInt(), maxOf(s.totals.fat.roundToInt(), 1), TextSecondary, valueLabel = "${s.totals.fat.roundToInt()} g")
             BarRow("Natrium", s.totals.sodiumMg.roundToInt(), s.targets.sodiumMgLimit, if (s.totals.sodiumMg > s.targets.sodiumMgLimit) RiskRed else Wellness, valueLabel = "${s.totals.sodiumMg.roundToInt()} mg")
             BarRow("Gula", s.totals.sugar.roundToInt(), s.targets.sugarGramsLimit, if (s.totals.sugar > s.targets.sugarGramsLimit) RiskRed else Wellness, valueLabel = "${s.totals.sugar.roundToInt()} g")
             Text("Batas natrium ${NumberFmt.thousands(s.targets.sodiumMgLimit)} mg dan gula ${s.targets.sugarGramsLimit} g adalah target edukasi yang dapat diubah di Profil, bukan diagnosis.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
         }
 
+        SectionTitle("Catatan makan")
+        SehatiCard(Modifier.staggerIn(1), contentPadding = 0) {
+        Column {
         MealCategory.entries.forEachIndexed { i, meal ->
             val list = s.entries.filter { it.meal == meal.name }
-            SehatiCard(Modifier.staggerIn(i + 1).testTag("meal_${meal.name}")) {
+            if (i > 0) HorizontalDivider(color = SurfaceMuted, modifier = Modifier.padding(horizontal = 14.dp))
+            Column(Modifier.fillMaxWidth().testTag("meal_${meal.name}").padding(start = 14.dp, end = 4.dp, top = 4.dp, bottom = 8.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(meal.label, style = MaterialTheme.typography.titleMedium, color = TextPrimary, modifier = Modifier.weight(1f))
-                    Text("${list.sumOf { it.kcal }} kkal", style = MaterialTheme.typography.labelLarge, color = TextMuted)
-                    IconButton({ addFor = meal }, Modifier.size(48.dp).testTag("add_food_${meal.name}")) { Icon(Icons.Outlined.AddCircle, "Tambah makanan ${meal.label}", tint = Primary) }
+                    Text(meal.label, style = MaterialTheme.typography.titleSmall, color = TextPrimary, modifier = Modifier.weight(1f))
+                    Text("${list.sumOf { it.kcal }} kkal", style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum"), color = TextMuted)
+                    IconButton({ addFor = meal }, Modifier.size(48.dp).testTag("add_food_${meal.name}")) { Icon(Icons.Outlined.Add, "Tambah makanan ${meal.label}", tint = PrimaryDark, modifier = Modifier.size(22.dp)) }
                 }
                 if (list.isEmpty()) Text("Belum ada catatan", style = MaterialTheme.typography.bodySmall, color = TextMuted)
                 list.forEach { e ->
                     Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
-                            Text(e.name, style = MaterialTheme.typography.bodyLarge, color = TextPrimary)
-                            Text("${trim(e.portions)}× ${e.portionLabel} · ${e.kcal} kkal · Na ${e.sodiumMg.roundToInt()} mg", style = MaterialTheme.typography.bodySmall, color = TextMuted)
+                            Text(e.name, style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
+                            Text("${trim(e.portions)}× ${e.portionLabel} · ${e.kcal} kkal · Na ${e.sodiumMg.roundToInt()} mg", style = MaterialTheme.typography.bodySmall.copy(fontFeatureSettings = "tnum"), color = TextMuted)
                         }
-                        IconButton({ vm.delete(e) }, Modifier.size(48.dp)) { Icon(Icons.Outlined.DeleteOutline, "Hapus ${e.name}", tint = TextMuted) }
+                        IconButton({ vm.delete(e) }, Modifier.size(48.dp)) { Icon(Icons.Outlined.DeleteOutline, "Hapus ${e.name}", tint = TextMuted, modifier = Modifier.size(20.dp)) }
                     }
                 }
             }
         }
+        }
+        }
 
-        InfoNote(FoodCatalog.ESTIMATE_NOTE, icon = Icons.Outlined.Info)
+        InfoNote(FoodCatalog.ESTIMATE_NOTE, icon = Icons.Outlined.Info, color = TextSecondary, bg = SurfaceMuted)
         SectionTitle("Ide menu sehat")
-        Recipes.list.forEach { r ->
-            SehatiCard {
-                Text(r.title, style = MaterialTheme.typography.titleSmall, color = TextPrimary)
-                Text(r.items.mapNotNull { FoodCatalog.byId(it)?.name }.joinToString(" + "), style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
-                Text(r.note, style = MaterialTheme.typography.bodySmall, color = TextMuted)
+        if (Recipes.list.isNotEmpty()) SehatiCard(contentPadding = 0) {
+            Column {
+                Recipes.list.forEachIndexed { i, r ->
+                    if (i > 0) HorizontalDivider(color = SurfaceMuted, modifier = Modifier.padding(horizontal = 14.dp))
+                    Column(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(r.title, style = MaterialTheme.typography.titleSmall, color = TextPrimary)
+                        Text(r.items.mapNotNull { FoodCatalog.byId(it)?.name }.joinToString(" + "), style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                        Text(r.note, style = MaterialTheme.typography.bodySmall, color = TextMuted)
+                    }
+                }
             }
         }
         Spacer(Modifier.height(8.dp))
@@ -113,7 +127,7 @@ private fun AddFoodSheet(meal: MealCategory, onAdd: (FoodItem, Float) -> Unit) {
     val results = remember(query, category) { FoodCatalog.search(query, category) }
 
     Column(Modifier.fillMaxWidth().heightIn(max = 620.dp).padding(horizontal = 20.dp).padding(bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text("Tambah ${meal.label.lowercase()}", style = MaterialTheme.typography.titleLarge)
+        Text("Tambah ${meal.label.lowercase()}", style = MaterialTheme.typography.titleLarge, color = TextPrimary)
         val p = picked
         if (p == null) {
             PhotoScanRow(onPick = { picked = it; portions = 1f })
@@ -131,17 +145,17 @@ private fun AddFoodSheet(meal: MealCategory, onAdd: (FoodItem, Float) -> Unit) {
                 }
             }
         } else {
-            Text(p.name, style = MaterialTheme.typography.titleMedium)
+            Text(p.name, style = MaterialTheme.typography.titleMedium, color = TextPrimary)
             Text(p.portion, style = MaterialTheme.typography.bodyMedium, color = TextMuted)
             NumberStepper("Porsi", (portions * 2).toInt(), { portions = it / 2f }, 1..12, tag = "portion", display = { trim(it / 2f) + " porsi" })
             Text("≈ ${(p.kcal * portions).roundToInt()} kkal · natrium ${(p.sodiumMg * portions).roundToInt()} mg · gula ${"%.1f".format(p.sugar * portions)} g", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
             if (!p.heartFriendly) {
                 val alt = FoodCatalog.healthierAlternatives(p)
-                if (alt.isNotEmpty()) InfoNote("Alternatif lebih ramah jantung: ${alt.joinToString { it.name }}", icon = Icons.Outlined.Lightbulb)
+                if (alt.isNotEmpty()) InfoNote("Alternatif lebih ramah jantung: ${alt.joinToString { it.name }}", icon = Icons.Outlined.Lightbulb, color = WellnessDark, bg = WellnessLight)
             }
-            InfoNote(FoodCatalog.ESTIMATE_NOTE)
+            InfoNote(FoodCatalog.ESTIMATE_NOTE, color = TextSecondary, bg = SurfaceMuted)
             PrimaryButton("Tambahkan", { onAdd(p, portions) }, tag = "confirm_add_food_button")
-            TextButton({ picked = null }, Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("Pilih makanan lain") }
+            TextButton({ picked = null }, Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text("Pilih makanan lain", color = TextSecondary) }
         }
     }
 }
@@ -176,10 +190,10 @@ private fun PhotoScanRow(onPick: (FoodItem) -> Unit) {
         }
         if (busy) Text("Mengenali makanan…", style = MaterialTheme.typography.bodySmall, color = TextMuted, modifier = Modifier.shimmer())
         suggestions?.let { list ->
-            if (list.isEmpty()) InfoNote("Makanan belum dikenali. Coba foto lebih dekat atau cari manual di bawah.", icon = Icons.Outlined.SearchOff)
+            if (list.isEmpty()) InfoNote("Makanan belum dikenali. Coba foto lebih dekat atau cari manual di bawah.", icon = Icons.Outlined.SearchOff, color = TextSecondary, bg = SurfaceMuted)
             else {
                 Text("Mungkin ini makananmu (ketuk untuk memilih):", style = MaterialTheme.typography.labelLarge, color = TextSecondary)
-                list.forEach { sg -> AssistChip({ onPick(sg.item) }, { Text(sg.item.name) }, Modifier.heightIn(min = 48.dp).testTag("scan_suggestion_${sg.item.id}")) }
+                list.forEach { sg -> AssistChip({ onPick(sg.item) }, { Text(sg.item.name, color = TextPrimary) }, Modifier.heightIn(min = 48.dp).testTag("scan_suggestion_${sg.item.id}"), shape = androidx.compose.foundation.shape.RoundedCornerShape(10.dp), border = androidx.compose.foundation.BorderStroke(1.dp, Hairline)) }
             }
         }
         Text("Foto diproses di ponselmu, tidak disimpan dan tidak dikirim. Hasil hanya saran, silakan periksa.", style = MaterialTheme.typography.bodySmall, color = TextMuted)

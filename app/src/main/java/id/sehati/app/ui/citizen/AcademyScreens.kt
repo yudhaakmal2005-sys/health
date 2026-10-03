@@ -1,6 +1,10 @@
 package id.sehati.app.ui.citizen
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.rounded.CheckCircle
@@ -11,6 +15,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -48,20 +54,28 @@ fun AcademyScreen(onBack: () -> Unit, onOpen: (String) -> Unit, vm: AcademyViewM
     ScreenColumn(Modifier.testTag("academy_screen")) {
         ScreenHeader("Health Academy", "Belajar 2 menit · kuis · aksi kecil", onBack = onBack)
         val done = progress.values.count { it.completedAt != null }
-        SehatiCard(container = PrimaryLight, border = Primary.copy(alpha = 0.2f)) {
-            Text("$done dari ${Academy.modules.size} materi tuntas · ${progress.values.count { it.readAt != null } * 2 + done * 10} poin belajar", style = MaterialTheme.typography.titleSmall, color = PrimaryDark)
+        SehatiCard {
+            Row(verticalAlignment = Alignment.Bottom) {
+                Text("$done", style = MaterialTheme.typography.headlineSmall.copy(fontFeatureSettings = "tnum"), color = TextPrimary, fontWeight = FontWeight.Bold)
+                Text(" dari ${Academy.modules.size} materi tuntas", style = MaterialTheme.typography.bodyMedium.copy(fontFeatureSettings = "tnum"), color = TextMuted, modifier = Modifier.padding(bottom = 3.dp))
+            }
+            Text("${progress.values.count { it.readAt != null } * 2 + done * 10} poin belajar", style = MaterialTheme.typography.bodySmall.copy(fontFeatureSettings = "tnum"), color = TextSecondary)
         }
         ChoiceChips(listOf<String?>(null) + Academy.categories, category, { category = it }, { it ?: "Semua" }, tagPrefix = "acadcat")
-        modules.forEachIndexed { i, m ->
-            val p = progress[m.id]
-            SehatiCard(Modifier.staggerIn(i).testTag("module_${m.id}"), onClick = { onOpen(m.id) }) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconBadge(if (p?.completedAt != null) Icons.Rounded.CheckCircle else Icons.Outlined.School, if (p?.completedAt != null) RiskGreenText else PrimaryDark, if (p?.completedAt != null) RiskGreenBg else PrimaryLight, 44)
-                    Spacer(Modifier.width(12.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text(m.title, style = MaterialTheme.typography.titleSmall, color = TextPrimary)
-                        Text(m.summary, style = MaterialTheme.typography.bodySmall, color = TextMuted)
-                        Text("${m.category} · ${m.minutes} menit" + (p?.quizScore?.let { " · skor $it/${p.quizTotal}" } ?: ""), style = MaterialTheme.typography.labelMedium, color = PrimaryDark)
+        if (modules.isNotEmpty()) SehatiCard(Modifier.staggerIn(1), contentPadding = 0) {
+            Column {
+                modules.forEachIndexed { i, m ->
+                    val p = progress[m.id]
+                    if (i > 0) HorizontalDivider(color = SurfaceMuted, modifier = Modifier.padding(horizontal = 14.dp))
+                    Row(Modifier.fillMaxWidth().testTag("module_${m.id}").clickable { onOpen(m.id) }.padding(horizontal = 14.dp, vertical = 12.dp), verticalAlignment = Alignment.Top) {
+                        Icon(if (p?.completedAt != null) Icons.Rounded.CheckCircle else Icons.Outlined.School, null, tint = if (p?.completedAt != null) Wellness else TextMuted, modifier = Modifier.size(20.dp).padding(top = 1.dp))
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(m.title, style = MaterialTheme.typography.titleSmall, color = TextPrimary)
+                            Text(m.summary, style = MaterialTheme.typography.bodySmall, color = TextMuted)
+                            Text("${m.category} · ${m.minutes} menit" + (p?.quizScore?.let { " · skor $it/${p.quizTotal}" } ?: ""), style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum"), color = TextSecondary, modifier = Modifier.padding(top = 2.dp))
+                        }
+                        Icon(Icons.Outlined.ChevronRight, null, tint = TextMuted, modifier = Modifier.size(20.dp))
                     }
                 }
             }
@@ -79,11 +93,17 @@ fun AcademyDetailScreen(moduleId: String, onBack: () -> Unit, vm: AcademyViewMod
     else ScreenColumn(Modifier.testTag("academy_detail_screen")) {
         ScreenHeader(m.title, "${m.category} · ${m.minutes} menit baca", onBack = onBack)
         m.paragraphs.forEachIndexed { i, p -> Text(p, style = MaterialTheme.typography.bodyLarge, color = TextSecondary, modifier = Modifier.staggerIn(i)) }
-        SehatiCard(container = WellnessLight, border = Wellness.copy(alpha = 0.3f)) {
-            Text("Aksi kecil", style = MaterialTheme.typography.labelLarge, color = WellnessDark)
-            Text(m.challenge, style = MaterialTheme.typography.bodyLarge, color = TextPrimary)
+        SehatiCard {
+            Row(verticalAlignment = Alignment.Top) {
+                Box(Modifier.size(width = 3.dp, height = 40.dp).background(Wellness, RoundedCornerShape(2.dp)))
+                Spacer(Modifier.width(12.dp))
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("AKSI KECIL", style = MaterialTheme.typography.labelSmall, color = TextMuted, letterSpacing = 1.2.sp)
+                    Text(m.challenge, style = MaterialTheme.typography.bodyLarge, color = TextPrimary)
+                }
+            }
         }
-        InfoNote("Materi edukasi umum, bukan pengganti saran tenaga kesehatan.", icon = Icons.Outlined.Shield)
+        InfoNote("Materi edukasi umum, bukan pengganti saran tenaga kesehatan.", icon = Icons.Outlined.Shield, color = TextSecondary, bg = SurfaceMuted)
         PrimaryButton("Mulai kuis (${m.quiz.size} soal)", { quiz = true }, icon = Icons.Outlined.Quiz, tag = "start_quiz_button")
     }
 }
@@ -97,10 +117,10 @@ private fun QuizScreen(m: EducationModule, onClose: () -> Unit, onFinish: (Int) 
     ScreenColumn(Modifier.testTag("quiz_screen")) {
         ScreenHeader("Kuis: ${m.title}", onBack = onClose)
         if (finished) {
-            AnimatedCheck(Modifier.align(Alignment.CenterHorizontally))
-            Text("Skor $score dari ${m.quiz.size}", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.align(Alignment.CenterHorizontally).testTag("quiz_score"))
+            Icon(Icons.Outlined.TaskAlt, null, tint = Wellness, modifier = Modifier.size(48.dp).align(Alignment.CenterHorizontally))
+            Text("Skor $score dari ${m.quiz.size}", style = MaterialTheme.typography.headlineMedium.copy(fontFeatureSettings = "tnum"), color = TextPrimary, fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.CenterHorizontally).testTag("quiz_score"))
             Text(if (score * 100 >= m.quiz.size * 60) "Materi tuntas. Selamat!" else "Baca lagi materinya, lalu coba lagi.", style = MaterialTheme.typography.bodyLarge, color = TextSecondary, modifier = Modifier.align(Alignment.CenterHorizontally))
-            InfoNote("Aksi hari ini: ${m.challenge}", icon = Icons.Outlined.Flag)
+            InfoNote("Aksi hari ini: ${m.challenge}", icon = Icons.Outlined.Flag, color = TextSecondary, bg = SurfaceMuted)
             PrimaryButton("Selesai", onClose, tag = "quiz_done_button")
         } else {
             val q = m.quiz[index]
@@ -111,7 +131,7 @@ private fun QuizScreen(m: EducationModule, onClose: () -> Unit, onFinish: (Int) 
                 val correct = chosen != null && i == q.correctIndex
                 val wrong = chosen == i && i != q.correctIndex
                 SehatiCard(Modifier.testTag("quiz_option_$i"), onClick = if (chosen == null) ({ picked = i; if (i == q.correctIndex) score++ }) else null,
-                    container = if (correct) RiskGreenBg else if (wrong) RiskRedBg else CardWhite, border = if (correct) RiskGreen else if (wrong) RiskRed else BorderColor) {
+                    border = if (correct) RiskGreen else if (wrong) RiskRed else BorderColor) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(o, style = MaterialTheme.typography.bodyLarge, color = TextPrimary, modifier = Modifier.weight(1f))
                         if (correct) Icon(Icons.Rounded.CheckCircle, "Benar", tint = RiskGreenText)
@@ -120,7 +140,7 @@ private fun QuizScreen(m: EducationModule, onClose: () -> Unit, onFinish: (Int) 
                 }
             }
             if (picked != null) {
-                InfoNote(q.explanation, icon = Icons.Outlined.Lightbulb)
+                InfoNote(q.explanation, icon = Icons.Outlined.Lightbulb, color = TextSecondary, bg = SurfaceMuted)
                 PrimaryButton(if (index == m.quiz.lastIndex) "Lihat skor" else "Soal berikutnya", {
                     if (index == m.quiz.lastIndex) { finished = true; onFinish(score) } else { index++; picked = null }
                 }, tag = "quiz_next_button")

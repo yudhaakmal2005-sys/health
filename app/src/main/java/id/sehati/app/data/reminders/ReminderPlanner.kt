@@ -37,17 +37,17 @@ object ReminderPlanner {
         fun pick(list: List<String>, salt: Int = 0) = list[Math.floorMod(dayIdx + salt, list.size.toLong()).toInt()]
 
         if (prefs.water) prefs.waterTimes.mapNotNull(::time).forEachIndexed { i, t ->
-            out += PlannedReminder("water_$i", ReminderKind.WATER, nextDaily(now, t), "Waktunya minum air 💧", pick(WATER_LINES, i))
+            out += PlannedReminder("water_$i", ReminderKind.WATER, nextDaily(now, t), "Waktunya minum air", pick(WATER_LINES, i))
         }
         if (prefs.walk) time(prefs.walkTime)?.let {
-            out += PlannedReminder("walk", ReminderKind.WALK, nextDaily(now, it), "Yuk jalan sehat 🚶", pick(WALK_LINES))
+            out += PlannedReminder("walk", ReminderKind.WALK, nextDaily(now, it), "Yuk jalan sehat", pick(WALK_LINES))
         }
         if (prefs.bpCheck) time(prefs.bpTime)?.let {
             out += PlannedReminder("bp", ReminderKind.BP_CHECK, nextWeekly(now, DayOfWeek.of(prefs.bpDay.coerceIn(1, 7)), it),
                 "Cek tekanan darah minggu ini", "Ukur tensimu atau datang ke Posyandu. Tekanan darah tinggi sering tanpa gejala.")
         }
         if (prefs.sleep) time(prefs.sleepTime)?.let {
-            out += PlannedReminder("sleep", ReminderKind.SLEEP, nextDaily(now, it), "Bersiap tidur 🌙", "Matikan layar 30 menit sebelum tidur. Tidur 7–8 jam membantu jantung pulih.")
+            out += PlannedReminder("sleep", ReminderKind.SLEEP, nextDaily(now, it), "Bersiap tidur", "Matikan layar 30 menit sebelum tidur. Tidur 7–8 jam membantu jantung pulih.")
         }
         if (prefs.fact) time(prefs.factTime)?.let {
             out += PlannedReminder("fact", ReminderKind.FACT, nextDaily(now, it), "Fakta atau mitos hari ini?", "Jawab satu pertanyaan jantung sehat dan kumpulkan poin.")
@@ -58,7 +58,7 @@ object ReminderPlanner {
         if (prefs.medication) meds.filter { it.active }.forEach { m ->
             MedicationRepository.times(m).mapNotNull { t -> time(t)?.let { t to it } }.forEach { (raw, t) ->
                 val body = if (m.instructions.isBlank()) "Minum sesuai resep dokter." else m.instructions
-                out += PlannedReminder("med_${m.id}_$raw", ReminderKind.MEDICATION, nextDaily(now, t), "Waktunya minum ${m.name} 💊", body, m.id, raw)
+                out += PlannedReminder("med_${m.id}_$raw", ReminderKind.MEDICATION, nextDaily(now, t), "Waktunya minum ${m.name}", body, m.id, raw)
             }
         }
         if (prefs.posyandu) posyandu.filter { rw == null || it.rw == rw }.forEach { s ->
@@ -67,7 +67,7 @@ object ReminderPlanner {
             val eve = date.minusDays(1).atTime(18, 0).atZone(now.zone)
             val day = date.atTime(time(s.startTime)?.minusHours(1) ?: LocalTime.of(7, 0)).atZone(now.zone)
             if (eve.isAfter(now)) out += PlannedReminder("posy_${s.id}_eve", ReminderKind.POSYANDU, eve.toInstant().toEpochMilli(),
-                "Besok Posyandu 🩺", "Cek tensi, gula darah, dan berat badan gratis" + (if (where.isNotBlank()) " di $where" else "") + ". Bawa QR SEHATI.")
+                "Besok Posyandu", "Cek tensi, gula darah, dan berat badan gratis" + (if (where.isNotBlank()) " di $where" else "") + ". Bawa QR SEHATI.")
             if (day.isAfter(now)) out += PlannedReminder("posy_${s.id}_day", ReminderKind.POSYANDU, day.toInstant().toEpochMilli(),
                 "Hari ini Posyandu", (if (where.isNotBlank()) "$where. " else "") + "Jangan lupa bawa QR SEHATI.")
         }

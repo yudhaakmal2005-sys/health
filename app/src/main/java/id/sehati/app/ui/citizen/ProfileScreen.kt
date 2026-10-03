@@ -4,7 +4,9 @@ import android.Manifest
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -12,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -38,11 +41,15 @@ fun ProfileScreen(
         ScreenHeader("Profil", "Identitas, privasi, dan pengaturan")
         SehatiCard(Modifier.staggerIn(0)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconBadge(Icons.Outlined.Person, PrimaryDark, PrimaryLight, 56)
+                val initials = u.fullName.split(' ').filter { it.isNotBlank() }.take(2).joinToString("") { it.first().uppercase() }
+                Box(Modifier.size(52.dp).background(SurfaceMuted, CircleShape), contentAlignment = Alignment.Center) {
+                    if (initials.isNotEmpty()) Text(initials, style = MaterialTheme.typography.titleMedium, color = TextSecondary, fontWeight = FontWeight.SemiBold)
+                    else Icon(Icons.Outlined.Person, null, tint = TextSecondary, modifier = Modifier.size(24.dp))
+                }
                 Spacer(Modifier.width(14.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(u.fullName, style = MaterialTheme.typography.titleLarge, color = TextPrimary)
-                    Text("SEHATI ID  ${u.sehatiId}", style = MaterialTheme.typography.titleSmall, color = PrimaryDark, modifier = Modifier.testTag("profile_sehati_id"))
+                    Text(u.fullName, style = MaterialTheme.typography.titleLarge, color = TextPrimary, fontWeight = FontWeight.Bold)
+                    Text("SEHATI ID  ${u.sehatiId}", style = MaterialTheme.typography.titleSmall.copy(fontFeatureSettings = "tnum"), color = TextSecondary, modifier = Modifier.testTag("profile_sehati_id"))
                     Text("${AgeCalc.age(u.birthDate)} tahun · ${Sex.parse(u.sex).label} · RW ${u.rw}, ${u.village}", style = MaterialTheme.typography.bodySmall, color = TextMuted)
                 }
             }
@@ -53,17 +60,20 @@ fun ProfileScreen(
         SectionTitle("Sinkronisasi")
         SehatiCard(Modifier.testTag("sync_card")) {
             Text("Tujuan: ${s.destination}", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
-            Text("Menunggu ${s.sync.pending} · gagal ${s.sync.failed} · terkirim ${s.sync.done}" + (s.sync.lastSyncAt?.let { " · terakhir ${TimeUtils.dateTime(it)}" } ?: ""), style = MaterialTheme.typography.bodySmall, color = TextMuted)
-            s.syncMessage?.let { InfoNote(it, icon = Icons.Outlined.Sync) }
+            Text("Menunggu ${s.sync.pending} · gagal ${s.sync.failed} · terkirim ${s.sync.done}" + (s.sync.lastSyncAt?.let { " · terakhir ${TimeUtils.dateTime(it)}" } ?: ""), style = MaterialTheme.typography.bodySmall.copy(fontFeatureSettings = "tnum"), color = TextMuted)
+            s.syncMessage?.let { InfoNote(it, icon = Icons.Outlined.Sync, color = TextSecondary, bg = SurfaceMuted) }
             PrimaryButton("Sinkronkan sekarang", vm::syncNow, icon = Icons.Outlined.Sync, loading = s.syncing, tag = "profile_sync_button")
             if (!u.consentServerSync) InfoNote("Sinkronisasi ke server nonaktif. Data hanya di perangkat ini.", icon = Icons.Outlined.CloudOff, color = RiskYellowText, bg = RiskYellowBg)
         }
         id.sehati.app.ui.settings.ServerSettingsCard()
 
         SectionTitle("Pengingat & obat")
-        SehatiCard(Modifier.testTag("reminder_entry_card")) {
-            SecondaryButton("Atur pengingat", onOpenReminders, icon = Icons.Outlined.NotificationsActive, tag = "profile_reminders_button")
-            SecondaryButton("Obat saya", onOpenMeds, icon = Icons.Outlined.Medication, tag = "profile_meds_button")
+        SehatiCard(Modifier.testTag("reminder_entry_card"), contentPadding = 0) {
+            Column {
+                AgendaRow(Icons.Outlined.NotificationsActive, "Atur pengingat", "Obat, minum air, Posyandu, dan lainnya", null, Modifier.testTag("profile_reminders_button"), onClick = onOpenReminders)
+                HorizontalDivider(color = SurfaceMuted, modifier = Modifier.padding(horizontal = 14.dp))
+                AgendaRow(Icons.Outlined.Medication, "Obat saya", "Jadwal dan catatan minum obat", null, Modifier.testTag("profile_meds_button"), onClick = onOpenMeds)
+            }
         }
 
         SectionTitle("Privasi & persetujuan")
@@ -101,7 +111,7 @@ fun ProfileScreen(
         SectionTitle("Akun")
         SecondaryButton("Keluar", { confirmLogout = true }, icon = Icons.Outlined.Logout, tag = "logout_button")
         TextButton({ confirmDelete = true }, Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("delete_data_button")) { Text("Hapus data saya", color = RiskRedText) }
-        Text("SEHATI ${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.bodySmall, color = TextMuted)
+        Text("SEHATI ${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.bodySmall, color = TextMuted, modifier = Modifier.align(Alignment.CenterHorizontally))
         Spacer(Modifier.height(8.dp))
     }
     if (confirmLogout) ConfirmDialog("Keluar dari SEHATI?", "Data tetap tersimpan di perangkat.", "Keluar", { confirmLogout = false; onLogout() }, { confirmLogout = false }, tag = "logout_dialog")

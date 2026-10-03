@@ -1,6 +1,8 @@
 package id.sehati.app.ui.citizen
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -40,36 +42,44 @@ fun HealthScreen(onShowQr: () -> Unit, onOpenAcademy: (String?) -> Unit, onRetak
 
         if (s.findings.isNotEmpty()) {
             SectionTitle("Yang perlu diperhatikan")
-            s.findings.take(6).forEachIndexed { i, fd ->
-                val st = runCatching { Severity.valueOf(fd.severity) }.getOrDefault(Severity.WATCH).style()
-                SehatiCard(Modifier.staggerIn(i + 1), contentPadding = 12) {
-                    Row(verticalAlignment = Alignment.Top) {
-                        IconBadge(st.icon, st.text, st.bg, 32)
-                        Spacer(Modifier.width(10.dp))
-                        Column { Text(fd.title, style = MaterialTheme.typography.titleSmall, color = TextPrimary); Text(fd.detail, style = MaterialTheme.typography.bodySmall, color = TextSecondary) }
-                    }
-                }
-            }
-            TextButton({ onOpenAcademy(null) }, Modifier.heightIn(min = 48.dp)) { Text("Pelajari di Health Academy") }
-        }
-
-        if (s.followUps.isNotEmpty()) {
-            SectionTitle("Tindak lanjut")
-            s.followUps.forEach { f ->
-                val open = f.status != FollowUpStatus.DONE.name && f.status != FollowUpStatus.CANCELLED.name
-                SehatiCard(Modifier.testTag("followup_${f.id}"), container = if (open) RiskOrangeBg else CardWhite, border = if (open) RiskOrange.copy(alpha = 0.3f) else BorderColor) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        IconBadge(Icons.Outlined.EventAvailable, if (open) RiskOrangeText else RiskGreenText, if (open) Color2(RiskOrange) else RiskGreenBg, 36)
-                        Spacer(Modifier.width(10.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text(FollowUpType.parse(f.type).label, style = MaterialTheme.typography.titleSmall, color = TextPrimary)
-                            Text(f.reason, style = MaterialTheme.typography.bodySmall, color = TextSecondary)
-                            Text("${FollowUpStatus.parse(f.status).label} · target ${TimeUtils.date(f.dueAt)}", style = MaterialTheme.typography.labelMedium, color = TextMuted)
+            SehatiCard(Modifier.staggerIn(1), contentPadding = 0) {
+                Column {
+                    s.findings.take(6).forEachIndexed { i, fd ->
+                        if (i > 0) HorizontalDivider(color = SurfaceMuted, modifier = Modifier.padding(horizontal = 14.dp))
+                        val st = runCatching { Severity.valueOf(fd.severity) }.getOrDefault(Severity.WATCH).style()
+                        Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp), verticalAlignment = Alignment.Top) {
+                            Icon(st.icon, null, tint = st.text, modifier = Modifier.size(18.dp).padding(top = 1.dp))
+                            Spacer(Modifier.width(10.dp))
+                            Column { Text(fd.title, style = MaterialTheme.typography.titleSmall, color = TextPrimary); Text(fd.detail, style = MaterialTheme.typography.bodySmall, color = TextMuted) }
                         }
                     }
                 }
             }
-            s.referrals.firstOrNull()?.let { InfoNote("Permintaan rujukan tercatat (${it.status.lowercase()}). Rujukan membantu proses administrasi dan bukan diagnosis.", icon = Icons.Outlined.LocalHospital) }
+            TextButton({ onOpenAcademy(null) }, Modifier.heightIn(min = 48.dp)) { Text("Pelajari di Health Academy", color = PrimaryDark) }
+        }
+
+        if (s.followUps.isNotEmpty()) {
+            SectionTitle("Tindak lanjut")
+            SehatiCard(contentPadding = 0) {
+                Column {
+                    s.followUps.forEachIndexed { i, f ->
+                        if (i > 0) HorizontalDivider(color = SurfaceMuted, modifier = Modifier.padding(horizontal = 14.dp))
+                        val open = f.status != FollowUpStatus.DONE.name && f.status != FollowUpStatus.CANCELLED.name
+                        Row(Modifier.fillMaxWidth().testTag("followup_${f.id}").padding(horizontal = 14.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Box(Modifier.size(width = 3.dp, height = 40.dp).background(if (open) RiskOrange else RiskGreen, RoundedCornerShape(2.dp)))
+                            Spacer(Modifier.width(12.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(FollowUpType.parse(f.type).label, style = MaterialTheme.typography.titleSmall, color = TextPrimary)
+                                Text(f.reason, style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                                Text("Target ${TimeUtils.date(f.dueAt)}", style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum"), color = TextMuted)
+                            }
+                            Spacer(Modifier.width(8.dp))
+                            StatusPill(FollowUpStatus.parse(f.status).label, if (open) RiskOrangeText else RiskGreenText, if (open) RiskOrangeBg else RiskGreenBg)
+                        }
+                    }
+                }
+            }
+            s.referrals.firstOrNull()?.let { InfoNote("Permintaan rujukan tercatat (${it.status.lowercase()}). Rujukan membantu proses administrasi dan bukan diagnosis.", icon = Icons.Outlined.LocalHospital, color = TextSecondary, bg = SurfaceMuted) }
         }
 
         // Tren tekanan darah
@@ -102,36 +112,42 @@ fun HealthScreen(onShowQr: () -> Unit, onOpenAcademy: (String?) -> Unit, onRetak
     }
 }
 
-private fun Color2(c: androidx.compose.ui.graphics.Color) = c.copy(alpha = 0.15f)
-
 @Composable
-private fun FloatingNote() = InfoNote(PROFILE_NOTE, icon = Icons.Outlined.Shield)
+private fun FloatingNote() = InfoNote(PROFILE_NOTE, icon = Icons.Outlined.Shield, color = TextSecondary, bg = SurfaceMuted)
 private const val PROFILE_NOTE = "Profil dan hasil di sini adalah pemantauan berbasis data yang dimasukkan, bukan diagnosis medis."
 
 @Composable
 fun CheckRow(c: HealthCheck, modifier: Modifier = Modifier) {
     SehatiCard(modifier.testTag("check_${c.id}")) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(TimeUtils.dateTime(c.measuredAt), style = MaterialTheme.typography.labelLarge, color = TextSecondary, modifier = Modifier.weight(1f))
+            Text(TimeUtils.dateTime(c.measuredAt), style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnum"), color = TextMuted, modifier = Modifier.weight(1f))
             SyncChip(SyncStatus.parse(c.syncStatus))
         }
         c.bloodPressure?.let { (sy, di) ->
             val r = BloodPressureRules.interpret(sy, di); val st = r.severity.style()
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("BP $sy/$di", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = TextPrimary)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.weight(1f), verticalAlignment = Alignment.Bottom) {
+                    Text("Tensi ", style = MaterialTheme.typography.labelMedium, color = TextMuted, modifier = Modifier.padding(bottom = 4.dp))
+                    Text("$sy/$di", style = MaterialTheme.typography.headlineSmall.copy(fontFeatureSettings = "tnum"), fontWeight = FontWeight.Bold, color = TextPrimary)
+                    Text(" mmHg", style = MaterialTheme.typography.labelSmall, color = TextMuted, modifier = Modifier.padding(bottom = 4.dp))
+                }
                 StatusPill(r.category, st.text, st.bg, st.icon)
             }
         }
         c.glucose?.let { g -> val r = GlucoseRules.interpret(g, c.glucoseFasting); val st = r.severity.style()
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("${if (c.glucoseFasting) "GDP" else "GDS"} ${g.toInt()} mg/dL", style = MaterialTheme.typography.titleMedium, color = TextPrimary)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.weight(1f), verticalAlignment = Alignment.Bottom) {
+                    Text("${if (c.glucoseFasting) "GDP" else "GDS"} ", style = MaterialTheme.typography.labelMedium, color = TextMuted, modifier = Modifier.padding(bottom = 2.dp))
+                    Text("${g.toInt()}", style = MaterialTheme.typography.titleLarge.copy(fontFeatureSettings = "tnum"), fontWeight = FontWeight.Bold, color = TextPrimary)
+                    Text(" mg/dL", style = MaterialTheme.typography.labelSmall, color = TextMuted, modifier = Modifier.padding(bottom = 3.dp))
+                }
                 StatusPill(r.category, st.text, st.bg, st.icon)
             } }
         c.cholesterol?.let { Text("Kolesterol total ${it.toInt()} mg/dL", style = MaterialTheme.typography.bodyMedium, color = TextSecondary) }
         val body = listOfNotNull(c.weightKg?.let { "Berat ${it.fmt1()} kg" }, c.waistCm?.let { "Perut ${it.fmt1()} cm" }, c.bmi?.let { "IMT ${it.fmt1()}" }, c.heartRate?.let { "Nadi $it" }).joinToString(" · ")
         if (body.isNotBlank()) Text(body, style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
         // Data provenance: dari mana data ini berasal
-        Text("Sumber: ${c.source.label}" + (c.operatorId?.let { " · petugas $it" } ?: "") + " · ${c.verification.label}", style = MaterialTheme.typography.bodySmall, color = PrimaryDark)
+        Text("Sumber: ${c.source.label}" + (c.operatorId?.let { " · petugas $it" } ?: "") + " · ${c.verification.label}", style = MaterialTheme.typography.bodySmall, color = TextMuted)
         if (c.notes.isNotBlank()) Text(c.notes, style = MaterialTheme.typography.bodySmall, color = TextMuted)
     }
 }
@@ -140,7 +156,7 @@ fun CheckRow(c: HealthCheck, modifier: Modifier = Modifier) {
 private fun MeasurementForm(vm: HealthViewModel) {
     val f by vm.form.collectAsStateWithLifecycle()
     Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text("Catat pengukuran sendiri", style = MaterialTheme.typography.titleLarge)
+        Text("Catat pengukuran sendiri", style = MaterialTheme.typography.titleLarge, color = TextPrimary)
         Text("Isi yang kamu ukur saja. Hasil mandiri ditandai belum diverifikasi.", style = MaterialTheme.typography.bodyMedium, color = TextMuted)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             SehatiTextField(f.systolic, { v -> vm.update { copy(systolic = v.filter(Char::isDigit).take(3)) } }, "Sistolik", Modifier.weight(1f), KeyboardType.Number, tag = "self_sys")
@@ -162,8 +178,8 @@ private fun MeasurementForm(vm: HealthViewModel) {
 @Composable
 private fun SavedResult(c: HealthCheck, onDone: () -> Unit) {
     Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        AnimatedCheck()
-        Text("Tersimpan di perangkat", style = MaterialTheme.typography.titleLarge, modifier = Modifier.testTag("measurement_saved_title"))
+        Icon(Icons.Outlined.TaskAlt, null, tint = Wellness, modifier = Modifier.size(48.dp))
+        Text("Tersimpan di perangkat", style = MaterialTheme.typography.titleLarge, color = TextPrimary, modifier = Modifier.testTag("measurement_saved_title"))
         val results = listOfNotNull(
             c.bloodPressure?.let { BloodPressureRules.interpret(it.first, it.second) },
             c.glucose?.let { GlucoseRules.interpret(it, c.glucoseFasting) },
@@ -171,8 +187,12 @@ private fun SavedResult(c: HealthCheck, onDone: () -> Unit) {
         if (results.any { it.needsUrgentCare }) EmergencyBanner()
         results.forEach { r ->
             val st = r.severity.style()
-            SehatiCard(container = st.bg, border = st.color.copy(alpha = 0.3f)) {
-                StatusPill(r.category, st.text, Color2White(), st.icon)
+            SehatiCard {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.size(width = 3.dp, height = 22.dp).background(st.color, RoundedCornerShape(2.dp)))
+                    Spacer(Modifier.width(10.dp))
+                    StatusPill(r.category, st.text, st.bg, st.icon)
+                }
                 Text(r.interpretation, style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
                 Text("Edukasi: ${r.education}", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                 Text("Langkah berikutnya: ${r.nextStep}", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
@@ -181,5 +201,3 @@ private fun SavedResult(c: HealthCheck, onDone: () -> Unit) {
         PrimaryButton("Selesai", onDone, tag = "measurement_done_button")
     }
 }
-
-private fun Color2White() = androidx.compose.ui.graphics.Color.White
