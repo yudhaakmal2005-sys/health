@@ -1,4 +1,5 @@
 import Fastify, { type FastifyError, type FastifyInstance } from 'fastify';
+import { serveWeb } from './core/static.js';
 import helmet from '@fastify/helmet';
 import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
@@ -66,7 +67,10 @@ export async function buildApp(deps: Deps): Promise<FastifyInstance> {
     return reply.code(500).send(errorBody('INTERNAL', 'Terjadi kesalahan pada server. Coba lagi nanti.'));
   });
 
-  app.setNotFoundHandler((_req, reply) => reply.code(404).send(errorBody('NOT_FOUND', 'Alamat API tidak ditemukan.')));
+  app.setNotFoundHandler((req, reply) => {
+    if (deps.config.webDir && serveWeb(deps.config.webDir, req, reply)) return reply;
+    return reply.code(404).send(errorBody('NOT_FOUND', 'Alamat API tidak ditemukan.'));
+  });
 
   await app.register(async (api) => {
     await api.register(async (s) => publicRoutes(s, deps));

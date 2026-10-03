@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { loadConfig } from './config.js';
 import { createPool } from './db/pool.js';
 import { runMigrations } from './db/migrate.js';
@@ -8,6 +9,9 @@ import { OpenAiCompatClient } from './ai/openai-compat.js';
 import type { Deps } from './core/types.js';
 
 async function main(): Promise<void> {
+  // Hosting tanpa Docker (mis. cPanel): baca .env di folder aplikasi bila ada. Variabel yang sudah diset tidak ditimpa.
+  const envFile = process.env.ENV_FILE ?? '.env';
+  if (existsSync(envFile)) process.loadEnvFile(envFile);
   const config = loadConfig();
   const pool = createPool(config.databaseUrl);
   const applied = await runMigrations(pool);

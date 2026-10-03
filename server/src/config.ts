@@ -32,6 +32,8 @@ export interface AppConfig {
   aiApiKey?: string | null;
   aiBaseUrl?: string;
   aiModel: string;
+  /** Opsional: folder hasil build dashboard (web/dist) yang disajikan langsung oleh server. */
+  webDir?: string | null;
   aiEffort: Effort;
   aiMaxTokens: number;
   rateLimits: RateLimits;
@@ -104,6 +106,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     aiBaseUrl: (env.AI_BASE_URL?.trim() || 'https://api.openai.com/v1'),
     aiModel: env.AI_MODEL && env.AI_MODEL.trim() !== '' ? env.AI_MODEL.trim() : aiProvider === 'openai' ? 'gpt-4o-mini' : 'claude-opus-5-5',
     aiEffort: effort,
+    webDir: env.WEB_DIR?.trim() || null,
     aiMaxTokens: int(env.AI_MAX_TOKENS, 8000, 'AI_MAX_TOKENS'),
     rateLimits: {
       ...rl,
